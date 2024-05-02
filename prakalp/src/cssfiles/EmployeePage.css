@@ -1,0 +1,97 @@
+.empoverview {
+    font-family: Arial, sans-serif;
+      margin-left: 7px;
+      margin-top: 45px;
+      /* border: 3px solid black; */
+      /* background-color: rosybrown; */
+      height: 624px;
+      display: flex;
+      flex-direction: column;
+      color: #fff;
+    }
+  
+
+  
+  .blurred-background {
+    filter: blur(5px); /* Adjust the blur intensity as needed */
+  }
+  
+  table {
+    border-collapse: collapse;
+    /* width: 100%; */
+  }
+  
+  th, td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 10px;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+    color: black;
+    font-size: 18px;
+  }
+
+.emp-title{
+    display: flex;
+    align-items: center;
+}
+
+.edit-emp a{
+    margin-left: 200px;
+    color: #fff;
+    margin-right: 5px;
+    
+}
+
+.edit-emp a:visited {
+    color: royalblue; /* Change to your desired color */
+  }
+
+
+
+.add-emp a{
+    margin-left: 5px;
+    color: #fff;
+}
+
+.add-emp a:visited {
+    color: rosybrown; /* Change to your desired color */
+  }
+
+  .table_row{
+    position: relative; /* Set relative position for parent container */
+  display: flex;
+  align-items: center;
+  }
+
+
+  .editimg {
+  height: 25px;
+  width: 25px;
+  background-color: transparent;
+}
+
+.edit-button-proj {
+  right: 60px; /* Adjust as needed */
+}
+
+.tables-container {
+  display: flex;
+  flex-direction: row;
+}
+
+
+.project-table {
+  width: 50%;
+}
+
+.employee-table {
+  margin-right:2px
+}
+
+.table-wrapper {
+  flex: 1;
+  margin-right: 20px; /* Adjust as needed for spacing between tables */
+}

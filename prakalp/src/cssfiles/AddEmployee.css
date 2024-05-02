@@ -1,0 +1,247 @@
+
+.add-emp-title {
+  margin-top: -60px;
+  margin-bottom: -15px;
+  align-self: center;
+}
+
+.edit-employee-container {
+    font-family: Arial, sans-serif;
+    /* padding: 20px; */
+    margin-top: 70px;
+    
+    /* display: flex;
+    flex-direction: column; */
+    color: #fff;
+  }
+  
+  .edit-employee-container label{
+    color: white;
+  }
+
+ .flex_container{
+  display: flex;
+  
+ } 
+
+ .flex_container1{
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  padding-left: 2%;
+ }
+
+.flex_container2{
+  display: flex;
+  flex-direction: column;
+  padding-left: 5%;
+}
+
+  .edit-employee-container label {
+    font-size: 17px;
+    margin-top: 5px;
+    margin-bottom: -10px;
+    
+  }
+  
+  .in {
+    
+    min-width: 30px;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 30px;
+    border: none;
+    /* border-bottom: 1px solid #fff; */
+    outline: none;
+    background: transparent;
+    margin-top: 10px;
+  }
+
+  .pass-in {
+    
+    min-width: 30px;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 30px;
+    padding: 10px;
+    border-radius: 3px;
+    border: 1px solid white;
+    /* border-bottom: 1px solid #fff; */
+    outline: none;
+    background: transparent;
+    margin-top: 10px;
+  }
+  
+    
+  .visibility-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
+/*    
+  .emp_name{
+    max-width: 300px;
+    
+  }
+
+  .emp_nickname{
+    max-width: 300px;
+  } */
+
+  .selectemp{
+    width: 300px;
+    background-color: transparent;
+    color: azure;
+    height: 35px;
+    font-size: 16px;
+
+  }
+
+.selectlocation{
+  width: 300px;
+    background-color: transparent;
+    color: azure;
+    height: 35px;
+    font-size: 16px;
+}
+
+
+  .role-align {
+    margin-top: 15px;
+    display: flex; 
+  }
+
+  .location_align{
+    margin-top: 15px;
+    display: flex; 
+  }
+
+  .blurred-background {
+    filter: blur(5px); /* Adjust the blur intensity as needed */
+  }
+
+  .echeckbox {
+    /* Ensure the checkbox is visible */
+    display: flex;
+    width: auto;
+    height: auto;
+    
+  }
+
+ .edit-employee-container select {
+    color: #fff; /* Change to your desired text color */
+    background:#141e30;/* Change to your desired background color */
+    margin-bottom: 5px;
+    margin-top: 5px;
+    min-height: 25px;
+  }
+
+  .use-email{
+    margin-bottom: 15px;
+    margin-top: -5px;
+  }
+
+  .error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+  }
+
+  .add-emp-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    margin-right: 140px;
+    font-size: 15px;
+    width: 190px;
+  align-self: center;
+  
+  }
+
+  .chbx {
+    /* background-color: #fff;  */
+  
+    /* color: #000;
+    opacity: 1;
+    z-index: 1;  */
+    /* color: #fff; */
+   background-color: white;
+    display: inline-block;
+    width: 5%;
+}
+
+.align{
+  padding-left: 45%;
+}
+
+
+
+.visibility-icon.visible {
+  color: #007bff; /* Change color when visible */
+}
+
+.visibility-icon.hidden {
+  color: #6c757d; /* Change color when hidden */
+}
+
+
+.show-password-btn {
+  margin-top: 5px; /* Adjust as needed */
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.show-password-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.password-input-container {
+  position: relative;
+  border:20px
+}
+
+.password-input-container .show-password-btn {
+  position: absolute;
+  top: 35%;
+  right: 10px;
+  transform: translateY(-50%);
+  border: 1px solid #ccc;
+}
+
+.pass-in {
+  position: relative;
+}
+
+.visibility-icon {
+  position: absolute;
+  top: 55%;
+  right: 50%; 
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+
+.error-message {
+  position: relative;
+  bottom: 10px;
+  left: 10px;
+  font-size: 16px;
+  color: red;
+}
+/* .visibility-icon {
+  position: absolute;
+  right: 800px;
+  top: 57%;
+  transform: translateY(-50%);
+  cursor: pointer;
+} */

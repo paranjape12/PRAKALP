@@ -1,0 +1,135 @@
+
+  .card2 {
+    border: 1px solid #000;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  margin: 20px auto;
+  background-color: black;
+  margin-top: 0px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+    
+  }
+
+  .card-header2 {
+    background-color: #ddd;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    border-radius: 9px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    max-height: 30px;
+  }
+  
+  .card-header2 h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    margin-left: 10px;
+  }
+
+ 
+  
+  .form-group {
+    padding: 10px;
+  }
+  
+  .form-group label {
+    display: block;
+  margin-bottom: 5px;
+  }
+  
+  .form-group input{
+    
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      border-color: #0056b3;
+      border: 0px;
+    
+  }
+  
+  .form-group input[type="text"],
+  input[type="number"],
+  textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+    margin-bottom: -5px;
+  }
+  
+  textarea {
+    height: 100px; 
+  }
+
+  .card-footer2 {
+    padding: 10px;
+    text-align: right;
+  }
+
+  .card-footer2 button[type="submit"] {
+    background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  margin-right: 140px;
+  font-size: 15px;
+  }
+
+  .card-footer2 button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Additional styling for checkbox */
+  input[type="checkbox"] {
+    margin-bottom: 5px;
+    margin-left: -230px;
+    
+  }
+
+  
+  .arrow-button2 {
+    background: #ddd;
+    border: none;
+    cursor: pointer;
+    padding: 5px; /* Adjust the padding to control the button size */
+  }
+  
+  .arrow-button2 img {
+    
+    width: 20px; /* Adjust the width as needed */
+    height: auto; /* Maintain aspect ratio */
+  }
+
+  .last-task{
+    display: flex;
+    flex-direction: row;
+  }
+
+  .last-task label{
+    width: 280px;
+  }
+  .last-task input{
+    margin-left: -140px;
+    margin-top: 2px;
+    width: 15px;
+    height: 15px;
+  }
+
+  .time-inputs {
+    display: flex;
+  }
+  
+  .time-input-column {
+    margin-right: 10px; /* Add spacing between columns */
+  }

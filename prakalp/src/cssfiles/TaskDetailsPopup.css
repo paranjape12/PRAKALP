@@ -1,0 +1,33 @@
+/* TaskDetailsPopup.css (if you have a separate CSS file) */
+.task-details-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    color: black;
+    padding: 20px;
+    height: 300px;
+    border: solid 2px black;
+    width: 250px;
+    z-index: 1000; /* Adjust as needed */
+  }
+  
+  .popup-content div {
+    margin-bottom: 10px; /* Adjust the margin as needed */
+  }
+  
+  .popup-content button {
+    display: block;
+    color: white;
+    border-radius: 10px;
+    background-color: green;
+    font-size: 18px;
+    margin: 30px auto; /* Adjust the margin as needed */
+  }
+
+  .popup-content h2 {
+  
+  }
+  
+  .header-task-details {}

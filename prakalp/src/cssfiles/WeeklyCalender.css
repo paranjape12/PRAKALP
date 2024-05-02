@@ -1,0 +1,109 @@
+/* WeeklyCalendar.css */
+.weekly-calendar {
+  font-family: Arial, sans-serif;
+  /* padding: 20px; */
+  margin-right: 10px;
+  /* margin-left: 10px; */
+  
+}
+
+
+
+
+.calender-heading {
+  display: flex;
+  /* position: fixed; */
+  margin-left: 20px;
+}
+
+.table-container {
+  width: 100%;
+  height: 580px;
+  overflow-x: auto; 
+  overflow-y: auto;
+  
+}
+
+.cal-table{
+  margin-top: -10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th, table td {
+  border: 1px solid white;
+  padding: 6px;
+  text-align: center;
+}
+
+table th {
+  background-color: white;
+}
+
+
+/* Apply alternating background colors to table rows for cal-row class */
+.cal-row:nth-child(even) {
+  background-color: blueviolet; /* Even rows are red */
+}
+
+.cal-row:nth-child(odd) {
+  background-color: black; /* Odd rows are black */
+}
+
+.days-week td {
+  background-color: darkcyan;
+}
+
+.sunday-cell {
+  background-color: red;
+}
+
+.cal-top{
+  display: flex;
+  margin-left: 40px;
+}
+
+.navigation-buttons {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+}
+
+.navigation-dates {
+  margin: 0 10px; /* Adjust spacing between buttons and dates */
+}
+
+.nav-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 6px;
+  margin: 0 4px;
+  cursor: pointer;
+}
+
+.nav-button:hover {
+  background-color: #0056b3;
+}
+
+/* Make the table header sticky */
+/* thead {
+  position: sticky;
+  top: 30px;
+  
+  background-color: white;
+  z-index: 1; 
+} */
+
+
+.task-type-p {
+  color: green; /* Customize color for P tasks */
+}
+
+.task-type-a {
+  color: red; /* Customize color for A tasks */
+}
+

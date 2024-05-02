@@ -1,0 +1,101 @@
+.card3 {
+  border: 1px solid #000;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  margin: 20px auto;
+  background-color: white;
+  margin-top: 40px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+  
+  .card-header3 {
+    background-color: #ddd;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    border-radius: 9px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    max-height: 30px;
+  }
+ 
+  .card-header3 h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    margin-left: 10px;
+  }
+  
+  /* .form-group {
+    background-color: #ddd;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 99px;
+    font-weight: bold;
+  } */
+  
+  input[type="text"],
+  input[type="number"],
+  input[type="date"]
+  textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+    
+  }
+  
+  textarea2 {
+    height: 150px; /* Adjust as needed */
+  }
+  
+  
+  
+  .card-footer3 button[type="submit"] {
+    background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  margin-left: 170px;
+  font-size: 15px;
+  }
+
+  .card-footer3 button:hover {
+    background-color: #0056b3;
+  }
+
+  .arrow-button3 {
+    background: #ddd;
+    border: none;
+    cursor: pointer;
+    padding: 5px; /* Adjust the padding to control the button size */
+
+  }
+  
+  .arrow-button3 img {
+    
+    width: 20px; /* Adjust the width as needed */
+    height: auto; /* Maintain aspect ratio */
+  }
+
+  h3{
+    margin-left: 10px;
+  }
+
+  

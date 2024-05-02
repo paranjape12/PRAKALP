@@ -1,0 +1,108 @@
+.App {
+  text-align: center;
+  z-index: 1000;
+  position: fixed;
+  top: 0%;
+  width: 100%;
+  
+}
+
+.title {
+  text-align: left;
+  padding-left: 35px;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+.blurred-background {
+  filter: blur(5px); /* Adjust the blur intensity as needed */
+}
+
+.navbar_bg {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: azure;
+  padding: 2px 20px;
+  height: 50px;
+  /* Adjust padding as needed */
+}
+
+.navbar-icon {
+  background-color: antiquewhite;
+  align-items: center;
+}
+
+.home_bg {
+  border: 0px;
+  background: transparent;
+  margin-left: 15px;
+  /* Adjust margin between icons as needed */
+}
+
+.home_bg.active {
+  padding: 6px;
+  border-radius: 10px;
+  color: aliceblue;
+  background: #3c608b;
+  /* background: linear-gradient(#141e30, #5592d7); */
+  /* Change this to the color you want */
+}
+
+
+.icon_bg {
+  height: 25px;
+  width: 25px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 130px;
+ 
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 200;
+  margin: 0;
+  padding: 0;
+  right: 0;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+  width: 150px;
+  background-color: white;
+  border-radius: 1px;
+}
+
+.dropdown-content button {
+  background-color: white;
+  /* Green background color */
+  color: black;
+  /* White text color */
+  padding: 11px;
+  border: 0px;
+  text-align: center;
+  font-size: 14px;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  /* transition: background-color 0.3s; */
+  margin: 0;
+  /* Add this line to reset margin */
+  
+}
+
+.dropdown-content button:hover {
+  background: linear-gradient(#141e30, #5592d7);
+  /* Darker green on hover */
+  width: 150px;
+  height: 50px;
+  text-align: center;
+  color: #f9f9f9;
+}
