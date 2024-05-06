@@ -1,18 +1,15 @@
 import React from 'react';
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';  // Import useNavigate
+import { useNavigate } from 'react-router-dom';  // Import useNavigate
 import '../cssfiles/Navbar.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser , faUsers, faBars, faCircleUser} from '@fortawesome/free-solid-svg-icons';
 import { faRightFromBracket , faDiagramProject } from '@fortawesome/free-solid-svg-icons';
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import menu from '../assets/menu.png';
 import emp from '../assets/emp.png';
 import settings from '../assets/settings.png';
 import home from '../assets/home.png';
 import profile from '../assets/profile-user.png';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 
 function Navbar({ onAddProjectClick, onAddTaskClick, onAssignTaskClick }) {
@@ -23,7 +20,6 @@ function Navbar({ onAddProjectClick, onAddTaskClick, onAssignTaskClick }) {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const navigate = useNavigate();  // Initialize useNavigate
-  const location = useLocation();
 
   const handleButtonClick = (buttonName) => {
     setActiveButton(buttonName);  // Reset dropdown states when a button is clicked
@@ -69,7 +65,7 @@ function Navbar({ onAddProjectClick, onAddTaskClick, onAssignTaskClick }) {
     setShowProfileDropdown(false);
   };
 
-
+  
   const handleProfileButtonClick = () => {
     setShowProfileDropdown(!showProfileDropdown);
     setShowSettingsDropdown(false);
@@ -81,7 +77,7 @@ function Navbar({ onAddProjectClick, onAddTaskClick, onAssignTaskClick }) {
     // For now, simply navigate to the login page
     navigate('/login');
   };
-
+   
   const [isPopupVisible, setPopupVisible] = useState(false);
   const background = isPopupVisible ? 'blurred-background' : '';
 
@@ -90,37 +86,6 @@ function Navbar({ onAddProjectClick, onAddTaskClick, onAssignTaskClick }) {
   return (
     <div className={`App ${background}`}>
       <div className='navbar_bg'>
-          <div className='title'>
-          <Link style={{ fontSize: '24px', color: '#f8f9fc', textDecoration: 'none' }}>
-            {location.pathname === "/" ? "Gogate" : "Overview - Task"}
-          </Link>
-          </div>
-
-
-        <div className='navbar-container'>
-          <ul className="navbar-list">
-            <li class="nav-item dropdown no-arrow mx-1 p-0">
-              <a title="today" id="today" class="nav-link text-white th1 p-0" style={{ paddingRight: '10px', cursor: 'pointer' }}>
-                Today
-              </a>
-            </li>
-            <li class="nav-item dropdown no-arrow mx-1 p-0">
-              <a title="previous" id="previous" class="nav-link text-white th1 p-0" style={{ paddingRight: '10px', cursor: 'pointer' }}>
-                &lt; Day 1
-              </a>
-            </li>
-            <li class="nav-item dropdown no-arrow mx-1 ">
-              <a title="next" id="next" class="nav-link  text-white  th7 p-0" style={{ paddingRight: '20px', cursor: 'pointer' }}>
-                -&nbsp; Day 7 &gt;
-              </a>
-            </li>
-          </ul>
-
-          <div className="navbar_icon">
-            <div className="icon-buttons">
-              <button className={activeButton === 'home' ? 'home_bg active' : 'home_bg'} onClick={() => handleButtonClick('home')}>
-                <img src={home} className='icon_bg'></img>
-              </button>
         <div className='title'>
         <a style={{fontSize:'24px',color:'#f8f9fc'}}>Prakalp</a>
         </div>
