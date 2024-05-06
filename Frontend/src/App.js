@@ -8,6 +8,7 @@ import AssignTask from '../src/components/AssignTask';
 import HomePage from '../src/pages/HomePage';
 import AddEmployee from '../src/pages/AddEmployee';
 import TaskOveriew from '../src/pages/TaskOverview';
+import TaskOveriew2 from '../src/pages/TaskOverview2';
 import EmployeePage from '../src/pages/EmployeePage';
 import Login from '../src/pages/Login';
 import EditEmployee from '../src/pages/EditEmployee';
@@ -66,6 +67,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
         <Route path="/task" element={<TaskOveriew isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+        <Route path="/task2" element={<TaskOveriew2 isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
         <Route path="/employee" element={<EmployeePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
         <Route path="/edit-employee" element={<EditEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
         <Route path="/add-employee" element={<AddEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
