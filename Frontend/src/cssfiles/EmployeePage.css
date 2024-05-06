@@ -21,13 +21,13 @@
     /* width: 100%; */
   }
   
-  th, td {
+  .employee-table th, td {
     border: 1px solid #dddddd;
     text-align: left;
     padding: 10px;
   }
   
-  th {
+  .employee-table th {
     background-color: #f2f2f2;
     color: black;
     font-size: 18px;

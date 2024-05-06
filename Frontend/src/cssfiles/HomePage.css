@@ -101,7 +101,7 @@
   margin-right: 5px;
 }
 
-th, td {
+.table-container th, td {
   border: 1px solid #dddddd;
   text-align: left !important;
   padding: 10px;
