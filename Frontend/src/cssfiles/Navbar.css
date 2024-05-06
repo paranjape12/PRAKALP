@@ -1,29 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
 .App {
   text-align: center;
   z-index: 1000;
   position: fixed;
   top: 0%;
   width: 100%;
+  height: 20%;
   
 }
 
 .title {
   text-align: left;
   padding-left: 35px;
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-family: "Nunito", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-size: 24px;
 }
 
 .blurred-background {
   filter: blur(5px); /* Adjust the blur intensity as needed */
+}
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.nav-item {
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: white;
 }
 
 .navbar_bg {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: azure;
-  padding: 2px 20px;
-  height: 50px;
+  background-color: #ff8f2ef7;
+  height: 38px;
+  padding: 10px;
   /* Adjust padding as needed */
 }
 
@@ -40,7 +68,7 @@
 }
 
 .home_bg.active {
-  padding: 6px;
+  padding: 0;
   border-radius: 10px;
   color: aliceblue;
   background: #3c608b;
@@ -99,10 +127,12 @@
 }
 
 .dropdown-content button:hover {
-  background: linear-gradient(#141e30, #5592d7);
+  background: rgb(206, 223, 233);
   /* Darker green on hover */
   width: 150px;
   height: 50px;
   text-align: center;
-  color: #f9f9f9;
+  color:#0b0c0c;
+  border-radius: 1px;
+  
 }

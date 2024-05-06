@@ -197,13 +197,13 @@ function TaskOverview({ isPopupVisible, selectedProjectName }) {
         <div className='task-count'>Total tasks:
           <div className='name-proj'>{tasksData.length}</div>
         </div>
-        <div className="navigation-buttons">
+        {/* <div className="navigation-buttons">
           <button className="nav-button" onClick={handlePrevWeek}>Previous Week</button>
           <div className="navigation-dates">
             <div>{start} - {end}</div>
           </div>
           <button className="nav-button" onClick={handleNextWeek}>Next Week</button>
-        </div>
+        </div> */}
       </div>
 
       <div className='table-container'>
