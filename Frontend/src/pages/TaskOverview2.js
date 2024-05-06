@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import '../cssfiles/TaskOverview2.css'; // Import your CSS file
+import Footer from '../components/Footer';
 
 const today = new Date(); // Get today's date
 
@@ -90,6 +91,7 @@ function TaskOverview2() {
           {/* Your logic for populating the table body with task data */}
         </tbody>
       </table>
+      <Footer/>
     </div>
   );
 }
