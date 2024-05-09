@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import '../cssfiles/TaskOverview2.css'; // Import your CSS file
-import Footer from '../components/Footer';
+import Navbar from '../../components/Navbar';
+import '../../cssfiles/TaskOverview2.css'; // Import your CSS file
 
 const today = new Date(); // Get today's date
 
@@ -15,7 +14,7 @@ const daysOfWeek = [
   'Sat',
 ];
 
-function TaskOverview2() {
+function Employee1() {
   const [showComplete, setShowComplete] = useState(
     // Check for cookie or default to 1 (show all tasks)
     document.cookie.includes('ShowComplete=0') ? 0 : 1
@@ -57,6 +56,7 @@ function TaskOverview2() {
       <table className="table table-bordered text-dark" width="100%" cellspacing="0" style={{marginTop:'38px', fontFamily: "Nunito"}}>
         <thead className="text-white" id="theader">
           <tr className="text-center small" style={{}}>
+          <th style={{ width: '20rem', color:'white' }}>Employee Name</th>
             <th style={{ width: '20rem', color:'white' }}>Projects</th>
             <th colSpan="2" style={{ verticalAlign: 'revert', color:'white' }}>
               Task Details
@@ -91,9 +91,8 @@ function TaskOverview2() {
           {/* Your logic for populating the table body with task data */}
         </tbody>
       </table>
-      <Footer/>
     </div>
   );
 }
 
-export default TaskOverview2;
+export default Employee1;

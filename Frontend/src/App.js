@@ -13,6 +13,11 @@ import EmployeePage from '../src/pages/EmployeePage';
 import Login from '../src/pages/Login';
 import EditEmployee from '../src/pages/EditEmployee';
 import EditTask from './components/EditTask';
+import Employee1 from './pages/Profile/Employee1';
+import Fabar from './components/Fabar';
+
+
+
 
 function App() {
 
@@ -72,6 +77,10 @@ function App() {
         <Route path="/edit-employee" element={<EditEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
         <Route path="/add-employee" element={<AddEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/employee1" element={<Employee1 isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+        <Route path="/addnew-project" element={<AddNewProject isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+        <Route path="/fabar" element={<Fabar isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+
       </Routes>
       {/* <Login onLoginSuccess={handleLoginSuccess}/> */}
     </Router>

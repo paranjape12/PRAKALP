@@ -10,6 +10,10 @@ import emp from '../assets/emp.png';
 import settings from '../assets/settings.png';
 import home from '../assets/home.png';
 import profile from '../assets/profile-user.png';
+import axios from 'axios';
+import Popup from 'reactjs-popup';
+import { RiCloseCircleFill } from 'react-icons/ri';
+
 
 
 function Navbar({ onAddProjectClick, onAddTaskClick, onAssignTaskClick }) {
@@ -83,6 +87,26 @@ function Navbar({ onAddProjectClick, onAddTaskClick, onAssignTaskClick }) {
 
 
 
+  // //pop add project
+  // const handleAddProject = async (projectName, salesName) => {
+  //   try {
+  //     const token = localStorage.getItem("token"); // Assuming you have a token stored in localStorage
+  //     const response = await axios.post('/api/projects', { projectName, salesName }, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     console.log(response.data); // Log the response from the server
+  //     alert("Project added successfully");
+  //     // Optionally, fetch updated data or perform additional logic after project addition
+  //     // fetchData(); // Example: if fetchData is a function to fetch updated data
+  //   } catch (error) {
+  //     console.error("Error adding project:", error);
+  //     alert("Error adding project");
+  //   }
+    
+  // };
+ 
+   
+
   return (
     <div className={`App ${background}`}>
       <div className='navbar_bg'>
@@ -152,7 +176,75 @@ function Navbar({ onAddProjectClick, onAddTaskClick, onAssignTaskClick }) {
               <div className="dropdown-content">
                 {/* Add your dropdown content for menu here */}
                 <div>
-                  <div><button onClick={handleAddProjectClick}>Add Project</button></div>
+                  
+                  
+                  
+                  <div><button onClick={handleAddProjectClick}>Add Project</button>
+                  {/* <Popup
+                    trigger={<button>Add Project</button>}
+                    position="right center"
+                    modal
+                    className="custom-popup"
+                  >
+                    {(close) => (
+                      <div className="popup-contents">
+                        <div
+                          style={{ justifyContent: "right", alignItems: "end" }}
+                        >
+                          <RiCloseCircleFill onClick={close} size={28} />
+                        </div>
+                        <h2>Add New Project </h2>
+                        <div className='input-group'>
+                        <label>
+                           <strong>Sales Order:</strong> 
+                         <input
+                             type="text"
+                             value={salesOrder}
+                              onChange={(event) => setSalesOrder(event.target.value)}
+                              />
+                            </label>
+
+                            <label>
+                             <strong>Enter Project Name:</strong> 
+                            <input
+                              type="text"
+                              value={projectName}
+                              onChange={(event) => setProjectName(event.target.value)}
+                            />
+                            </label>
+      
+                            </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            marginTop: "10px",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={() => handlesave()}
+                          >
+                            SAVE
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-dbtn btn-outline-danger"
+                            onClick={() => handleclose()}
+                          >
+                            CLOSE
+                          </button>
+
+                        </div>
+                      </div>
+                    )}
+                  </Popup> */}
+                  </div>
+
+
+
                   <div><button> Manage Employees </button></div>
                   <div><button onClick={handleAddTaskClick}>Add Task</button></div>
                   <div><button onClick={handleAssignTaskClick}>Assign Task</button></div>
@@ -181,6 +273,7 @@ function Navbar({ onAddProjectClick, onAddTaskClick, onAssignTaskClick }) {
                 </div>
               </div>
             )}
+            
           </button>
           </div>
         </div>
