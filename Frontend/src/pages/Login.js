@@ -163,7 +163,7 @@ function Login({ }) {
                       <div className="form-group">
                         <div className="input-group flex-nowrap">
                           <input
-                            type={showPassword ? "text" : "password"} // Toggle input type based on showPassword state
+                            type={passwordVisible ? "text" : "password"} // Toggle input type based on showPassword state
                             className="form-control form-control-user"
                             id="exampleInputPassword"
                             placeholder="Password"
@@ -178,7 +178,11 @@ function Login({ }) {
                               style={{ borderRadius: '0rem 10rem 10rem 0rem', height: '2.4rem', width: '43px' }}
                               onClick={togglePasswordVisibility}
                             >
-                              <img className={passwordVisible ? 'eyeIcon' : 'eyeIconSlash'} src={passwordVisible ? eyeIcon : eyeIconSlash} alt="Eye Icon" />
+                              {passwordVisible ? (
+                                <img className="eyeIcon" src={eyeIcon} alt="Eye Icon" />
+                              ) : (
+                                <img className="eyeIconSlash" src={eyeIconSlash} alt="Eye Slash Icon" />
+                              )}
                             </span>
                           </div>
                         </div>
