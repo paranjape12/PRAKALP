@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+body{
+    background-image: linear-gradient(180deg, #7898f9 10%, #224abe 100%);
+}
+div,
+input {
+    font-family: Nunito;
+}
+
+.bg-register-image {
+    background: url("../assets/register.jpg");
+    background-position: unset;
+    background-size: cover;
+    object-fit: unset;
+    background-repeat: no-repeat;
+}
+
+form.user .btn-reg-user {
+    font-size: 1rem;
+    border-radius: 10rem;
+    padding: .75rem 1rem;
+    width: 33rem;
+    height: 45px;
+}
+
+#Errormsg .modal-content {
+    box-shadow: 2px 3px red;
+}
+
+#Errormsg,
+#Sucessmsg {
+    z-index: 2;
+    top: 1%;
+    left: 38%;
+}
+
+#Sucessmsg .modal-dialog,
+#Errormsg .modal-dialog {
+    top: 12%;
+}
+
+#Sucessmsg .modal-content {
+    box-shadow: 2px 3px green;
+}
+
+.eyeIcon path {
+    fill: orange;
+}
+
+.eyeIconSlash path {
+    fill: green;
+}
+
+#dropLocation {
+    border-radius: 30px;
+}

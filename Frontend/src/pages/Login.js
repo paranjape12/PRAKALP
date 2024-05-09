@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import App from "../App";
 import HomePage from "../pages/HomePage";
+import eyeIcon from '../assets/eye.svg';
+import eyeIconSlash from '../assets/eye-slash.svg';
 import axios from "axios";
 import "../cssfiles/Login.css"; // Make sure to import your CSS file
 // import { Link } from 'react-router-dom';
 
-function Login({}) {
+function Login({ }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,6 +21,12 @@ function Login({}) {
 
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked); // Define 'handleCheckboxChange' function
+  };
+
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
   };
 
   //   const loginUrl ="";
@@ -63,10 +71,6 @@ function Login({}) {
 
   const onLoginSuccess = () => {
     navigate("/");
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword); // Toggle the state to show/hide password
   };
 
   return (
@@ -166,16 +170,15 @@ function Login({}) {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                           />
+
                           <div className="input-group-prepend">
                             <span
                               className="input-group-text"
                               id="showeye"
-                              style={{ borderRadius: "0rem 10rem 10rem 0rem" }}
+                              style={{ borderRadius: '0rem 10rem 10rem 0rem', height: '2.4rem', width: '43px' }}
+                              onClick={togglePasswordVisibility}
                             >
-                              <i
-                                className="fa fa-eye"
-                                onClick={togglePasswordVisibility}
-                              ></i>
+                              <img className={passwordVisible ? 'eyeIcon' : 'eyeIconSlash'} src={passwordVisible ? eyeIcon : eyeIconSlash} alt="Eye Icon" />
                             </span>
                           </div>
                         </div>
@@ -197,39 +200,39 @@ function Login({}) {
                           </label>
                         </div>
                       </div>
-                      
+
                       {/* <link id="loginbtn" class="btn btn-primary btn-user btn-block">
                                             Login
                       </link> */}
-                      
+
                       <button
                         id="loginbtn"
                         className="btn btn-outline-primary btn-user"
                         onClick={handleLoginClick}
                         type="button" // Use type="button" to prevent form submission
                       ><strong>
-                         Login
-                      </strong>
-                       
+                          Login
+                        </strong>
+
                       </button>
-                      
-                      <hr/>
+
+                      <hr />
                       <a
-                                    className="btn btn-outline-danger btn-user"
-                                    // onClick={handleGoogleLogin}
-                                    href="#!" // Use href="#!" to prevent anchor link behavior
-                                >
-                                    <i className="fab fa-google fa-fw"></i> <strong>Login with Protovec Account.</strong>
-                                </a>
+                        className="btn btn-outline-danger btn-user"
+                        // onClick={handleGoogleLogin}
+                        href="#!" // Use href="#!" to prevent anchor link behavior
+                      >
+                        <i className="fab fa-google fa-fw"></i> <strong>Login with Protovec Account.</strong>
+                      </a>
                     </form>
 
                     {/* <div className="text-center">
                               <Link to="/forgot-password" className="small">Forgot Password?</Link>
                           </div> */}
-                      <hr/>
+                    <hr />
                     <div class="text-center">
                       <a class="small" href="register">
-                      <h6>Create an Account!</h6>  
+                        <h6>Create an Account!</h6>
                       </a>
                     </div>
                   </div>

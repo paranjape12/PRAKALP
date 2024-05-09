@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import '../cssfiles/TaskOverview2.css'; // Import your CSS file
+import '../cssfiles/TaskOverview2.css'; 
 import Footer from '../components/Footer';
+import eyeIcon from '../assets/eye.svg';
+import eyeIconSlash from '../assets/eye-slash.svg';
 
-const today = new Date(); // Get today's date
+const today = new Date(); 
 
 const daysOfWeek = [
   'Sun',
@@ -16,22 +18,24 @@ const daysOfWeek = [
 ];
 
 function TaskOverview2() {
-  const [showComplete, setShowComplete] = useState(
-    // Check for cookie or default to 1 (show all tasks)
-    document.cookie.includes('ShowComplete=0') ? 0 : 1
-  );
-
-  const [completeIconClass, setCompleteIconClass] = useState(
-    showComplete ? 'fa fa-eye' : 'fa fa-eye-slash'
-  );
+  const [showComplete, setShowComplete] = useState(document.cookie.includes('ShowComplete'));
+  const toggleShowComplete = () => {
+    const newValue = showComplete ? '1' : '0';
+    document.cookie = `ShowComplete=${newValue};`;
+    setShowComplete(!showComplete);
+  };
 
   const [dates, setDates] = useState([]);
+  const [startDateIndex, setStartDateIndex] = useState(0);
 
   useEffect(() => {
     const newDates = [];
+    let currentDate = new Date(today);
+    const startIndex = startDateIndex; // Start index for the new dates array
     for (let i = 0; i < 7; i++) {
-      const newDate = new Date(today.setDate(today.getDate() + i));
+      const newDate = new Date(currentDate.setDate(currentDate.getDate() + startIndex + i)); // Adjusted date calculation
       newDates.push({
+        date: newDate,
         dateString: newDate.toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
@@ -39,59 +43,61 @@ function TaskOverview2() {
         day: daysOfWeek[newDate.getDay()],
         isSunday: newDate.getDay() === 0,
       });
+      currentDate = new Date(today);
     }
     setDates(newDates);
-  }, []);
-
-  const handleShowCompleteToggle = () => {
-    setShowComplete((prevShowComplete) => !prevShowComplete);
-    setCompleteIconClass((prevIconClass) =>
-      prevIconClass === 'fa fa-eye' ? 'fa fa-eye-slash' : 'fa fa-eye'
-    );
-    // Update your logic for setting cookie or handling show/hide functionality
+  }, [startDateIndex]);
+  
+  const handleNextDayClick = () => {
+    const nextIndex = startDateIndex + 7;
+    setStartDateIndex(nextIndex);
+  };
+  
+  const handlePreviousDayClick = () => {
+    const previousIndex = startDateIndex - 7;
+    setStartDateIndex(previousIndex);
   };
 
   return (
     <div>
-      <Navbar />
-      <table className="table table-bordered text-dark" width="100%" cellspacing="0" style={{marginTop:'38px', fontFamily: "Nunito"}}>
+      {dates.length > 0 && (
+        <Navbar 
+          onPreviousDayClick={handlePreviousDayClick} 
+          onNextDayClick={handleNextDayClick}
+          dates={dates} 
+          />
+      )}
+      <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito" }}>
         <thead className="text-white" id="theader">
           <tr className="text-center small" style={{}}>
-            <th style={{ width: '20rem', color:'white' }}>Projects</th>
-            <th colSpan="2" style={{ verticalAlign: 'revert', color:'white' }}>
+            <th style={{ width: '20rem', color: 'white' }}>Projects</th>
+            <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', alignItems: 'center' }}>
               Task Details
-              <input
-                type="hidden"
-                id="completeHiden"
-                value={showComplete} // Set hidden input value
-              />
-              <a
-                className="show_complete pr-2"
-                style={{ float: 'right', color: 'white' }}
-                title="Show/Hide Completed Task"
-                onClick={handleShowCompleteToggle} // Handle toggle click
-              >
-                <i className={completeIconClass}></i>
-              </a>
+              <i className="taskEye" src={showComplete ? eyeIcon : eyeIconSlash} alt="Toggle Complete" style={{ paddingLeft: '60px', cursor: 'pointer', width: '20px', color: 'white' }} onClick={toggleShowComplete} />
             </th>
-            {dates.map((date) => (
+            {dates.slice(startDateIndex, startDateIndex + 7).map((date, index) => {
+            const currentDate = new Date(date.date);
+            const isSunday = currentDate.getDay() === 0;
+            return (
               <th
-                key={date.dateString}
-                className={date.isSunday ? 'th1th' : `th${date.day}`}
-                style={{ backgroundColor: date.isSunday ? 'red' : '',color:'white' }}
+                key={index} // Use index as key since dates may repeat across different weeks
+                className={isSunday ? 'th1th' : `th${date.day}`}
+                style={{ backgroundColor: isSunday ? 'red' : '', color: 'white' }}
               >
-                {date.dateString}
+                {currentDate.toLocaleString('default', { month: 'short', day: 'numeric' })}
                 <br />
-                [ {date.day} ]
+                [ {currentDate.toLocaleString('default', { weekday: 'short' })} ]
               </th>
-            ))}
+            );
+          })}
+
           </tr>
         </thead>
         <tbody id="projectviewtbody">
           {/* Your logic for populating the table body with task data */}
         </tbody>
       </table>
-      <Footer/>
+      <Footer />
     </div>
   );
 }

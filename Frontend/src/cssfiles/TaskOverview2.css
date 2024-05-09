@@ -6,3 +6,11 @@ th {
   font-size: 14px;
 }
 
+.taskEye {
+  svg {
+      path {
+          fill: white;
+      }
+}
+}
+
