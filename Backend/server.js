@@ -13,7 +13,7 @@ const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: '',
-  database: 'prakalpdb',
+  database: 'indiscpx_TaskDB',
 });
 
 // Connect to MySQL
@@ -31,7 +31,7 @@ app.use(bodyParser.json());
 ///////Projects Table////////
 
 // Endpoint to add a new project
-app.post('/addProject', (req, res) => {
+app.post('/api/addProject', (req, res) => {
   const { projectName, salesName } = req.body;
 
   const sql = 'INSERT INTO projects (projectName, salesName) VALUES (?, ?)';
@@ -47,7 +47,7 @@ app.post('/addProject', (req, res) => {
 });
 
 // Endpoint to fetch projects table data from the database
-app.get('/getProjects', (req, res) => {
+app.get('/api/getProjects', (req, res) => {
   const sql = 'SELECT * FROM projects';
   db.query(sql, (err, result) => {
     if (err) {
@@ -63,7 +63,7 @@ app.get('/getProjects', (req, res) => {
 // Endpoint to fetch project lists of a particular employee
 // app.get('/getProjectsByEmployee', (req, res) => {
 //   const name_emp = 'Zeba';
-//   const sql = 'SELECT t.project FROM employees e JOIN tasks t ON e.name = t.employee WHERE e.name = {name_emp}'; // Adjust this query based on your database schema
+const sql = 'SELECT t.project FROM employees e JOIN tasks t ON e.name = t.employee WHERE e.name = {name_emp}'; // Adjust this query based on your database schema
 //   db.query(sql, (err, result) => {
 //     if (err) {
 //       console.error('Error fetching projects by employee ID:', err);
@@ -76,9 +76,9 @@ app.get('/getProjects', (req, res) => {
 // });
 
 
-app.get('/getProjectsByEmployee/:employeeId', (req, res) => {
+app.get('/api/getProjectsByEmployee/:employeeId', (req, res) => {
   const employeeId = req.params.employeeId;
-  const sql = 'SELECT DISTINCT project FROM tasks WHERE employee = ?'; 
+  const sql = 'SELECT DISTINCT project FROM tasks WHERE employee = ?';
   // Assuming 'employee' is the column name in the tasks table that stores employee names
   db.query(sql, [employeeId], (err, result) => {
     if (err) {
@@ -92,10 +92,11 @@ app.get('/getProjectsByEmployee/:employeeId', (req, res) => {
 });
 
 
-app.get('/getProjectsforEmp', (req, res) => {
+app.get('/api/getProjectsforEmp', (req, res) => {
   const employeeName = req.query.employeeName; // Assuming the employee name is passed as a query parameter
-  const sql = `SELECT t.project FROM employees e JOIN tasks t ON e.name = t.employee WHERE e.name = ?`;
-  
+  const sql = `SELECT t.project FROM employees e JOIN tasks t ON
+e.name = t.employee WHERE e.name = ?`;
+
   db.query(sql, [employeeName], (err, result) => {
     if (err) {
       console.error('Error fetching projects from database:', err);
@@ -110,7 +111,7 @@ app.get('/getProjectsforEmp', (req, res) => {
 
 
 // Endpoint to fetch projects based on user role
-app.get('/getFilteredProjects/:userId', (req, res) => {
+app.get('/api/getFilteredProjects/:userId', (req, res) => {
   const userId = req.params.userId;
   // Assuming you have a table named 'users' with a column 'role'
   const getUserRoleQuery = 'SELECT role FROM users WHERE id = ?';
@@ -163,17 +164,11 @@ app.get('/getFilteredProjects/:userId', (req, res) => {
 
 
 // Endpoint to fetch timeRequired and timeTaken from tasks table
-app.get('/getCalenderTime', (req, res) => {
+app.get('/api/getCalenderTime', (req, res) => {
   // const date = req.params.date;
   // const sql = 'SELECT timeRequired, timeTaken FROM tasks where date = `2024-03-18`';
 
 
-
-
-
-
-
-  
   const date = '2024-03-18';
   const sql = 'SELECT * FROM tasks';
   db.query(sql, (err, result) => {
@@ -188,18 +183,8 @@ app.get('/getCalenderTime', (req, res) => {
 });
 
 
-
-function sayHello() {
-  return "Hello, World!";
-}
-
-
-
-
-
-
 // Endpoint to update a project
-app.put('/updateProject/:projectId', (req, res) => {
+app.put('/api/updateProject/:projectId', (req, res) => {
   const projectId = req.params.projectId;
   const { projectName, salesName } = req.body;
 
@@ -216,7 +201,7 @@ app.put('/updateProject/:projectId', (req, res) => {
 });
 
 // Endpoint to delete a project
-app.delete('/deleteProject/:projectId', (req, res) => {
+app.delete('/api/deleteProject/:projectId', (req, res) => {
   const projectId = req.params.projectId;
 
   const sql = 'DELETE FROM projects WHERE id_p = ?';
@@ -236,7 +221,7 @@ app.delete('/deleteProject/:projectId', (req, res) => {
 ///////Tasks Table////////
 
 // Endpoint to fetch employee names from the database in task table
-app.get('/getEmployeeNames', (req, res) => {
+app.get('/api/getEmployeeNames', (req, res) => {
   const sql = 'SELECT name FROM employees'; // Assuming 'name' is the column containing employee names
   db.query(sql, (err, results) => {
     if (err) {
@@ -250,19 +235,21 @@ app.get('/getEmployeeNames', (req, res) => {
 });
 
 // // Endpoint to add a new task
-app.post('/addTasks', (req, res) => {
-  const { employee, project, taskName, timeRequired, description, isLastTask, date } = req.body;
+app.post('/api/addTasks', (req, res) => {
+  const { employee, project, taskName, timeRequired, description,
+    isLastTask, date } = req.body;
 
-  const sql = 'INSERT INTO tasks (employee, project, taskName, timeRequired, description, isLastTask, date) VALUES (?, ?, ?, ?, ?, ?, ?)';
-  db.query(sql, [employee, project, taskName, timeRequired, description, isLastTask, date], (err, result) => {
-    if (err) {
-      console.error('Error adding task to database:', err);
-      res.status(500).send('Internal Server Error');
-    } else {
-      console.log('Task added to database');
-      res.status(200).send('Task added successfully');
-    }
-  });
+  const sql = 'INSERT INTO tasks (employee, project, taskName,timeRequired, description, isLastTask, date) VALUES (?, ?, ?, ?, ?, ?,?)';
+  db.query(sql, [employee, project, taskName, timeRequired,
+    description, isLastTask, date], (err, result) => {
+      if (err) {
+        console.error('Error adding task to database:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        console.log('Task added to database');
+        res.status(200).send('Task added successfully');
+      }
+    });
 });
 
 
@@ -270,26 +257,28 @@ app.post('/addTasks', (req, res) => {
 
 
 // Endpoint to update a task
-app.put('/updateTask/:taskId', (req, res) => {
+app.put('/api/updateTask/:taskId', (req, res) => {
   const taskId = req.params.taskId;
-  const { taskName, timeRequired, description, isLastTask, hoursRequired, minutesRequired } = req.body;
+  const { taskName, timeRequired, description, isLastTask,
+    hoursRequired, minutesRequired } = req.body;
 
-  const sql = 'UPDATE tasks SET taskName = ?, timeRequired = ?, description = ?, isLastTask = ?, hoursRequired = ?, minutesRequired = ? WHERE taskId = ?';
-  db.query(sql, [taskName, timeRequired, description, isLastTask, hoursRequired, minutesRequired, taskId], (err, result) => {
-    if (err) {
-      console.error('Error updating task:', err);
-      res.status(500).send('Internal Server Error');
-    } else {
-      console.log('Task updated successfully');
-      res.status(200).send('Task updated successfully');
-    }
-  });
+  const sql = 'UPDATE tasks SET taskName = ?, timeRequired = ?,description = ?, isLastTask = ?, hoursRequired = ?, minutesRequired =? WHERE taskId = ?';
+  db.query(sql, [taskName, timeRequired, description, isLastTask,
+    hoursRequired, minutesRequired, taskId], (err, result) => {
+      if (err) {
+        console.error('Error updating task:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        console.log('Task updated successfully');
+        res.status(200).send('Task updated successfully');
+      }
+    });
 });
 
 
 // Endpoint to fetch tasks table data from the database
-app.get('/getTasks', (req, res) => {
-  const sql = 'SELECT project, taskName, timeRequired, date, description, isLastTask FROM tasks';
+app.get('/api/getTasks', (req, res) => {
+  const sql = 'SELECT project, taskName, timeRequired, date,description, isLastTask FROM tasks';
   db.query(sql, (err, result) => {
     if (err) {
       console.error('Error fetching tasks from database:', err);
@@ -306,18 +295,18 @@ app.get('/getTasks', (req, res) => {
 
 
 
-// app.post('/addTasks', (req, res) => {
-//   const { employee, project, taskName, timeRequired, description, isLastTask, date } = req.body;
+// app.post('/api/addTasks', (req, res) => {
+//   const { employee, project, taskName, timeRequired, description,isLastTask, date } = req.body;
 
-//   let sql = 'INSERT INTO tasks (employee, project, taskName, timeRequired, description, isLastTask, date) VALUES (?, ?, ?, ?, ?, ?, ?)';
-//   let data = [employee, project, taskName, timeRequired, description, isLastTask, date];
+//   let sql = 'INSERT INTO tasks (employee, project, taskName,timeRequired, description, isLastTask, date) VALUES (?, ?, ?, ?, ?, ?,?)';
+//   let data = [employee, project, taskName, timeRequired,description, isLastTask, date];
 
 //   // Handle missing project ID (optional)
 //   if (!project) {
-//     sql = 'INSERT INTO tasks (employee, project, taskName, timeRequired, description, isLastTask, date) VALUES (?, ?, ?, ?, ?, ?, ?)';
-//     data = [employee, project, taskName, timeRequired, description, isLastTask, date];
+//     sql = 'INSERT INTO tasks (employee, project, taskName,timeRequired, description, isLastTask, date) VALUES (?, ?, ?, ?, ?, ?,?)';
+//     data = [employee, project, taskName, timeRequired, description,isLastTask, date];
 //   }
-//   db.query(sql, [employee, project, taskName, timeRequired, description, isLastTask, date], (err, result) => {
+//   db.query(sql, [employee, project, taskName, timeRequired,description, isLastTask, date], (err, result) => {
 //         if (err) {
 //           console.error('Error adding task to database:', err);
 //           res.status(500).send('Internal Server Error');
@@ -330,7 +319,7 @@ app.get('/getTasks', (req, res) => {
 //     });
 
 
-// app.get('/tasksByProject/:projectName', (req, res) => {
+// app.get('/api/tasksByProject/:projectName', (req, res) => {
 //   const projectName = req.params.projectName;
 //   const sql = 'SELECT * FROM tasks WHERE id_t = ?';
 //   db.query(sql, [projectName], (err, result) => {
@@ -344,9 +333,9 @@ app.get('/getTasks', (req, res) => {
 //   });
 // });
 
-// app.get('/tasksByProject/:projectName', (req, res) => {
+// app.get('/api/tasksByProject/:projectName', (req, res) => {
 //   const projectName = req.params.projectName;
-//   const sql = 'SELECT tasks.id_t, tasks.taskName FROM tasks JOIN projects ON tasks.id_p = projects.id_p WHERE projects.projectName = ?';
+//   const sql = 'SELECT tasks.id_t, tasks.taskName FROM tasks JOIN projects ON tasks.id_p = projects.id_p WHERE projects.projectName =?';
 //   db.query(sql, [projectName], (err, result) => {
 //     if (err) {
 //       console.error('Error fetching tasks by project name:', err);
@@ -359,7 +348,7 @@ app.get('/getTasks', (req, res) => {
 // });
 
 // Endpoint to fetch tasks by project name
-app.get('/tasksByProject/:projectName', (req, res) => {
+app.get('/api/tasksByProject/:projectName', (req, res) => {
   const projectName = req.params.projectName;
   const sql = 'SELECT * FROM tasks WHERE project = ?'; // Assuming 'project' is the column name in the tasks table
   db.query(sql, [projectName], (err, result) => {
@@ -376,7 +365,7 @@ app.get('/tasksByProject/:projectName', (req, res) => {
 
 
 // Endpoint to fetch a task by ID
-app.get('/getTask/:taskId', (req, res) => {
+app.get('/api/getTask/:taskId', (req, res) => {
   const taskId = req.params.taskId;
   const sql = 'SELECT * FROM tasks WHERE id_t = ?';
   db.query(sql, [taskId], (err, result) => {
@@ -400,9 +389,9 @@ app.get('/getTask/:taskId', (req, res) => {
 
 
 // Endpoint to delete a task
-app.delete('/deleteTask/:taskId', (req, res) => {
+app.delete('/api/deleteTask/:taskId', (req, res) => {
   const taskId = req.params.taskId;
-  console.log('Received delete request for task with ID:', taskId); // Check if the server receives the request
+  console.log('Received delete request for task with ID:', taskId); //Check if the server receives the request
   const sql = 'DELETE FROM tasks WHERE id_t = ?';
   db.query(sql, [taskId], (err, result) => {
     if (err) {
@@ -425,24 +414,26 @@ app.delete('/deleteTask/:taskId', (req, res) => {
 
 
 // Endpoint to add a new employee
-app.post('/addEmployee', (req, res) => {
-  const { name, nickname, email, useEmail, password, confirmPassword, role, location} = req.body;
+app.post('/api/addEmployee', (req, res) => {
+  const { name, nickname, email, useEmail, password, confirmPassword,
+    role, location } = req.body;
 
-  const sql = 'INSERT INTO employees (name, nickname, email, use_email, password, confirm_password, role, location) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-  db.query(sql, [name, nickname, email, useEmail, password, confirmPassword, role, location], (err, result) => {
-    if (err) {
-      console.error('Error adding employee to database:', err);
-      res.status(500).send('Internal Server Error');
-    } else {
-      console.log('Employee added to database');
-      res.status(200).send('Employee added successfully');
-    }
-  });
+  const sql = 'INSERT INTO employees (name, nickname, email,use_email, password, confirm_password, role, location) VALUES (?, ?,?, ?, ?, ?, ?, ?)';
+  db.query(sql, [name, nickname, email, useEmail, password,
+    confirmPassword, role, location], (err, result) => {
+      if (err) {
+        console.error('Error adding employee to database:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        console.log('Employee added to database');
+        res.status(200).send('Employee added successfully');
+      }
+    });
 });
 
 
 // Endpoint to fetch a specific employee by ID
-app.put('/getEmployee/:employeeId', (req, res) => {
+app.put('/api/getEmployee/:employeeId', (req, res) => {
   const employeeId = req.params.employeeId;
   const sql = 'SELECT * FROM employees WHERE name = ?';
   db.query(sql, [employeeId], (err, result) => {
@@ -462,7 +453,7 @@ app.put('/getEmployee/:employeeId', (req, res) => {
 });
 
 // Endpoint to fetch project lists of a particular employee
-app.get('/getProjectsByEmployee/:employeeId', (req, res) => {
+app.get('/api/getProjectsByEmployee/:employeeId', (req, res) => {
   const employeeId = req.params.employeeId;
   const sql = 'SELECT * FROM projects WHERE id_e = ?'; // Assuming 'employeeId' is the column containing employee IDs in the projects table
   db.query(sql, [employeeId], (err, result) => {
@@ -482,7 +473,7 @@ app.get('/getProjectsByEmployee/:employeeId', (req, res) => {
 
 
 // Endpoint to fetch project names from the database
-app.get('/getProjectNames', (req, res) => {
+app.get('/api/getProjectNames', (req, res) => {
   const sql = 'SELECT projectName FROM projects'; // Assuming 'projectName' is the column containing project names
   db.query(sql, (err, results) => {
     if (err) {
@@ -496,7 +487,7 @@ app.get('/getProjectNames', (req, res) => {
 });
 
 // Endpoint to fetch all tasks from the task table
-app.get('/getAllTasks', (req, res) => {
+app.get('/api/getAllTasks', (req, res) => {
   const sql = 'SELECT * FROM tasks';
   db.query(sql, (err, results) => {
     if (err) {
@@ -511,44 +502,46 @@ app.get('/getAllTasks', (req, res) => {
 
 
 // Endpoint to update a task
-app.put('/updateTask', (req, res) => {
-  
+app.put('/api/updateTask', (req, res) => {
+
   const { taskName, timeTaken, description, isLastTask } = req.body;
 
-  const updateTaskQuery = 'UPDATE tasks SET taskName = ?, timeTaken = ?, description = ?, isLastTask = ? WHERE id_t = ?';
-  db.query(updateTaskQuery, [taskName, timeTaken, description, isLastTask, taskId], (err, result) => {
-    if (err) {
-      console.error('Error updating task:', err);
-      res.status(500).send('Internal Server Error');
-    } else {
-      console.log('Task updated successfully');
-      res.status(200).send('Task updated successfully');
-    }
-  });
+  const updateTaskQuery = 'UPDATE tasks SET taskName = ?, timeTaken =?, description = ?, isLastTask = ? WHERE id_t = ?';
+  db.query(updateTaskQuery, [taskName, timeTaken, description,
+    isLastTask, taskId], (err, result) => {
+      if (err) {
+        console.error('Error updating task:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        console.log('Task updated successfully');
+        res.status(200).send('Task updated successfully');
+      }
+    });
 });
 
 //End point to Edit Task
-app.put('/editTask/:taskId', (req, res) => {
+app.put('/api/editTask/:taskId', (req, res) => {
   const taskId = req.params.taskId;
   const { taskName, timeRequired, description, isLastTask } = req.body;
 
-  const sql = 'UPDATE tasks SET taskName = ?, timeRequired = ?, description = ?, isLastTask = ? WHERE id_t = ?';
-  db.query(sql, [taskName, timeRequired, description, isLastTask, taskId], (err, result) => {
-    if (err) {
-      console.error('Error updating task:', err);
-      res.status(500).send('Internal Server Error');
-    } else {
-      console.log('Task updated successfully');
-      res.status(200).send('Task updated successfully');
-    }
-  });
+  const sql = 'UPDATE tasks SET taskName = ?, timeRequired = ?,description = ?, isLastTask = ? WHERE id_t = ?';
+  db.query(sql, [taskName, timeRequired, description, isLastTask,
+    taskId], (err, result) => {
+      if (err) {
+        console.error('Error updating task:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        console.log('Task updated successfully');
+        res.status(200).send('Task updated successfully');
+      }
+    });
 });
 
 
 // Endpoint to delete a task by ID
-app.delete('/deleteTask/:taskId', (req, res) => {
+app.delete('/api/deleteTask/:taskId', (req, res) => {
   const taskId = req.params.taskId;
-  console.log('Received delete request for task with ID:', taskId); // Check if the server receives the request
+  console.log('Received delete request for task with ID:', taskId); //Check if the server receives the request
   const sql = 'DELETE FROM tasks WHERE id_t = ?'; // Update column name to 'id_t'
   db.query(sql, [taskId], (err, result) => {
     if (err) {
@@ -569,7 +562,7 @@ app.delete('/deleteTask/:taskId', (req, res) => {
 
 
 
-app.get('/tasksByDateRange', (req, res) => {
+app.get('/api/tasksByDateRange', (req, res) => {
   const { startDate, endDate } = req.query;
   const sql = 'SELECT * FROM tasks WHERE date BETWEEN ? AND ?';
   db.query(sql, [startDate, endDate], (err, result) => {
@@ -585,7 +578,7 @@ app.get('/tasksByDateRange', (req, res) => {
 
 
 // Endpoint to fetch tasks by date
-app.get('/tasksByDate/:date', (req, res) => {
+app.get('/api/tasksByDate/:date', (req, res) => {
   const date = req.params.date;
 
   const sql = 'SELECT * FROM tasks WHERE date = ?';
@@ -602,17 +595,7 @@ app.get('/tasksByDate/:date', (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-app.post('/getLogin', (req, res) => {
+app.post('/api/getLogin', (req, res) => {
   const { name, password } = req.body;
 
   // Query the database to retrieve the user's data
@@ -641,11 +624,33 @@ app.post('/getLogin', (req, res) => {
   });
 });
 
-app.post('/assignTask', (req, res) => {
-  const { employee, project, taskName, timeRequired, description, isLastTask, date } = req.body;
+
+app.get('/api/fetchAllLoginData', (req, res) => {
+  // Query the database to retrieve all data from the login table
+  const sql = 'SELECT * FROM employees';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error retrieving login data:', err);
+      return res.status(500).json({ success: false, message: 'An error occurred while processing your request' });
+    }
+
+    // Check if any data was retrieved
+    if (results.length === 0) {
+      return res.status(404).json({ success: false, message: 'No data found in login table' });
+    }
+
+    // Send the retrieved data in the response
+    return res.status(200).json({ success: true, message: 'Login data retrieved successfully', data: results });
+  });
+});
+
+
+app.post('/api/assignTask', (req, res) => {
+  const { employee, project, taskName, timeRequired, description,
+    isLastTask, date } = req.body;
 
   // Insert the task into the tasks table
-  const insertTaskQuery = 'INSERT INTO tasks (employee, project, taskName, timeRequired, description, isLastTask, date) VALUES (?, ?, ?, ?, ?, ?, ?)';
+  const insertTaskQuery = "INSERT INTO tasks (employee, project, taskName, timeRequired, description, isLastTask, date) VALUES (?, ?,?, ?, ?, ?, ?)'";
   db.query(insertTaskQuery, [employee, project, taskName, timeRequired, description, isLastTask, date], (err, result) => {
     if (err) {
       console.error('Error adding task to database:', err);
@@ -659,20 +664,22 @@ app.post('/assignTask', (req, res) => {
 
 
 // Endpoint to handle updating an employee
-app.put('/updateEmployee/:employeeId', (req, res) => {
+app.put('/api/updateEmployee/:employeeId', (req, res) => {
   const employeeId = req.params.employeeId;
-  const { name, nickname, email, use_email, password, confirm_password, role, location } = req.body;
+  const { name, nickname, email, use_email, password,
+    confirm_password, role, location } = req.body;
 
   const sql = 'UPDATE employees SET name = ?, nickname = ?, email = ?, use_email = ?, password = ?, confirm_password = ?, role = ?, location = ? WHERE id_e = ?';
-  db.query(sql, [name, nickname, email, use_email, password, confirm_password, role, location, employeeId], (err, result) => {
-    if (err) {
-      console.error('Error updating employee:', err);
-      res.status(500).send('Internal Server Error');
-    } else {
-      console.log('Employee updated successfully');
-      res.status(200).send('Employee updated successfully');
-    }
-  });
+  db.query(sql, [name, nickname, email, use_email, password,
+    confirm_password, role, location, employeeId], (err, result) => {
+      if (err) {
+        console.error('Error updating employee:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        console.log('Employee updated successfully');
+        res.status(200).send('Employee updated successfully');
+      }
+    });
 });
 
 
