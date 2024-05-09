@@ -100,7 +100,9 @@ function Register() {
                                 </form>
                                 <hr />
                                 <div className="text-center">
-                                    <a className="small" href="login.php">Already have an account? Login!</a>
+                                    <Link to="/login" className="small">
+                                        <h6>Already have an account? Login!</h6>
+                                    </Link>
                                 </div>
                             </div>
                         </div>

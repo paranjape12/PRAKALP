@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import App from "../App";
 import HomePage from "../pages/HomePage";
 import eyeIcon from '../assets/eye.svg';
@@ -231,9 +231,9 @@ function Login({ }) {
                           </div> */}
                     <hr />
                     <div class="text-center">
-                      <a class="small" href="register">
+                      <Link to="/register" className="small">
                         <h6>Create an Account!</h6>
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
