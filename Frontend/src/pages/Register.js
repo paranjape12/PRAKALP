@@ -16,43 +16,42 @@ function Register() {
     };
 
     const handleRegister = async () => {
-        console.log("entered handleRegister");
-        
+
         const { value: fname } = document.getElementById('exampleFirstName');
         const { value: lname } = document.getElementById('exampleLastName');
         const { value: email } = document.getElementById('exampleInputEmail');
         const { value: passwd } = document.getElementById('exampleInputPassword');
         const { value: cpass } = document.getElementById('exampleRepeatPassword');
         const { value: selectedVal } = document.getElementById('dropLocation');
-    
+
         const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const PassRegex = /^(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         const emailDomain = email.split('@')[1];
-        
+
         if (fname === "" || lname === "" || email === "" || passwd === "" || cpass === "") {
             setErrorMessage("Please enter all account details");
             return;
-        }    
+        }
         if (!EmailRegex.test(email)) {
             setErrorMessage("Please Enter Valid Email Format<br> eg.Abc@abcd.com");
             return;
-        }    
+        }
         if (!PassRegex.test(passwd)) {
-            setErrorMessage("Password format mismatch. Please enter in the following way eg. Abcd@123 <br> <br>1. Atleast one capital letter. <br>2. Password must contain a special character (@, $, !, &, etc).<br>3. Password length must be greater than 8 characters.");
+            setErrorMessage("Password format mismatch. Please enter in the following way eg. Abcd@123 <br>1. Atleast one capital letter. <br>2. Password must contain a special character (@, $, !, &, etc).<br>3. Password length must be greater than 8 characters.");
             return;
-        }    
+        }
         if (cpass !== passwd) {
             setErrorMessage("Password and confirm password are not match ");
             return;
-        }    
+        }
         if (selectedVal === 'unset') {
             setErrorMessage("Please Select Location ");
             return;
-        }    
+        }
         if (emailDomain !== 'protovec.com') {
             setErrorMessage("Please Enter Company Provided Email");
             return;
-        }    
+        }
         try {
             const response = await axios.post('http://localhost:3001/api/register', {
                 email,
@@ -61,10 +60,10 @@ function Register() {
                 selectedVal,
                 passwd
             });
-    
+
             if (response.data.message === 'Success') {
                 setTimeout(() => {
-                    window.location = '/login'; 
+                    window.location = '/login';
                 }, TIMEOUT_DURATION);
             } else {
                 setErrorMessage('Unable to create account');
@@ -73,9 +72,9 @@ function Register() {
             setErrorMessage('Error occurred while creating account');
         }
     };
-    
+
     const TIMEOUT_DURATION = 1000;
-    
+
 
     return (
         <div className="container blue-bg">
@@ -118,7 +117,7 @@ function Register() {
                                                 className="form-control form-control-user"
                                                 id="exampleInputPassword"
                                                 placeholder="Password"
-                                                
+
                                             />
                                             <div className="input-group-prepend">
                                                 <span
@@ -160,9 +159,11 @@ function Register() {
                                         <h6>Already have an account? Login!</h6>
                                     </Link>
                                 </div>
-                                <div className="text-center">
-                                    <h6 style={{color:'red'}}>{errorMessage}</h6>
-                                </div>
+                                {errorMessage.split('<br>').map((line, index) => (
+                                    <div className="text-center">
+                                        <p style={{ color: 'red' }} key={index}>{line}</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>

@@ -1,28 +1,75 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import App from "../App";
-import HomePage from "../pages/HomePage";
-import eyeIcon from '../assets/eye.svg';
-import eyeIconSlash from '../assets/eye-slash.svg';
-import googleIcon from '../assets/google.svg';
+import eyeIcon from "../assets/eye.svg";
+import eyeIconSlash from "../assets/eye-slash.svg";
+import googleIcon from "../assets/google.svg";
 import axios from "axios";
 import "../cssfiles/Login.css"; // Make sure to import your CSS file
 // import { Link } from 'react-router-dom';
 
-function Login({ }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
+function Login() {
+   const [password, setPassword] = useState("");
+   const [email, setEmail] = useState("");
+   const [rememberMe, setRememberMe] = useState(false);
+   const [errorMessage, setErrorMessage] = useState('');
+   const navigate = useNavigate();
 
-  const navigate = useNavigate();
 
-  const handleCheckboxChange = () => {
-    setIsChecked(!isChecked); // Define 'handleCheckboxChange' function
+        const handleLogin = async () => {
+    try {
+      if (!email || !password) {
+        setErrorMessage('Please enter all credentials');
+        return;
+      }
+
+      const emailRegex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+      const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
+
+      if (!emailRegex.test(email)) {
+        setErrorMessage('Email format mismatch. Please enter a valid email address');
+        return;
+      }
+
+      if (!passRegex.test(password)) {
+        setErrorMessage(`Password format mismatch. 
+          Please enter a valid password with the following criteria:
+          1. At least one capital letter.
+          2. Must contain a special character (@, $, !, &, etc).
+          3. Password length must be at least 8 characters.`);
+        return;
+      }
+      // Encode password to base64 using btoa function
+      const encodedPassword = btoa(password);
+
+      // Encode password to base64
+      // const encodedPassword = Buffer.from(password).toString('base64');
+
+      const response = await axios.post('http://localhost:3001/api/getLogin', {
+        email,
+        pass: encodedPassword, // Send the encoded password to the backend
+        rememberMe: rememberMe.toString() // Convert rememberMe boolean to string
+      });
+
+      if (response.data === 'Success') {
+        window.location = '/task2'; // Redirect to dashboard upon successful login
+      } else {
+        setErrorMessage('Please enter a valid email or password');
+        setEmail('');
+        setPassword('');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrorMessage('An error occurred. Please try again.');
+    }
   };
+  
+
+
+
+
+  // const handleCheckboxChange = () => {
+  //   setIsChecked(!isChecked); // Define 'handleCheckboxChange' function
+  // };
 
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -30,88 +77,7 @@ function Login({ }) {
     setPasswordVisible(!passwordVisible);
   };
 
-  //   const loginUrl ="";
-  //   const handleGoogleLogin = () => {
-  //     // Redirect to the specified login URL when the button is clicked
-  //     window.location.href = loginUrl;
-  // };
-
-  // const handleLoginClick = () => {
-
-  //   if (username === 'admin' && password === '1234') {
-  //     // Perform login success logic
-  //     onLoginSuccess();
-  //     // Navigate to a different route
-
-  //   } else {
-  //     setError('Invalid username or password');
-  //   }
-
-  // };
-
-  const handleLoginClick = async (e) => {
-    e.preventDefault(); // Prevent the default form submission behavior
-
-    try {
-      const response = await axios.post("http://localhost:3001/getLogin", {
-        name: username,
-        password,
-      });
-
-      if (response.data.success) {
-        // Login successful, redirect to homepage or any other route
-        onLoginSuccess();
-      } else {
-        setError(response.data.message || "An error occurred during login");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      setError("An error occurred during login");
-    }
-  };
-
-  const onLoginSuccess = () => {
-    navigate("/");
-  };
-
   return (
-    //     <div className="login-box">
-    //       <h2>Login</h2>
-    //       <form>
-    //         <div className="user-box">
-    //           <input
-    //             type="text"
-    //             name="username"
-    //             value={username}
-    //             onChange={(e) => setUsername(e.target.value)}
-    //             required
-    //           />
-    //           <label className={username ? 'active' : ''}>User Name</label>
-    //         </div>
-    //         <div className="user-box">
-    //           <input
-    //             type="password"
-    //             name="password"
-    //             value={password}
-    //             onChange={(e) => setPassword(e.target.value)}
-    //             required
-    //           />
-    //           <label className={password ? 'active' : ''}>Password</label>
-    //                   {/* Visibility toggle icon */}
-    //                   {/* <span className="visibility-icon" onClick={togglePasswordVisibility}>
-    //                       {showPassword ? '👁️' : '🙈'}
-    //                   </span> */}
-
-    //         </div>
-    //         <button className='btn' onClick={handleLoginClick} type="submit">
-    //         Submit
-    //       </button>
-    //         {error && <p style={{ color: 'red' }}>{error}</p>}
-    //       </form>
-    //     </div>
-    //   );
-    // }
-
     <div class="container">
       <div
         class="modal fade"
@@ -176,13 +142,25 @@ function Login({ }) {
                             <span
                               className="input-group-text"
                               id="showeye"
-                              style={{ borderRadius: '0rem 10rem 10rem 0rem', height: '2.4rem', width: '43px' }}
+                              style={{
+                                borderRadius: "0rem 10rem 10rem 0rem",
+                                height: "2.4rem",
+                                width: "43px",
+                              }}
                               onClick={togglePasswordVisibility}
                             >
                               {passwordVisible ? (
-                                <img className="eyeIcon" src={eyeIcon} alt="Eye Icon" />
+                                <img
+                                  className="eyeIcon"
+                                  src={eyeIcon}
+                                  alt="Eye Icon"
+                                />
                               ) : (
-                                <img className="eyeIconSlash" src={eyeIconSlash} alt="Eye Slash Icon" />
+                                <img
+                                  className="eyeIconSlash"
+                                  src={eyeIconSlash}
+                                  alt="Eye Slash Icon"
+                                />
                               )}
                             </span>
                           </div>
@@ -194,8 +172,8 @@ function Login({ }) {
                             type="checkbox"
                             className="custom-control-input"
                             id="customCheck"
-                            checked={isChecked}
-                            onChange={handleCheckboxChange}
+                           checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
                           />
                           <label
                             className="custom-control-label"
@@ -205,30 +183,31 @@ function Login({ }) {
                           </label>
                         </div>
                       </div>
-
-                      {/* <link id="loginbtn" class="btn btn-primary btn-user btn-block">
-                                            Login
-                      </link> */}
-
+                      <div>
                       <button
                         id="loginbtn"
                         className="btn btn-primary btn-user"
-                        onClick={handleLoginClick}
+                        onClick={handleLogin}
                         type="button" // Use type="button" to prevent form submission
-                      ><strong>
-                          Login
-                        </strong>
-
+                      >
+                        <strong>Login</strong>
                       </button>
-
+                      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+                      </div>
                       <hr />
                       <a
                         className="btn btn-danger btn-user"
                         // onClick={handleGoogleLogin}
                         href="#!" // Use href="#!" to prevent anchor link behavior
                       >
-                        <img src={googleIcon} alt="Google Icon" style={{width:'1.5rem', marginRight:'1rem'}} className="googleIcon" />
-                        <i className="fab fa-google fa-fw"></i> <strong>Login with Protovec Account.</strong>
+                        <img
+                          src={googleIcon}
+                          alt="Google Icon"
+                          style={{ width: "1.5rem", marginRight: "1rem" }}
+                          className="googleIcon"
+                        />
+                        <i className="fab fa-google fa-fw"></i>{" "}
+                        <strong>Login with Protovec Account.</strong>
                       </a>
                     </form>
 

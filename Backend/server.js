@@ -3,10 +3,12 @@ const cors = require('cors');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
 
+
 const app = express();
 const port = 3001; 
 
 app.use(cors()); 
+
 
 // Create a MySQL db
 const db = mysql.createConnection({
@@ -625,36 +627,69 @@ app.get('/api/tasksByDate/:date', (req, res) => {
   });
 });
 
-
-
 app.post('/api/getLogin', (req, res) => {
-  const { name, password } = req.body;
+  const { email, pass, rememberMe } = req.body;
 
-  // Query the database to retrieve the user's data
-  const sql = 'SELECT * FROM employees WHERE name = ?';
-  db.query(sql, [name], (err, results) => {
+  const selectlogin = `SELECT * FROM Logincrd WHERE Email=? AND Password=?`;
+
+  db.query(selectlogin,[email,pass], (err, result) => {
     if (err) {
-      console.error('Error retrieving user data:', err);
-      return res.status(500).json({ success: false, message: 'An error occurred while processing your request' });
+      console.error(err);
+      res.status(500).send('Error');
+      return;
     }
 
-    // Check if the user exists
-    if (results.length === 0) {
-      return res.status(401).json({ success: false, message: 'Invalid username or password' });
+    if (result.length === 0) {
+      return res.status(401).send('Error: Invalid credentials');
     }
+      const { Type, id } = result[0];
 
-    const user = results[0];
+      if (rememberMe === 'true') {
+        // Set cookies
+        res.cookie('username', email, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
+        res.cookie('password', pass, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
+      } else {
+        // Clear cookies
+        res.clearCookie('username');
+        res.clearCookie('password');
+      }
 
-    // Verify the password
-    if (password === user.password) {
-      // Passwords match, login successful
-      return res.status(200).json({ success: true, message: 'Login successful', user });
-    } else {
-      // Passwords don't match
-      return res.status(401).json({ success: false, message: 'Invalid username or password' });
-    }
+      
+
+      res.send('Success');
+   
   });
 });
+
+// GJC
+// app.post('/api/getLogin', (req, res) => {
+//   const { email, password } = req.body;
+
+//   // Query the database to retrieve the user's data
+//   const sql = 'SELECT * FROM logincrd WHERE Email = ?';
+//   db.query(sql, [email], (err, results) => {
+//     if (err) {
+//       console.error('Error retrieving user data:', err);
+//       return res.status(500).json({ success: false, message: 'An error occurred while processing your request' });
+//     }
+
+//     // Check if the user exists
+//     if (results.length === 0) {
+//       return res.status(401).json({ success: false, message: 'Invalid username or password' });
+//     }
+
+//     const user = results[0];
+
+//     // Verify the password
+//     if (password === user.password) {
+//       // Passwords match, login successful
+//       return res.status(200).json({ success: true, message: 'Login successful', user });
+//     } else {
+//       // Passwords don't match
+//       return res.status(401).json({ success: false, message: 'Invalid username or password' });
+//     }
+//   });
+// });
 
 
 app.get('/api/fetchAllLoginData', (req, res) => {
