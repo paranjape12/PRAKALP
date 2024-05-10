@@ -4,11 +4,11 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 
 const app = express();
-const port = 3001; // Choose a port for your server
+const port = 3001; 
 
-app.use(cors()); // Add this line to enable CORS
+app.use(cors()); 
 
-// Create a MySQL connection
+// Create a MySQL db
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
@@ -27,6 +27,38 @@ db.connect((err) => {
 
 // Middleware to parse JSON requests
 app.use(bodyParser.json());
+
+
+// api endpoint to register new user
+app.post('/api/register', (req, res) => {
+  const { email, fname, lname, slectedval, passwd } = req.body;
+  console.log("req.body : ", req);
+  const password = Buffer.from(passwd).toString('base64'); // Encrypting password
+
+  const selectQuery = 'SELECT * FROM Logincrd WHERE Email=? OR Password=?';
+  db.query(selectQuery, [email, password], (error, results) => {
+    if (error) {
+      res.status(500).json({ message: 'Error occurred while executing query' });
+      return;
+    }
+
+    if (results.length > 0) {
+      res.status(400).json({ message: 'User already exists' });
+      return;
+    }
+
+    const insertQuery = 'INSERT INTO Logincrd (Name, Nickname, Email, Password, Type, Location) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(insertQuery, [fname, lname, email, password, 'Employee', slectedval], (error, results) => {
+      if (error) {
+        res.status(500).json({ message: 'Error occurred while inserting data' });
+        return;
+      }
+
+      res.status(200).json({ message: 'Success' });
+    });
+  });
+});
+
 
 ///////Projects Table////////
 

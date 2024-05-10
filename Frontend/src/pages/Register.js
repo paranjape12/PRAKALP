@@ -2,39 +2,94 @@ import React, { useState } from 'react';
 import '../cssfiles/register.css';
 import eyeIcon from '../assets/eye.svg';
 import eyeIconSlash from '../assets/eye-slash.svg';
+import ErrorMessageModal from "../components/ErrorMessageModal";
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 function Register() {
-
     const [passwordVisible, setPasswordVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     const togglePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible);
     };
 
+    const handleRegister = async () => {
+        console.log("entered handleRegister");
+        
+        const { value: fname } = document.getElementById('exampleFirstName');
+        const { value: lname } = document.getElementById('exampleLastName');
+        const { value: email } = document.getElementById('exampleInputEmail');
+        const { value: passwd } = document.getElementById('exampleInputPassword');
+        const { value: cpass } = document.getElementById('exampleRepeatPassword');
+        const { value: selectedVal } = document.getElementById('dropLocation');
+    
+        const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const PassRegex = /^(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const emailDomain = email.split('@')[1];
+        
+        if (fname === "" || lname === "" || email === "" || passwd === "" || cpass === "") {
+            setErrorMessage("Please enter all account details");
+            return;
+        }    
+        if (!EmailRegex.test(email)) {
+            setErrorMessage("Please Enter Valid Email Format<br> eg.Abc@abcd.com");
+            return;
+        }    
+        if (!PassRegex.test(passwd)) {
+            setErrorMessage("Password format mismatch. Please enter in the following way eg. Abcd@123 <br> <br>1. Atleast one capital letter. <br>2. Password must contain a special character (@, $, !, &, etc).<br>3. Password length must be greater than 8 characters.");
+            return;
+        }    
+        if (cpass !== passwd) {
+            setErrorMessage("Password and confirm password are not match ");
+            return;
+        }    
+        if (selectedVal === 'unset') {
+            setErrorMessage("Please Select Location ");
+            return;
+        }    
+        if (emailDomain !== 'protovec.com') {
+            setErrorMessage("Please Enter Company Provided Email");
+            return;
+        }    
+        try {
+            const response = await axios.post('http://localhost:3001/api/register', {
+                email,
+                fname,
+                lname,
+                selectedVal,
+                passwd
+            });
+    
+            if (response.data.message === 'Success') {
+                setTimeout(() => {
+                    window.location = '/login'; 
+                }, TIMEOUT_DURATION);
+            } else {
+                setErrorMessage('Unable to create account');
+            }
+        } catch (error) {
+            setErrorMessage('Error occurred while creating account');
+        }
+    };
+    
+    const TIMEOUT_DURATION = 1000;
+    
+
     return (
         <div className="container blue-bg">
-            <div className="modal fade" id="Errormsg" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div className="modal-dialog modal-sm" role="document">
-                    <div className="modal-content p-1">
-                        <div className="modal-header p-1">
-                            <h6 className="text-danger m-0" id="Errormsgtext"></h6>
-                            <button className="close" type="button" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">×</span>
-                            </button>
+            {successMessage && (
+                <div className="modal fade" id="Sucessmsg" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div className="modal-dialog modal-sm" role="document">
+                        <div className="modal-content p-1">
+                            <div className="modal-header p-1">
+                                <h6 className="text-success text-center m-0" id="Sucessmsgtext">{successMessage}</h6>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div className="modal fade" id="Sucessmsg" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div className="modal-dialog modal-sm" role="document">
-                    <div className="modal-content p-1">
-                        <div className="modal-header p-1">
-                            <h6 className="text-success text-center m-0" id="Sucessmsgtext"></h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            )}
             <div className="card o-hidden border-0 shadow-lg my-5">
                 <div className="card-body p-0">
                     <div className="row">
@@ -47,7 +102,7 @@ function Register() {
                                 <form className="user">
                                     <div className="form-group row">
                                         <div className="col-sm-6 mb-3 mb-sm-0">
-                                            <input type="text" className="form-control form-control-user" id="exampleFirstName" placeholder=" Name" />
+                                            <input type="text" className="form-control form-control-user" id="exampleFirstName" placeholder="Name" />
                                         </div>
                                         <div className="col-sm-6">
                                             <input type="text" className="form-control form-control-user" id="exampleLastName" placeholder="Nickname" />
@@ -63,6 +118,7 @@ function Register() {
                                                 className="form-control form-control-user"
                                                 id="exampleInputPassword"
                                                 placeholder="Password"
+                                                
                                             />
                                             <div className="input-group-prepend">
                                                 <span
@@ -94,15 +150,18 @@ function Register() {
                                             </select>
                                         </div>
                                     </div>
-                                    <a id="registerbtn" className="btn btn-primary btn-reg-user btn-block">
+                                    <button type="button" id="registerbtn" className="btn btn-primary btn-reg-user btn-block" onClick={handleRegister}>
                                         Register Account
-                                    </a>
+                                    </button>
                                 </form>
                                 <hr />
                                 <div className="text-center">
                                     <Link to="/login" className="small">
                                         <h6>Already have an account? Login!</h6>
                                     </Link>
+                                </div>
+                                <div className="text-center">
+                                    <h6 style={{color:'red'}}>{errorMessage}</h6>
                                 </div>
                             </div>
                         </div>
