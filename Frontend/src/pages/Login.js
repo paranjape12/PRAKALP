@@ -4,6 +4,7 @@ import App from "../App";
 import HomePage from "../pages/HomePage";
 import eyeIcon from '../assets/eye.svg';
 import eyeIconSlash from '../assets/eye-slash.svg';
+import googleIcon from '../assets/google.svg';
 import axios from "axios";
 import "../cssfiles/Login.css"; // Make sure to import your CSS file
 // import { Link } from 'react-router-dom';
@@ -211,7 +212,7 @@ function Login({ }) {
 
                       <button
                         id="loginbtn"
-                        className="btn btn-outline-primary btn-user"
+                        className="btn btn-primary btn-user"
                         onClick={handleLoginClick}
                         type="button" // Use type="button" to prevent form submission
                       ><strong>
@@ -222,10 +223,11 @@ function Login({ }) {
 
                       <hr />
                       <a
-                        className="btn btn-outline-danger btn-user"
+                        className="btn btn-danger btn-user"
                         // onClick={handleGoogleLogin}
                         href="#!" // Use href="#!" to prevent anchor link behavior
                       >
+                        <img src={googleIcon} alt="Google Icon" style={{width:'1.5rem', marginRight:'1rem'}} className="googleIcon" />
                         <i className="fab fa-google fa-fw"></i> <strong>Login with Protovec Account.</strong>
                       </a>
                     </form>
