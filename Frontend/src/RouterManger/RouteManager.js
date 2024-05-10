@@ -23,14 +23,15 @@ function RouteManager() {
         <Router>
 
             <Routes>
-                <Route path="/" element={<HomePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+                <Route path="/" element={<Login />} /> 
                 <Route path="/register" element={<Register />} />
+                <Route path="/homepage" element={<HomePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/task" element={<TaskOveriew isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/task2" element={<TaskOveriew2 isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/employee" element={<EmployeePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/edit-employee" element={<EditEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/add-employee" element={<AddEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
-                <Route path="/login" element={<Login />} />
+                
             </Routes>
         </Router>
 

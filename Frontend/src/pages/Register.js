@@ -156,7 +156,7 @@ function Register() {
                                 </form>
                                 <hr />
                                 <div className="text-center">
-                                    <Link to="/login" className="small">
+                                    <Link to="/" className="small">
                                         <h6>Already have an account? Login!</h6>
                                     </Link>
                                 </div>
