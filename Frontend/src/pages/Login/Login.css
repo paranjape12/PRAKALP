@@ -1,0 +1,68 @@
+html {
+  height: 100%;
+}
+
+#login-body {
+  background-image: linear-gradient(180deg, #ffffff 10%, #000000 100%);
+  background-size: cover; 
+  height: 100vh;
+  margin: 0; 
+  padding: 0; 
+}
+
+.bg-login-image {
+  background: url(../../img/loginimage2.jpg);
+  background-position: unset;
+  background-size: cover;
+  object-fit: unset;
+  background-repeat: no-repeat;
+}
+
+#Errormsg .modal-content {
+  box-shadow: 2px 3px red;
+}
+
+#Errormsg {
+  z-index: 2;
+
+  top: 1%;
+  left: 38%;
+
+}
+
+#Errormsg .modal-dialog {
+
+  top: 12%;
+}
+
+
+.btn-user {
+  font-size: 1rem;
+  border-radius: 10rem;
+  padding: .60rem 1rem;
+  width: 25rem;
+  height: 45px;
+}
+
+.form-group input[type="text"],
+input[type="number"],
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 40px;
+  box-sizing: border-box;
+  margin-bottom: -5px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  border-color: #0056b3;
+  border: 0px;
+  border: 1px solid #ccc;
+  border-radius: 30px;
+  padding: 1.5rem;
+}
