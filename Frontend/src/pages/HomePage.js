@@ -6,7 +6,7 @@ import deletebtn from '../assets/delete.png';
 import editbtn from '../assets/edit-text.png';
 import axios from 'axios';
 import EditProject from '../components/EditProject';
-import TaskOverview from './TaskOverview'; 
+import TaskOverview from './TaskOverviewGJC'; 
 //import WeeklyCalender from './WeeklyCalender';
 import Navbar from '../components/Navbar';
 import AddNewProject from '../components/AddNewProject';

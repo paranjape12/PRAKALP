@@ -3,12 +3,12 @@ import { BrowserRouter as Router, Route, Routes, Navigate, Switch, Link } from '
 import '../App.css';
 import HomePage from '../pages/HomePage';
 import AddEmployee from '../pages/AddEmployee';
+import TaskOveriewGJC from '../pages/TaskOverviewGJC';
 import TaskOveriew from '../pages/TaskOverview';
-import TaskOveriew2 from '../pages/TaskOverview2';
 import EmployeePage from '../pages/EmployeePage';
-import Login from '../pages/Login';
+import Login from '../pages/Login/Login';
 import EditEmployee from '../pages/EditEmployee';
-import Register from '../pages/Register';
+import Register from '../pages/Register/Register';
 
 function RouteManager() {
 
@@ -25,10 +25,10 @@ function RouteManager() {
             <Routes>
                 <Route path="/" element={<Login />} /> 
                 <Route path="/register" element={<Register />} />
-                <Route path="/task2" element={<TaskOveriew2 isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+                <Route path="/task" element={<TaskOveriew isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
 
                 <Route path="/homepage" element={<HomePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
-                <Route path="/task" element={<TaskOveriew isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+                <Route path="/task2" element={<TaskOveriewGJC isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/employee" element={<EmployeePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/edit-employee" element={<EditEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/add-employee" element={<AddEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
