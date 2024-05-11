@@ -129,6 +129,11 @@
   
 }
 
+th {
+  background-color: #4e73df;
+  font-size: 14px;
+}
+
 .dropdown-content button:hover {
   background: rgb(206, 223, 233);
   /* Darker green on hover */

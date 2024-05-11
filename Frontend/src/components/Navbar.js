@@ -76,7 +76,7 @@ function Navbar({ onAddProjectClick, onAddTaskClick, onAssignTaskClick, onNextDa
         <div className='title'>
           <Link style={{ fontSize: '24px', color: '#f8f9fc', textDecoration:'none' }}>
             {location.pathname === "/" ? "GJC created Home" :
-              location.pathname === "/task2" ? "Overview - Task" :
+              location.pathname === "/task" ? "Overview - Task" :
                 location.pathname === "/employee1" ? "Overview - Employee" : "Prakalp"}
           </Link>
         </div>
