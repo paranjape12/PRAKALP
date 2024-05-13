@@ -4,7 +4,8 @@ import eyeIcon from "../../assets/eye.svg";
 import eyeIconSlash from "../../assets/eye-slash.svg";
 import googleIcon from "../../assets/google.svg";
 import axios from "axios";
-import "./Login.css"; // Make sure to import your CSS file
+import { Buffer } from "buffer";
+import "./Login.css";
 // import { Link } from 'react-router-dom';
 
 function Login() {
@@ -12,6 +13,7 @@ function Login() {
   const [email, setEmail] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
 
@@ -38,11 +40,9 @@ function Login() {
           3. Password length must be at least 8 characters.`);
         return;
       }
-      // Encode password to base64 using btoa function
-      const encodedPassword = btoa(password);
 
       // Encode password to base64
-      // const encodedPassword = Buffer.from(password).toString('base64');
+      const encodedPassword = Buffer.from(password).toString('base64');
 
       const response = await axios.post('http://localhost:3001/api/getLogin', {
         email,
@@ -51,7 +51,10 @@ function Login() {
       });
 
       if (response.data === 'Success') {
-        window.location = '/task2'; // Redirect to dashboard upon successful login
+        setSuccessMessage("Login Successful!")
+        setTimeout(function () {
+          window.location = '/task';
+        }, 3000);
       } else {
         setErrorMessage('Please enter a valid email or password');
         setEmail('');
@@ -63,14 +66,6 @@ function Login() {
     }
   };
 
-
-
-
-
-  // const handleCheckboxChange = () => {
-  //   setIsChecked(!isChecked); // Define 'handleCheckboxChange' function
-  // };
-
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -78,22 +73,22 @@ function Login() {
   };
 
   return (
-    <body id="login-body">
-      <div class="container">
+    <div id="login-body">
+      <div className="container">
         <div
-          class="modal fade"
+          className="modal fade"
           id="Errormsg"
-          tabindex="-1"
+          tabIndex="-1"
           role="dialog"
           aria-labelledby="exampleModalLabel"
           aria-hidden="true"
         >
-          <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content  p-1">
-              <div class="modal-header p-1">
-                <h6 class="text-danger m-0" id="Errormsgtext"></h6>
+          <div className="modal-dialog modal-sm" role="document">
+            <div className="modal-content  p-1">
+              <div className="modal-header p-1">
+                <h6 className="text-danger m-0" id="Errormsgtext"></h6>
                 <button
-                  class="close"
+                  className="close"
                   type="button"
                   data-dismiss="modal"
                   aria-label="Close"
@@ -104,19 +99,18 @@ function Login() {
             </div>
           </div>
         </div>
-        <div class="row justify-content-center">
-          <div class="col-xl-10 col-lg-12 col-md-9">
-            <div class="card o-hidden border-0 shadow-lg my-5">
-              <div class="card-body p-0">
-                {/* Nested Row within Card Body  */}
-                <div class="row">
-                  <div class="col-lg-5 d-none d-lg-block bg-login-image"></div>
-                  <div class="col-lg-7">
-                    <div class="p-5">
-                      <div class="text-center">
-                        <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+        <div className="row justify-content-center">
+          <div className="col-xl-10 col-lg-12 col-md-9">
+            <div className="card o-hidden border-0 shadow-lg my-5">
+              <div className="card-body p-0">
+                <div className="row">
+                  <div className="col-lg-5 d-none d-lg-block bg-login-image"></div>
+                  <div className="col-lg-7">
+                    <div className="p-5">
+                      <div className="text-center">
+                        <h1 className="h4 text-gray-900 mb-4">Welcome Back!</h1>
                       </div>
-                      <form class="user">
+                      <form className="user">
                         <div className="form-group">
                           <input
                             type="email"
@@ -193,7 +187,12 @@ function Login() {
                           >
                             <strong>Login</strong>
                           </button>
-                          {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+                          {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem' }}>{errorMessage}</p>}
+                          {!errorMessage && (
+                            <div className="text-center">
+                              <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
+                            </div>
+                          )}
                         </div>
                         <hr />
                         <a
@@ -216,7 +215,7 @@ function Login() {
                               <Link to="/forgot-password" className="small">Forgot Password?</Link>
                           </div> */}
                       <hr />
-                      <div class="text-center">
+                      <div className="text-center">
                         <Link to="/register" className="small">
                           <h6>Create an Account!</h6>
                         </Link>
@@ -229,7 +228,7 @@ function Login() {
           </div>
         </div>
       </div>
-    </body>
+    </div>
   );
 }
 

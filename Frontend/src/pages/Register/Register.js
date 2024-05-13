@@ -62,9 +62,10 @@ function Register() {
             });
 
             if (response.data.message === 'Success') {
+                setSuccessMessage("Register Successful !")
                 setTimeout(() => {
-                    window.location = '/login';
-                }, TIMEOUT_DURATION);
+                    window.location = '/';
+                }, 3000);
             } else {
                 setErrorMessage('Unable to create account');
             }
@@ -73,11 +74,9 @@ function Register() {
         }
     };
 
-    const TIMEOUT_DURATION = 1000;
-
 
     return (
-        <body id="reg-body">
+        <div id="reg-body">
             <div className="container">
                 {successMessage && (
                     <div className="modal fade" id="Sucessmsg" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -165,13 +164,18 @@ function Register() {
                                             <p style={{ color: 'red', margin: '0' }} key={index}>{line}</p>
                                         </div>
                                     ))}
+                                    {!errorMessage && (
+                                        <div className="text-center">
+                                            <p style={{ color: 'green', margin: '0' }}>{successMessage}</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </body>
+        </div>
     );
 }
 
