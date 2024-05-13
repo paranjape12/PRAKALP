@@ -6,13 +6,12 @@ import deletebtn from '../assets/delete.png';
 import editbtn from '../assets/edit-text.png';
 import axios from 'axios';
 import EditProject from '../components/EditProject';
-import TaskOverview from './TaskOverviewGJC'; 
 //import WeeklyCalender from './WeeklyCalender';
-import Navbar from '../components/Navbar';
-import AddNewProject from '../components/AddNewProject';
-import AddTask from '../components/AddTask';
+import Navbar from '../components/Navbar/Navbar';
+import AddNewProject from '../components/Navbar/AddNewProject';
+import AddTask from '../components/Navbar/AddTask';
 import AssignTask from '../components/AssignTask';
-
+import TaskOverviewGJC from './TaskOverview/TaskOverviewGJC';
 
 
 
@@ -198,7 +197,7 @@ function HomePage({ isPopupVisible, userRole, employeeId }) {
 
       {/* Display TaskOverview component */}
       <div className="half-page">
-        <TaskOverview isPopupVisible={isPopupVisible} selectedProjectName={selectedProjectName} />
+        <TaskOverviewGJC isPopupVisible={isPopupVisible} selectedProjectName={selectedProjectName} />
       </div>
 
       {/* {!isThreeColumnLayout && (

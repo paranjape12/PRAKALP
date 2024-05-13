@@ -13,8 +13,3 @@ body {
 .table-bordered td, .table-bordered th, .table-bordered tr{
   border: 1px solid #000;
 }
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}

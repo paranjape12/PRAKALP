@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import '../cssfiles/EmployeePage.css';
 import editbtn from '../assets/edit-text.png';
 import deletebtn from '../assets/delete.png';
-import Navbar from '../components/Navbar';
-import AddNewProject from '../components/AddNewProject';
-import AddTask from '../components/AddTask';
+import Navbar from '../components/Navbar/Navbar';
+import AddNewProject from '../components/Navbar/AddNewProject';
+import AddTask from '../components/Navbar/AddTask';
 import AssignTask from '../components/AssignTask';
 import EditEmployee from './EditEmployee';   // Import the EditEmployee component
 
