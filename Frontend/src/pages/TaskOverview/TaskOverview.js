@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import '../cssfiles/Navbar.css';
-import Footer from '../components/Footer';
+import Navbar from '../../components/Navbar/Navbar';
+import eyeIcon from '../../assets/eye-white.svg'
+import eyeSlashIcon from '../../assets/eye-slash-white.svg'
+import '../../pages/TaskOverview/TaskOverview.css';
+import Footer from '../../components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-
 
 const today = new Date();
 
@@ -19,11 +20,11 @@ const daysOfWeek = [
 ];
 
 function TaskOverview() {
-  const [showComplete, setShowComplete] = useState(document.cookie.includes('ShowComplete'));
-  const toggleShowComplete = () => {
-    const newValue = showComplete ? '1' : '0';
-    document.cookie = `ShowComplete=${newValue};`;
-    setShowComplete(!showComplete);
+  const [showComplete, setShowComplete] = useState(true);
+  
+  const toggleShowComplete = (e) => {
+    e.stopPropagation(); 
+    setShowComplete(prevShowComplete => !prevShowComplete);
   };
 
   const [dates, setDates] = useState([]);
@@ -73,11 +74,18 @@ function TaskOverview() {
           <tr className="text-center small" style={{}}>
             <th style={{ width: '20rem', verticalAlign: 'revert', color: 'white', alignItems: 'center' }}>Projects</th>
             <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', alignItems: 'center' }}>
-              Task Details
-              <i className="taskEye" style={{ paddingLeft: '60px', cursor: 'pointer', width: '20px', color: 'white', zIndex: '3' }} onClick={toggleShowComplete}>
-                {showComplete ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} />}
-              </i>
+              <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '1rem' }}>
+                <span>Task Details</span>
+                <div className="taskEye" style={{ marginLeft: '7rem'}}>
+                  {showComplete ? (
+                    <img className='eyeicon' src={eyeIcon} alt="Eye Icon" width={18} style={{ cursor: 'pointer', color: 'white', pointerEvents: 'auto' }} onClick={toggleShowComplete}/>
+                  ) : (
+                    <img src={eyeSlashIcon} alt="Eye Slash Icon" width={18} style={{ cursor: 'pointer', color: 'white', pointerEvents: 'auto' }} onClick={toggleShowComplete}/>
+                  )}
+                </div>
+              </div>
             </th>
+
             {dates.slice(startDateIndex, startDateIndex + 7).map((date, index) => {
               const currentDate = new Date(date.date);
               const isSunday = currentDate.getDay() === 0;

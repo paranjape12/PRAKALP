@@ -1,16 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 
 
-th {
+.table th {
   background-color: #4e73df;
-  font-size: 14px;
+  font-size: 15px;
+  padding: 0;
 }
 
-.taskEye {
-  svg {
-      path {
-          fill: white;
-      }
+.eye-icon {
+  cursor: pointer;
+  pointer-events: auto; 
 }
-}
+
 
