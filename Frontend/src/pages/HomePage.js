@@ -8,9 +8,9 @@ import axios from 'axios';
 import EditProject from '../components/EditProject';
 //import WeeklyCalender from './WeeklyCalender';
 import Navbar from '../components/Navbar/Navbar';
-import AddNewProject from '../components/Navbar/AddNewProject';
-import AddTask from '../components/Navbar/AddTask';
-import AssignTask from '../components/AssignTask';
+import AddNewProject from '../components/Navbar/Dropdown/Add Project/AddNewProject';
+import AddTask from '../components/Navbar/Dropdown/Add Task/AddTask';
+import AssignTask from '../components/Navbar/Dropdown/Assign Task/AssignTask';
 import TaskOverviewGJC from './TaskOverview/TaskOverviewGJC';
 
 

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, InputLabel, Select} from '@mui/material';
-
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, InputLabel, Select,FormControl, MenuItem} from '@mui/material';
+import'./CreateCopyProject.css';
 
 
 function CreateCopyProject({open,onClose,onBack}) {
   const [projectName, setProjectName] = useState('');
   const [salesOrder, setSalesOrder] = useState('');
+  const [selectedProject, setSelectedProject] = useState('');
  
   const handleClose = () => {
     onClose();
@@ -45,7 +46,7 @@ function CreateCopyProject({open,onClose,onBack}) {
                     margin="dense"
                     type="text"
                     fullWidth
-                    inputProps={{ style: { padding: '25px', fontFamily: 'Nunito' } }}
+                    inputProps={{ style: { padding: '0.8rem', fontFamily: 'Nunito' } }}
                     />
                     <InputLabel style={{ fontFamily: 'Nunito', color:'black', fontWeight:'700', fontSize:'18px', }}>Project Name</InputLabel>
                     <TextField
@@ -55,23 +56,22 @@ function CreateCopyProject({open,onClose,onBack}) {
                     margin="dense"
                     type="text"
                     fullWidth
-                    inputProps={{ style: { padding: '25px', fontFamily: 'Nunito' } }}
+                    inputProps={{ style: { padding: '0.8rem', fontFamily: 'Nunito' } }}
                     />
+                     <FormControl style={{ marginTop: '1rem'}}>
+                  <InputLabel >Select Project</InputLabel>
+                  <Select
+                    label="Select Project"
+                    id="copyprojdrop"
+                    value={selectedProject}
+                    onChange={(e) => setSelectedProject(e.target.value)}
+                    
+                  >
+              <MenuItem value="Unassigned/ No Work">Unassigned/ No Work</MenuItem>
+            </Select>
+          </FormControl>
                 </DialogContent>
-                <DialogContent>
-                <Select
-                    className="col-md-12 form-select border border-primary rounded p-1"
-                    aria-label="Default select example"
-                    id="assignaddprojdropproj"
-                    onChange={handleSelectChange}
-                    defaultValue="" // Set default value if needed
-                    >
-                    {/* <MenuItem value="" disabled>Select Project</MenuItem>
-                    {projectNameArray.map((value) => (
-                        <MenuItem key={value} value={value}>{value}</MenuItem> */}
-                    {/* ))} */}
-                    </Select>
-                </DialogContent>
+               
                 <DialogActions>
                     <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={onClose} color="primary">
                     Close

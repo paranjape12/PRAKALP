@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Switch, Link } from 'react-router-dom';
 import '../App.css';
 import HomePage from '../pages/HomePage';
-import AddEmployee from '../pages/AddEmployee';
+import AddEmployee from '../components/Navbar/Dropdown/Manage Employee/AddEmployee';
 import TaskOveriew from '../pages/TaskOverview/TaskOverview';
 import EmployeePage from '../pages/EmployeePage';
 import Login from '../pages/Login/Login';
-import EditEmployee from '../pages/EditEmployee';
+import EditEmployee from '../components/Navbar/Dropdown/Manage Employee/EditEmployee';
 import Register from '../pages/Register/Register';
 
 function RouteManager() {

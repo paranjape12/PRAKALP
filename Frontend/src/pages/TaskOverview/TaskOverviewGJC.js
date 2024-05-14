@@ -6,7 +6,7 @@ import infobtn from '../../assets/information-sign.png';
 import '../TaskOverview/TaskOverviewGJC.css';
 import TaskDetailsPopup from '../../components/TaskDetailsPopup';
 import EditTask from '../../components/EditTask';
-import AssignTask from '../../components/AssignTask';
+import AssignTask from '../../components/Navbar/Dropdown/Assign Task/AssignTask';
 
 function TaskOverview({ isPopupVisible, selectedProjectName }) {
   const [tasksData, setTasksData] = useState([]);

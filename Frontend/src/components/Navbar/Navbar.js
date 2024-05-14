@@ -3,8 +3,9 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faUsers, faBars, faCircleUser, faDiagramProject, faRightFromBracket, faL } from '@fortawesome/free-solid-svg-icons';
 import './Navbar.css';
-import AddTaskModal from './AddTask'
-import AddNewProject from './AddNewProject';
+import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask'
+import AddNewProject from '../Navbar/Dropdown/Add Project/AddNewProject';
+import AssignTaskDialog from '../Navbar/Dropdown/Assign Task/AssignTask'
 
 function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const [activeButton, setActiveButton] = useState(null);
@@ -12,6 +13,7 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const [showMenuDropdown, setShowMenuDropdown] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [addProjectDialogOpen, setAddProjectDialogOpen] = useState(false);
+  const [assignTaskDialogOpen, setAssignTaskDialogOpen] = useState(false);
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const navigate = useNavigate();
@@ -28,6 +30,12 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   };
   const handleCloseAddTaskDialog = () => {
     setAddTaskDialogOpen(false);
+  };
+  const handleOpenAssignTaskDialog = () => {
+    setAssignTaskDialogOpen(true);
+  };
+  const handleCloseAssignTaskDialog = () => {
+    setAssignTaskDialogOpen(false);
   };
 
   const onTodayClick = () => {
@@ -121,7 +129,8 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
                     <div><button> Manage Employees </button></div>
                     <div><button onClick={handleOpenAddTaskDialog}>Add Task</button>
                       <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} /></div>
-                    <div><button>Assign Task</button></div>
+                    <div><button onClick={handleOpenAssignTaskDialog}>Assign Task</button>
+                    <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog}/></div>
                     <div><button>Setting</button></div>
                   </div>
                 </div>

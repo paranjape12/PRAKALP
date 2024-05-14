@@ -5,10 +5,10 @@ import '../cssfiles/EmployeePage.css';
 import editbtn from '../assets/edit-text.png';
 import deletebtn from '../assets/delete.png';
 import Navbar from '../components/Navbar/Navbar';
-import AddNewProject from '../components/Navbar/AddNewProject';
-import AddTask from '../components/Navbar/AddTask';
-import AssignTask from '../components/AssignTask';
-import EditEmployee from './EditEmployee';   // Import the EditEmployee component
+import AddNewProject from '../components/Navbar/Dropdown/Add Project/AddNewProject';
+import AddTask from '../components/Navbar/Dropdown/Add Task/AddTask';
+import AssignTask from '../components/Navbar/Dropdown/Assign Task/AssignTask';
+import EditEmployee from '../components/Navbar/Dropdown/Manage Employee/EditEmployee';   // Import the EditEmployee component
 
 function EmployeePage({ isPopupVisible}) {
   const [employeeNames, setEmployeeNames] = useState([]);

@@ -1,23 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import '../cssfiles/AddEmployee.css'; // Import your CSS file
+import { useParams } from 'react-router-dom';
+import './AddEmployee.css'; // Import your CSS file
 
-const AddEmployee = ({ isPopupVisible }) => {
+const EditEmployee = ({ isPopupVisible}) => {
+  const { employeeId } = useParams(); // Access the employeeId from URL params
 
   const [formData, setFormData] = useState({
     name: '',
     nickname: '',
     email: '',
+    use_email: '',
     password: '',
     confirmPassword: '',
     role: '',
     location: '',
   });
-
-  const [useEmail, setUseEmail] = useState(false); // State to track whether email is used for login
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [errors, setErrors] = useState({});
   const [showEmailAlert, setShowEmailAlert] = useState(false);
+
+  // useEffect(() => {
+  //   // Fetch employee data based on employeeId
+  //   axios.put(`http://localhost:3001/updateEmployee/${employeeId}`)
+  //     .then(response => {
+  //       const { name, nickname, email,use_email, role, location, password, confirm_password } = response.data;
+  //       setFormData({
+  //         name,
+  //         nickname,
+  //         email,
+  //         use_email,
+  //         role,
+  //         location,
+  //         password: '', // Reset password fields
+  //         confirmPassword: '', // Reset confirmPassword fields
+  //       });
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching employee data:', error);
+  //     });
+  // }, [employeeId]);
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -30,75 +51,59 @@ const AddEmployee = ({ isPopupVisible }) => {
     setFormData({ ...formData, [id]: value });
   };
 
-  const handleAddEmployee = () => {
-    // const { name, nickname, email, password, confirmPassword, role, location } = formData;
-    
-    const name = document.getElementById('name').value;
-  const nickname = document.getElementById('nickname').value;
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const confirmPassword = document.getElementById('confirmPassword').value;
-  const role = document.getElementById('selectRole').value; // Extract role value
-  const location = document.getElementById('selectLocation').value; // Extract location value
-    const newErrors = {};
+  const handleUpdateEmployee = () => {
 
-    if (!name.trim()) {
+    
+    // Validate form fields
+    const newErrors = {};
+    if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
     }
-
-    if (!nickname.trim()) {
+    if (!formData.nickname.trim()) {
       newErrors.nickname = 'Nickname is required';
     }
-
-    if (!email.trim()) {
+    if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!isValidEmail(email)) {
+    } else if (!isValidEmail(formData.email)) {
       newErrors.email = 'Invalid email format';
     }
-
-    if (!password.trim()) {
+    if (!formData.role.trim()) {
+      newErrors.role = 'Role is required';
+    }
+    if (!formData.location.trim()) {
+      newErrors.location = 'Location is required';
+    }
+    if (!formData.password.trim()) {
       newErrors.password = 'Password is required';
     }
-
-    if (!confirmPassword.trim()) {
+    if (!formData.confirmPassword.trim()) {
       newErrors.confirmPassword = 'Confirm Password is required';
-    } else if (password !== confirmPassword) {
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
+    setErrors(newErrors);
 
+    // If there are errors, do not proceed with the update
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
       return;
     }
 
-    // All fields are filled and validated, make the API call
-    axios.post('http://localhost:3001/addEmployee', {
-      name,
-      nickname,
-      email,
-      useEmail,
-      password,
-      confirmPassword,
-      role,
-      location,
-    })
+    // If no errors, make the API call to update the employee
+    axios.put(`http://localhost:3001/updateEmployee/${employeeId}`, formData)
       .then(response => {
+        // Handle success (e.g., show success message)
         console.log(response.data);
-        window.location.reload();
+      
       })
       .catch(error => {
-        console.error('Error adding employee:', error);
-        // Handle error (e.g., show an error message)
+        console.error('Error updating employee:', error);
+        // Handle error (e.g., show error message)
       });
-      window.alert('Employee added successfully');
-  };
-
-  const handleUseEmailChange = (e) => {
-    setUseEmail(e.target.checked); // Update useEmail state when checkbox is toggled
+      window.alert('Employee updated successfully');
   };
 
   const togglePasswordVisibility = () => {
-    setIsPasswordVisible(!isPasswordVisible);
+    setFormData({ ...formData, isPasswordVisible: !formData.isPasswordVisible });
   };
 
   const isValidEmail = (email) => {
@@ -106,12 +111,10 @@ const AddEmployee = ({ isPopupVisible }) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const backgroundClass = isPopupVisible ? 'blurred-background' : '';
-
   return (
-    <div className={`edit-employee-container ${backgroundClass}`}>
+    <div className={`edit-employee-container ${isPopupVisible ? 'blurred-background' : ''}`}>
       <div className='add-emp-title'>
-        <h1>Add Employee</h1>
+        <h1>Edit Employee</h1>
       </div>
       <div className='flex_container'>
         <div className='flex_container1'>
@@ -129,12 +132,11 @@ const AddEmployee = ({ isPopupVisible }) => {
           {showEmailAlert && <span className="alert">Email should be in lowercase letters</span>}
 
           <label>Password :</label>
-<input type={isPasswordVisible ? 'text' : 'password'} id="password" className='pass-in' value={formData.password} onChange={handleInputChange} />
-<span className="visibility-icon" onClick={togglePasswordVisibility}>
-  {isPasswordVisible ? '👁️' : '👁️'}
-</span>
-{errors.password && <span className="error-message">{errors.password}</span>}
-
+          <input type={formData.isPasswordVisible ? 'text' : 'password'} id="password" className='pass-in' value={formData.password} onChange={handleInputChange} />
+          <span className="visibility-icon" onClick={togglePasswordVisibility}>
+            {formData.isPasswordVisible ? '👁️' : '👁️'}
+          </span>
+          {errors.password && <span className="error-message">{errors.password}</span>}
 
           <label>Confirm Password :</label>
           <input type="password" id="confirmPassword" className='pass-in' value={formData.confirmPassword} onChange={handleInputChange} />
@@ -143,7 +145,7 @@ const AddEmployee = ({ isPopupVisible }) => {
         <div className='flex_container2'>
           <label>Role :</label>
           <div className='role-align'>
-            <select id="selectRole" className='selectemp'>
+            <select id="role" className='selectemp' value={formData.role} onChange={handleInputChange}>
               {/* Populate this dropdown with employee names from your data source */}
               <option value="">Select Role</option>
               <option value="Admin">Admin</option>
@@ -153,7 +155,7 @@ const AddEmployee = ({ isPopupVisible }) => {
           </div>
           <label>Location :</label>
           <div className='location_align'>
-            <select id="selectLocation" className='selectlocation'>
+            <select id="location" className='selectlocation' value={formData.location} onChange={handleInputChange}>
               {/* Populate this dropdown with employee locations from your data source */}
               <option value="">Select Location</option>
               <option value="Mumbai">Mumbai</option>
@@ -163,10 +165,10 @@ const AddEmployee = ({ isPopupVisible }) => {
         </div>
       </div>
       <div className='align'>
-        <button className='add-emp-btn' onClick={handleAddEmployee}>Add Employee</button>
+        <button className='add-emp-btn' onClick={handleUpdateEmployee}>Update Employee</button>
       </div>
     </div>
   );
 };
 
-export default AddEmployee;
+export default EditEmployee;
