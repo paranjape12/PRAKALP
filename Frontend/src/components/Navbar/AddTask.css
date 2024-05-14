@@ -5,3 +5,7 @@
 #addprojmin{
     border: none;
 }
+
+#addtaskdetails {
+    border-radius: 0;
+}

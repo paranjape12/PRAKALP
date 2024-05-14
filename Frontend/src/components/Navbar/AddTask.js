@@ -28,24 +28,24 @@ const AddTaskModal = ({ open, onClose }) => {
   };
 
   const handleSave = () => {
-    // Perform save operation
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={handleClose} aria-labelledby="addnewTitle">
-      <DialogTitle id="addnewTitle">Add New Task</DialogTitle>
+      <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df',fontWeight:'700', fontSize:'30px'}}>
+            Add New Task</DialogTitle>
       <DialogContent>
         <FormControl fullWidth>
           <InputLabel id="addprojdrop-label"
-            style={{ margin: '10px' }} >Select Project</InputLabel>
+            style={{ margin: '5px' }} >Select Project</InputLabel>
           <Select
             labelId="addprojdrop-label"
             id="addprojdrop"
             value={selectedProject}
             onChange={(e) => setSelectedProject(e.target.value)}
             label="Select Project"
-            style={{ margin: '10px' }}
+            style={{ margin: '5px' }}
           >
             <MenuItem value="Unassigned/ No Work">Unassigned/ No Work</MenuItem>
           </Select>
