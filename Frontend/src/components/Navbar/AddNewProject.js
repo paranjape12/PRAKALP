@@ -14,6 +14,11 @@ function AddNewProject({open,onClose}) {
   };
 
   const handleCopyCloseDialog = () => {
+    setShowMainDialog(false);
+    setOpenCopyDialog(false);
+  };
+
+  const handleCopyBackDialog = () => {
     setShowMainDialog(true);
     setOpenCopyDialog(false);
   };
@@ -67,7 +72,7 @@ function AddNewProject({open,onClose}) {
           </DialogActions>
         </Dialog>
       )}
-      {openCopyDialog && <CreateCopyProject open={openCopyDialog} onClose={handleCopyCloseDialog} />}
+      {openCopyDialog && <CreateCopyProject open={openCopyDialog} onClose={handleCopyCloseDialog} onBack={handleCopyBackDialog}/>}
     </>
   );
 }

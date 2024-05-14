@@ -3,12 +3,16 @@ import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, I
 
 
 
-function CreateCopyProject({open,onClose}) {
+function CreateCopyProject({open,onClose,onBack}) {
   const [projectName, setProjectName] = useState('');
   const [salesOrder, setSalesOrder] = useState('');
  
   const handleClose = () => {
     onClose();
+  };
+
+  const handleBack = () => {
+    onBack();
   };
  
   const handleSelectChange = (e) => {
@@ -28,7 +32,7 @@ function CreateCopyProject({open,onClose}) {
                 <Dialog open={open} onClose={onClose}>
                 <DialogTitle style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df',fontWeight:'700', fontSize:'30px'}}>
                     Add New Project
-                    <Button style={{ float: 'right', backgroundColor: '#858796', color: 'white', fontFamily: 'Nunito', textTransform: 'capitalize', marginLeft:'10rem' }} onClick={onClose} color="primary">
+                    <Button style={{ float: 'right', backgroundColor: '#858796', color: 'white', fontFamily: 'Nunito', textTransform: 'capitalize', marginLeft:'10rem' }} onClick={onBack} color="primary">
                     Back
                     </Button>
                 </DialogTitle>
