@@ -1,11 +1,19 @@
-#addprojhr{
-    border: none;
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+
+#addprojhr, #addprojmin,#addtaskdetails{
+    border: none; 
+    
 }
 
-#addprojmin{
-    border: none;
+#addprojdrop {
+    padding-right: 13rem;
 }
 
-#addtaskdetails {
-    border-radius: 0;
+#selempdrop {
+    padding-right: 13rem;
 }
+
+
+
+

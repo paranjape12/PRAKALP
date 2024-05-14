@@ -22,6 +22,7 @@ const AddTaskModal = ({ open, onClose }) => {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [selectedProject, setSelectedProject] = useState('');
+  const [selectedEmployee ,setSelectedEmployee] = useState('');
 
   const handleClose = () => {
     onClose();
@@ -36,32 +37,46 @@ const AddTaskModal = ({ open, onClose }) => {
       <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df',fontWeight:'700', fontSize:'30px'}}>
             Add New Task</DialogTitle>
       <DialogContent>
-        <FormControl fullWidth>
-          <InputLabel id="addprojdrop-label"
-            style={{ margin: '5px' }} >Select Project</InputLabel>
-          <Select
-            labelId="addprojdrop-label"
-            id="addprojdrop"
-            value={selectedProject}
-            onChange={(e) => setSelectedProject(e.target.value)}
-            label="Select Project"
-            style={{ margin: '5px' }}
-          >
-            <MenuItem value="Unassigned/ No Work">Unassigned/ No Work</MenuItem>
-          </Select>
-        </FormControl>
-        <InputLabel style={{ fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '18px' }}>Task Details</InputLabel>
-        <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px' }}>Task Name</InputLabel>
+      <div>
+          <FormControl style={{ marginTop: '1rem' , marginRight:'3rem'}}>
+            <InputLabel >Select Project</InputLabel>
+            <Select
+              label="Select Project"
+              id="addprojdrop"
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+              
+            >
+              <MenuItem value="Unassigned/ No Work">Unassigned/ No Work</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl style={{ marginTop: '1rem'}}>
+            <InputLabel >Select Employee</InputLabel>
+            <Select
+            id="selempdrop"
+              label="Select Employee"
+              value={selectedEmployee}
+              onChange={(e) => setSelectedEmployee(e.target.value)}
+            >
+              <MenuItem value="">Select Employee</MenuItem>
+              <MenuItem value="55">Saurabh Patil</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+        <InputLabel  style={{ fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '18px' , marginTop:'1rem' }}>Task Details</InputLabel>
+        <InputLabel  style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px' }}>Task Name</InputLabel>
         <TextField
           autoFocus
           margin="dense"
           id="addtaskname"
           type="text"
+          placeholder='Task Name Enter'
           fullWidth
           value={taskName}
           onChange={(e) => setTaskName(e.target.value)}
-          inputProps={{ style: { padding: '25px', fontFamily: 'Nunito' } }}
+          inputProps={{ style: { padding: '0.5rem', fontFamily: 'Nunito' } }}
         />
+
         <FormControlLabel
           control={<Checkbox
             checked={lastTask}
@@ -72,7 +87,7 @@ const AddTaskModal = ({ open, onClose }) => {
         />
         <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px' }}>Time Required For Task</InputLabel>
         <TextField
-          variant="standard"
+          style={{marginRight:'1rem'}}
           margin="dense"
           id="addprojhr"
           type="number"
@@ -80,14 +95,14 @@ const AddTaskModal = ({ open, onClose }) => {
           onChange={(e) => setMinutes(e.target.value)}
           InputProps={{
             endAdornment: (
-              <InputAdornment position="end" style={{ outline: 'none' }}>Hr</InputAdornment>
+              <InputAdornment position="end" style={{ outline: 'none'}}>Hr</InputAdornment>
             ),
             style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
             inputProps: { min: 0, max: 12, style: { padding: '25px' } }
           }}
         />
         <TextField
-          variant="standard"
+          
           margin="dense"
           id="addprojmin"
           type="number"
@@ -95,7 +110,7 @@ const AddTaskModal = ({ open, onClose }) => {
           onChange={(e) => setHours(e.target.value)}
           InputProps={{
             endAdornment: (
-              <InputAdornment position="end" style={{ outline: 'none' }}>Min</InputAdornment>
+              <InputAdornment position="end" style={{ outline: 'none', }}>Min</InputAdornment>
             ),
             style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
             inputProps: { min: 0, max: 59, style: { padding: '25px' } }
