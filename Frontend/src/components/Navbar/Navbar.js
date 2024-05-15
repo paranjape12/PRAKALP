@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faUsers, faBars, faCircleUser, faDiagramProject, faRightFromBracket, faL } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faUsers, faBars, faCircleUser, faDiagramProject, faRightFromBracket, faHouse } from '@fortawesome/free-solid-svg-icons';
 import './Navbar.css';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask'
 import AddNewProject from '../Navbar/Dropdown/Add Project/AddNewProject';
 import AssignTaskDialog from '../Navbar/Dropdown/Assign Task/AssignTask'
+import SettingsDialog from '../Navbar/Dropdown/Settings/SettingsDialog';
 
 function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const [activeButton, setActiveButton] = useState(null);
@@ -14,6 +15,7 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [addProjectDialogOpen, setAddProjectDialogOpen] = useState(false);
   const [assignTaskDialogOpen, setAssignTaskDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const navigate = useNavigate();
@@ -37,30 +39,16 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const handleCloseAssignTaskDialog = () => {
     setAssignTaskDialogOpen(false);
   };
+  const handleOpenSettingsDialog = () => {
+    setSettingsDialogOpen(true);
+  };
+  const handleCloseSettingsDialog = () => {
+    setSettingsDialogOpen(false);
+  };
 
   const onTodayClick = () => {
     window.location.reload(false);
   }
-
-  const handleButtonClick = (buttonName) => {
-    setActiveButton(buttonName);
-    setShowSettingsDropdown(false);
-    setShowMenuDropdown(false);
-    setShowProfileDropdown(false);
-
-    if (buttonName === 'home') {
-      navigate('/');
-    }
-    if (buttonName === 'emp') {
-      navigate('/employee');
-    }
-  };
-
-  const handleSettingsButtonClick = () => {
-    setShowSettingsDropdown(!showSettingsDropdown);
-    setShowMenuDropdown(false);
-    setShowProfileDropdown(false);
-  };
 
   const handleMenuButtonClick = () => {
     setShowMenuDropdown(!showMenuDropdown);
@@ -85,76 +73,100 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
       <div className='navbar_bg'>
         <div className='title'>
           <Link style={{ fontSize: '24px', color: '#f8f9fc', textDecoration: 'none' }}>
-            {location.pathname === "/" ? "GJC created Home" :
+            {location.pathname === "/project" ? "Overview - Project" :
               location.pathname === "/task" ? "Overview - Task" :
-                location.pathname === "/employee1" ? "Overview - Employee" : "Prakalp"}
+                location.pathname === "/employee" ? "Overview - Employee" : "Prakalp"}
           </Link>
         </div>
         <div className='navbar-container'>
           {dates.length > 0 && (
             <ul className="navbar-list">
-              <li className="nav-item dropdown no-arrow mx-1 p-0">
+              <li className="today-nav-item dropdown no-arrow mx-1 p-0">
                 <Link onClick={onTodayClick} className="nav-link text-white th1 p-0" style={{ paddingRight: '10px', cursor: 'pointer', fontFamily: 'Nunito' }}>
                   Today
                 </Link>
               </li>
-              <li className="nav-item dropdown no-arrow mx-1 p-0">
+              <li className="prev-nav-item dropdown no-arrow mx-1 p-0">
                 <Link onClick={onPreviousDayClick} className="nav-link text-white th1 p-0" style={{ paddingRight: '10px', cursor: 'pointer', fontFamily: 'Nunito' }}>
                   &lt; {dates[0].dateString ? dates[0].dateString : ''}
                 </Link>
               </li>
-              <li className="nav-item dropdown no-arrow mx-1 p-0">
+              <li className="next-nav-item dropdown no-arrow mx-1 p-0">
                 <a onClick={onNextDayClick} className="nav-link text-white th1 p-0" style={{ paddingRight: '10px', cursor: 'pointer', fontFamily: 'Nunito' }}>
                   - {dates[dates.length - 1].dateString ? dates[dates.length - 1].dateString : ''} &gt;
                 </a>
               </li>
             </ul>
           )}
-          <div className="navbar_icon">
-            <button className={activeButton === 'emp' ? 'home_bg active' : 'home_bg'} onClick={() => handleButtonClick('emp')}>
-              <FontAwesomeIcon icon={faUsers} size='2x' color='white' />
+          {location.pathname === "/task" ? (
+            <div className="navbar_icon">
+              <Link to="/employee">
+                <FontAwesomeIcon icon={faUsers} style={{ fontSize: '1.6rem', paddingLeft: '1rem' }} color='white' />
+              </Link>
+              <Link to="/project">
+                <FontAwesomeIcon icon={faDiagramProject} style={{ fontSize: '1.6rem', paddingLeft: '1rem' }} color='white' />
+              </Link>
+            </div>
+          ) : location.pathname === "/employee" ? (
+            <div className="navbar_icon">
+              <Link to="/project">
+                <FontAwesomeIcon icon={faDiagramProject} style={{ fontSize: '1.6rem', paddingLeft: '1rem' }} color='white' />
+              </Link>
+              <Link to="/task">
+                <FontAwesomeIcon icon={faHouse} style={{ fontSize: '1.6rem', paddingLeft: '1rem' }} color='white' />
+              </Link>
+            </div>
+          ) : location.pathname === "/project" ? (
+            <div className="navbar_icon">
+              <Link to='/employee'>
+                <FontAwesomeIcon icon={faUsers} style={{ fontSize: '1.6rem', paddingLeft: '1rem' }} color='white' />
+              </Link>
+              <Link to='/task'>
+                <FontAwesomeIcon icon={faHouse} style={{ fontSize: '1.6rem', paddingLeft: '1rem' }} color='white' />
+              </Link>
+            </div>
+          ) : (
+            <div className="placeholder-class"></div>
+          )}
+
+          <div className='dropdown'>
+            <button className={activeButton === 'menu' ? 'home_bg active' : 'home_bg'} onClick={() => { handleMenuButtonClick('menu'); }}>
+              <FontAwesomeIcon icon={faBars} style={{ fontSize: '1.6rem' }} color='white' />
             </button>
-            <button className={activeButton === 'home' ? 'home_bg active' : 'home_bg'} onClick={() => handleButtonClick('home')}>
-              <FontAwesomeIcon icon={faDiagramProject} size='2x' color='white' />
-            </button>
-            <div className='dropdown'>
-              <button className={activeButton === 'menu' ? 'home_bg active' : 'home_bg'} onClick={() => { handleMenuButtonClick('menu'); }}>
-                <FontAwesomeIcon icon={faBars} size='2x' color='white' />
-              </button>
-              {showMenuDropdown && (
+            {showMenuDropdown && (
+              <div className="dropdown-content">
+                <div>
+                  <div><button onClick={handleOpenAddProjectDialog}>Add Project</button>
+                    <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} /></div>
+                  <div><button> Manage Employees </button>
+                  </div>
+                  <div><button onClick={handleOpenAddTaskDialog}>Add Task</button>
+                    <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} /></div>
+                  <div><button onClick={handleOpenAssignTaskDialog}>Assign Task</button>
+                    <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} /></div>
+                  <div><button onClick={handleOpenSettingsDialog}>Setting</button>
+                    <SettingsDialog open={settingsDialogOpen} onClose={handleCloseSettingsDialog} /></div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className='dropdown'>
+            <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
+              <FontAwesomeIcon icon={faCircleUser} style={{ fontSize: '1.6rem' }} color='white' />
+              {showProfileDropdown && (
                 <div className="dropdown-content">
                   <div>
-                    <div><button onClick={handleOpenAddProjectDialog}>Add Project</button>
-                      <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} /></div>
-                    <div><button> Manage Employees </button></div>
-                    <div><button onClick={handleOpenAddTaskDialog}>Add Task</button>
-                      <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} /></div>
-                    <div><button onClick={handleOpenAssignTaskDialog}>Assign Task</button>
-                    <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog}/></div>
-                    <div><button>Setting</button></div>
+                    <div><button><FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile</button></div>
+                    <div onClick={handleLogout}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
                   </div>
                 </div>
               )}
-            </div>
-
-            <div className='dropdown'>
-              <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
-                <FontAwesomeIcon icon={faCircleUser} size='2x' color='white' />
-                {showProfileDropdown && (
-                  <div className="dropdown-content">
-                    <div>
-                      <div><button><FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile</button></div>
-                      <div onClick={handleLogout}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
-                    </div>
-                  </div>
-                )}
-              </button>
-            </div>
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
 export default Navbar;
