@@ -8,6 +8,7 @@ import EmployeePage from '../pages/EmployeePage';
 import Login from '../pages/Login/Login';
 import EditEmployee from '../components/Navbar/Dropdown/Manage Employee/EditEmployee';
 import Register from '../pages/Register/Register';
+import ProjectOverview from '../pages/ProjectOverview';
 
 function RouteManager() {
 
@@ -23,11 +24,13 @@ function RouteManager() {
 
             <Routes>
                 <Route path="/" element={<Login />} /> 
-                <Route path="/register" element={<Register />} />
+                <Route path="/register" element={<Register/>} />
                 <Route path="/task" element={<TaskOveriew isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+                <Route path="/employee" element={<EmployeePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+                <Route path="/project" element={<ProjectOverview/>} />
+
 
                 <Route path="/homepage" element={<HomePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
-                <Route path="/employee" element={<EmployeePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/edit-employee" element={<EditEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/add-employee" element={<AddEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 
