@@ -5,7 +5,8 @@ import { faUser, faUsers, faBars, faCircleUser, faDiagramProject, faRightFromBra
 import './Navbar.css';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask'
 import AddNewProject from '../Navbar/Dropdown/Add Project/AddNewProject';
-import AssignTaskDialog from '../Navbar/Dropdown/Assign Task/AssignTask'
+import AssignTaskDialog from '../Navbar/Dropdown/Assign Task/AssignTask';
+import Profile from '../../pages/Profile/Profile';
 import SettingsDialog from '../Navbar/Dropdown/Settings/SettingsDialog';
 
 function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
@@ -15,7 +16,7 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [addProjectDialogOpen, setAddProjectDialogOpen] = useState(false);
   const [assignTaskDialogOpen, setAssignTaskDialogOpen] = useState(false);
-  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const navigate = useNavigate();
@@ -39,11 +40,12 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const handleCloseAssignTaskDialog = () => {
     setAssignTaskDialogOpen(false);
   };
-  const handleOpenSettingsDialog = () => {
-    setSettingsDialogOpen(true);
+
+  const handleOpenProfileDialog = () => {
+    setAssignTaskDialogOpen(true);
   };
-  const handleCloseSettingsDialog = () => {
-    setSettingsDialogOpen(false);
+  const handleCloseProfileDialog = () => {
+    setAssignTaskDialogOpen(false);
   };
 
   const onTodayClick = () => {
@@ -151,22 +153,26 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
             )}
           </div>
 
-          <div className='dropdown'>
-            <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
-              <FontAwesomeIcon icon={faCircleUser} style={{ fontSize: '1.6rem' }} color='white' />
-              {showProfileDropdown && (
-                <div className="dropdown-content">
-                  <div>
-                    <div><button><FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile</button></div>
-                    <div onClick={handleLogout}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
+            <div className='dropdown'>
+              <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
+                <FontAwesomeIcon icon={faCircleUser} size='2x' color='white' />
+                {showProfileDropdown && (
+                  <div className="dropdown-content">
+                    <div>
+                      <div><button><Link to="/profile" style={{ textDecoration: 'none', color: 'black' }}>
+                        <FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile
+                      </Link></button>
+                      </div>
+                      
+                      <div onClick={handleLogout}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
+                    </div>
                   </div>
-                </div>
-              )}
-            </button>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
 }
 export default Navbar;

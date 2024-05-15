@@ -9,6 +9,7 @@ import Login from '../pages/Login/Login';
 import EditEmployee from '../components/Navbar/Dropdown/Manage Employee/EditEmployee';
 import Register from '../pages/Register/Register';
 import ProjectOverview from '../pages/ProjectOverview';
+import Profile from '../pages/Profile/Profile';
 
 function RouteManager() {
 
@@ -29,7 +30,8 @@ function RouteManager() {
                 <Route path="/employee" element={<EmployeePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/project" element={<ProjectOverview/>} />
 
-
+                <Route path="/profile" element={<Profile isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+                
                 <Route path="/homepage" element={<HomePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/edit-employee" element={<EditEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/add-employee" element={<AddEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
