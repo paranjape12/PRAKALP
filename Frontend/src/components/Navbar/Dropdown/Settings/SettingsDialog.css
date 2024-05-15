@@ -1,0 +1,40 @@
+#projectst_setting_nw,
+#projectst_setting,
+#projectst2_setting,
+#projectst3_setting,
+#projectst4_setting {
+    margin-left: -1rem;
+}
+
+.text-myback {
+    color: #b35513;
+}
+
+.nav-pills .nav-item .nav-link {
+    color: #4e73df;
+    /* Default text color */
+    background-color: transparent;
+    /* Default background color */
+    transition: color 0.3s, background-color 0.3s;
+    /* Smooth transition effect */
+}
+
+.nav-pills .nav-item .nav-link.active {
+    color: #ffffff;
+    /* Text color when selected */
+    background-color: #b35513;
+    /* Background color when selected */
+}
+
+.nav-link {
+    color: #4e73df;
+    font-size: 1rem;    
+}
+
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+    background-color: #b35513;
+}
+
+#pv, #pv2, #ev{
+    font-size: 1rem;
+}
