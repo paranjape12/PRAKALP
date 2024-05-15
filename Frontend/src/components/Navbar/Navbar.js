@@ -18,6 +18,7 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const [assignTaskDialogOpen, setAssignTaskDialogOpen] = useState(false);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,6 +40,13 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   };
   const handleCloseAssignTaskDialog = () => {
     setAssignTaskDialogOpen(false);
+  };
+  
+  const handleOpenSettingsDialog = () => {
+    setSettingsDialogOpen(true);
+  };
+  const handleCloseSettingsDialog = () => {
+    setSettingsDialogOpen(false);
   };
 
   const handleOpenProfileDialog = () => {
