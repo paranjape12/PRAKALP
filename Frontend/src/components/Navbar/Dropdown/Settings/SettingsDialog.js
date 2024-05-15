@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, Button } from '@mui/material';
 import './SettingsDialog.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 const SettingsDialog = ({ open, onClose }) => {
     const [activeLink, setActiveLink] = useState('pv');
 
     const handleClose = () => {
-        onClose(false);
+        onClose();
     };
 
     const handleClick = (id) => {
@@ -15,7 +17,11 @@ const SettingsDialog = ({ open, onClose }) => {
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-            <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>Setting</DialogTitle>
+            <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>Setting 
+            
+            <FontAwesomeIcon onClick={handleClose} icon={faXmark} style={{color:'red', marginLeft:'64rem'}} />
+        
+        </DialogTitle>
             <DialogContent>
                 <div className="modal-body">
                     <main className="row d-flex flex-nowrap small">
