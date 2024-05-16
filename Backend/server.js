@@ -30,11 +30,49 @@ db.connect((err) => {
 // Middleware to parse JSON requests
 app.use(bodyParser.json());
 
+// Decrypt Token Function
+function decryptToken(token) {
+  const decodedToken =  Buffer.from(token, 'base64').toString('utf-8');
+  console.log('Decoded token:', decodedToken); 
+  const userData = JSON.parse(decodedToken)[0];
+  console.log("userData : ",userData);
+  return userData;
+}
 
+// API Endpoint for Decrypted Token
+app.post('/api/empDropdown', (req, res) => {
+  const { token } = req.body;
+  console.log('Request body:', req.body);
+  const userData = decryptToken(token);
+  if (userData.Type !== 'Admin' && userData.Type !== 'Team Leader') {
+    const query = `SELECT * FROM Logincrd WHERE id='${userData.id}' AND disableemp!='1' ORDER BY Name ASC`;
+    db.query(query, (err, result) => {
+      if (err) {
+        console.error('Error executing query:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        res.json(result);
+      }
+    });
+  } else {
+    const query = `SELECT * FROM Logincrd WHERE disableemp!='1' ORDER BY Name ASC`;
+    db.query(query, (err, result) => {
+      if (err) {
+        console.error('Error executing query:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        res.json(result);
+      }
+    });
+  }
+});
+
+
+// api endpoint to register new user
 app.post('/api/register', (req, res) => {
   const { email, fname, lname, slectedval, passwd } = req.body;
   console.log("req.body : ", req);
-  const password = Buffer.from(passwd).toString('base64'); 
+  const password = Buffer.from(passwd).toString('base64'); // Encrypting password
 
   const selectQuery = 'SELECT * FROM Logincrd WHERE Email=? OR Password=?';
   db.query(selectQuery, [email, password], (error, results) => {
