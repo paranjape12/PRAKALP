@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, InputLabel, Select,FormControl, MenuItem} from '@mui/material';
 import'./CreateCopyProject.css';
-
+import axios from 'axios';
 
 function CreateCopyProject({open,onClose,onBack}) {
   const [projectName, setProjectName] = useState('');
   const [salesOrder, setSalesOrder] = useState('');
   const [selectedProject, setSelectedProject] = useState('');
- 
+  const [projects, setProjects] = useState([]);
   const handleClose = () => {
     onClose();
   };
@@ -21,6 +21,20 @@ function CreateCopyProject({open,onClose,onBack}) {
     console.log(e.target.value);
   };  
 
+  //select project api 
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  //api 
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/getProjectNames');
+      setProjects(response.data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -67,7 +81,11 @@ function CreateCopyProject({open,onClose,onBack}) {
                     onChange={(e) => setSelectedProject(e.target.value)}
                     
                   >
-              <MenuItem value="Unassigned/ No Work">Unassigned/ No Work</MenuItem>
+              {projects.map((project, index) => (
+                <MenuItem key={index} value={project}>
+                  {project}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
                 </DialogContent>

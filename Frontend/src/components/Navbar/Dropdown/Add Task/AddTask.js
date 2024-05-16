@@ -35,6 +35,9 @@ const AddTaskModal = ({ open, onClose }) => {
     onClose();
   };
 
+
+
+  //select project api 
   useEffect(() => {
     fetchProjects();
     fetchEmployees();
