@@ -6,7 +6,7 @@ import googleIcon from "../../assets/google.svg";
 import axios from "axios";
 import { Buffer } from "buffer";
 import "./Login.css";
-// import { Link } from 'react-router-dom';
+
 
 function Login() {
   const [password, setPassword] = useState("");
@@ -15,6 +15,12 @@ function Login() {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+
+  const generateToken = (userData) => {
+    const userDataString = JSON.stringify(userData);
+    const token = Buffer.from(userDataString).toString('base64');
+    localStorage.setItem('token', token);
+  };
 
 
   const handleLogin = async () => {
@@ -49,8 +55,12 @@ function Login() {
         pass: encodedPassword, // Send the encoded password to the backend
         rememberMe: rememberMe.toString() // Convert rememberMe boolean to string
       });
-
-      if (response.data === 'Success') {
+      
+      if (response.data.message === 'Success') {
+        const userData = response.data.result;
+        generateToken(userData);
+        console.log('Token :', localStorage.getItem('token')); 
+        console.log('Response Data Result :', response.data);
         setSuccessMessage("Login Successful!")
         setTimeout(function () {
           window.location = '/task';
