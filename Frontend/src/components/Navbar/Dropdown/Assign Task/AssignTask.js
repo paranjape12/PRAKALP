@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {Dialog,DialogTitle,DialogContent,DialogActions,TextField,Button,Select,MenuItem,FormControl,InputLabel } from '@mui/material';
 import './AssignTask.css'
+import axios from 'axios';
+
 
 const AssignTaskDialog = ({ open, onClose }) => {
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [date, setDate] = useState('');
   const [activity, setActivity] = useState('');
+  const [projects, setProjects] = useState([]);
 
   const handleSave = () => {
     onClose();
@@ -16,6 +19,21 @@ const AssignTaskDialog = ({ open, onClose }) => {
     onClose();
   };
 
+
+  //select project api 
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  //api 
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/getProjectNames');
+      setProjects(response.data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  };
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg">
       <DialogTitle id="assigntask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>
@@ -30,7 +48,11 @@ const AssignTaskDialog = ({ open, onClose }) => {
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
             >
-              <MenuItem value="Unassigned/ No Work">Unassigned/ No Work</MenuItem>
+              {projects.map((project, index) => (
+                <MenuItem key={index} value={project}>
+                  {project}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <FormControl style={{ marginTop: '1rem'}}>
