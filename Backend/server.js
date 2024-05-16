@@ -31,11 +31,10 @@ db.connect((err) => {
 app.use(bodyParser.json());
 
 
-// api endpoint to register new user
 app.post('/api/register', (req, res) => {
   const { email, fname, lname, slectedval, passwd } = req.body;
   console.log("req.body : ", req);
-  const password = Buffer.from(passwd).toString('base64'); // Encrypting password
+  const password = Buffer.from(passwd).toString('base64'); 
 
   const selectQuery = 'SELECT * FROM Logincrd WHERE Email=? OR Password=?';
   db.query(selectQuery, [email, password], (error, results) => {
@@ -506,9 +505,9 @@ app.get('/api/getProjectsByEmployee/:employeeId', (req, res) => {
 
 
 
-// Endpoint to fetch project names from the database
+// Endpoint to fetch project names 
 app.get('/api/getProjectNames', (req, res) => {
-  const sql = 'SELECT projectName FROM projects'; // Assuming 'projectName' is the column containing project names
+  const sql = 'SELECT projectName FROM projects ORDER BY `projectName` ASC'; // Assuming 'projectName' is the column containing project names
   db.query(sql, (err, results) => {
     if (err) {
       console.error('Error fetching project names:', err);
@@ -642,22 +641,15 @@ app.post('/api/getLogin', (req, res) => {
     if (result.length === 0) {
       return res.status(401).send('Error: Invalid credentials');
     }
-      const { Type, id } = result[0];
 
       if (rememberMe === 'true') {
-        // Set cookies
         res.cookie('username', email, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
         res.cookie('password', pass, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
       } else {
-        // Clear cookies
         res.clearCookie('username');
         res.clearCookie('password');
       }
-
-      
-
-      res.send('Success');
-   
+      res.send({ message: 'Success', result: result });
   });
 });
 
