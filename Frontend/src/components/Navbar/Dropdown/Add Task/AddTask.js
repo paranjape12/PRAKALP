@@ -37,6 +37,7 @@ const AddTaskModal = ({ open, onClose }) => {
 
   useEffect(() => {
     fetchProjects();
+    fetchEmployees();
   }, []);
 
   const fetchProjects = async () => {
@@ -45,6 +46,18 @@ const AddTaskModal = ({ open, onClose }) => {
       setProjects(response.data);
     } catch (error) {
       console.error('Error fetching projects:', error);
+    }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.post('http://localhost:3001/api/empDropdown', {
+        token: localStorage.getItem('token'),
+      });
+      setSelectedEmployee('');
+      setEmployees(response.data);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
     }
   };
 
@@ -77,7 +90,11 @@ const AddTaskModal = ({ open, onClose }) => {
               value={selectedEmployee}
               onChange={(e) => setSelectedEmployee(e.target.value)}
             >
-              
+              {employees.map((employee) => (
+                <MenuItem key={employee.id} value={employee.Name}>
+                  {employee.Name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </div>
