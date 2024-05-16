@@ -8,6 +8,7 @@ import AddNewProject from '../Navbar/Dropdown/Add Project/AddNewProject';
 import AssignTaskDialog from '../Navbar/Dropdown/Assign Task/AssignTask';
 import Profile from '../../pages/Profile/Profile';
 import SettingsDialog from '../Navbar/Dropdown/Settings/SettingsDialog';
+import AddEmployee from '../Navbar/Dropdown/Manage Employee/AddEmployee';
 
 function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const [activeButton, setActiveButton] = useState(null);
@@ -20,6 +21,7 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
+  const [showAddEmployee, setShowAddEmployee] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -148,7 +150,9 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
                 <div>
                   <div><button onClick={handleOpenAddProjectDialog}>Add Project</button>
                     <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} /></div>
-                  <div><button> Manage Employees </button>
+                  <div>
+                    <button onClick={() => setShowAddEmployee(true)}>Manage Employee</button>
+                    {showAddEmployee && <AddEmployee onClose={() => setShowAddEmployee(false)} />}
                   </div>
                   <div><button onClick={handleOpenAddTaskDialog}>Add Task</button>
                     <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} /></div>
