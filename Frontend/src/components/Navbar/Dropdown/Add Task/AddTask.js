@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  InputAdornment,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
+  Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputAdornment, FormControlLabel, InputLabel, MenuItem, Select,
   TextField,
 } from '@mui/material';
 import './AddTask.css'
@@ -25,19 +14,64 @@ const AddTaskModal = ({ open, onClose }) => {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [employees, setEmployees] = useState([]);
+  const [taskDetails, setTaskDetails] = useState('');
 
   const handleClose = () => {
     onClose();
   };
 
-  const handleSave = () => {
-    onClose();
+  const handleSave = async () => {
+    // Clear previous messages
+    setErrorMessage('');
+    setSuccessMessage('');
+    // Validation checks
+    if (selectedProject === '') {
+      setErrorMessage('Select at least one project');
+      return;
+    }
+    if (hours === 0 && minutes === 0) {
+      setErrorMessage('Please enter time required to complete the task');
+      return;
+    }
+    if (hours > 99 || minutes > 59) {
+      setErrorMessage('Hours limit must be less than 100 and minutes limit must be less than 60');
+      return;
+    }
+    if (taskName === '') {
+      setErrorMessage('Please enter task name');
+      return;
+    }
+    if (hours === 0 && minutes === 0) {
+      setErrorMessage('Please enter time required to complete the task for the selected employee');
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://localhost:3001/api/createTask', {
+        ProjectName: selectedProject,
+        TaskName: taskName,
+        Emplname: selectedEmployee,
+        islasttask: lastTask ? 1 : 0,
+        taskdetails: taskDetails,
+        hr: hours,
+        min: minutes,
+        token: localStorage.getItem('token'),
+      });
+      
+      if (response.data === 'Success') {
+        setSuccessMessage("Task added Successfully !")
+        setTimeout(function () {
+          onClose();
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error saving task:', error);
+    }
   };
 
-
-
-  //select project api 
   useEffect(() => {
     fetchProjects();
     fetchEmployees();
@@ -161,13 +195,22 @@ const AddTaskModal = ({ open, onClose }) => {
           label="Description"
           multiline
           fullWidth
+          value={taskDetails}
+          onChange={(e) => setTaskDetails(e.target.value)}
         />
+
+        {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign:'center' }}>{errorMessage}</p>}
+        {successMessage && (
+          <div className="text-center">
+            <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
+          </div>
+        )}
       </DialogContent>
       <DialogActions>
         <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={handleClose} color="primary">
           Close
         </Button>
-        <Button style={{ fontFamily: 'Nunito', backgroundColor: '#1cc88a', color: 'white' }} onClick={handleClose} color="primary">
+        <Button style={{ fontFamily: 'Nunito', backgroundColor: '#1cc88a', color: 'white' }} onClick={handleSave} color="primary">
           Save
         </Button>
       </DialogActions>
