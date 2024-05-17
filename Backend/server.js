@@ -33,9 +33,7 @@ app.use(bodyParser.json());
 // Decrypt Token Function
 function decryptToken(token) {
   const decodedToken =  Buffer.from(token, 'base64').toString('utf-8');
-  console.log('Decoded token:', decodedToken); 
   const userData = JSON.parse(decodedToken)[0];
-  console.log("userData : ",userData);
   return userData;
 }
 
@@ -103,10 +101,10 @@ app.post('/api/register', (req, res) => {
 
 // Endpoint to add a new project
 app.post('/api/addProject', (req, res) => {
-  const { projectName, salesName } = req.body;
+  const { ProjectName, sales_order } = req.body;
 
-  const sql = 'INSERT INTO projects (projectName, salesName) VALUES (?, ?)';
-  db.query(sql, [projectName, salesName], (err, result) => {
+  const sql = 'INSERT INTO projects (ProjectName, sales_order) VALUES (?, ?)';
+  db.query(sql, [ProjectName, sales_order], (err, result) => {
     if (err) {
       console.error('Error adding project to database:', err);
       res.status(500).send('Internal Server Error');
@@ -116,6 +114,23 @@ app.post('/api/addProject', (req, res) => {
     }
   });
 });
+
+
+//Save api 
+app.post('/saveProject', (req, res) => {
+  const { ProjectName, ProjectSalesOrder } = req.body;
+  const firstchar = ProjectSalesOrder.charAt(0);
+  const withSpace = ProjectSalesOrder.length;
+  
+  const query = 'INSERT INTO projects (name, sales_order, first_char, length_with_space) VALUES (?, ?, ?, ?)';
+  db.query(query, [ProjectName, ProjectSalesOrder, firstchar, withSpace], (err, result) => {
+      if (err) {
+          return res.status(500).send(err);
+      }
+      res.send('Project saved!');
+  });
+});
+
 
 // Endpoint to fetch projects table data from the database
 app.get('/api/getProjects', (req, res) => {
