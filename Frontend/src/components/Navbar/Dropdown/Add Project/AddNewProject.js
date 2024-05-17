@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, InputLabel} from '@mui/material';
 import CreateCopyProject  from './CreateCopyProject';
+import axios from 'axios';
 
 function AddNewProject({open,onClose}) {
   const [projectName, setProjectName] = useState('');
   const [salesOrder, setSalesOrder] = useState('');
   const [openCopyDialog, setOpenCopyDialog] = useState(false);
   const [showMainDialog, setShowMainDialog] = useState(true);
+  const [projectSalesOrder, setProjectSalesOrder] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleCreateCopyProjectClick = () => {
     setShowMainDialog(false);
@@ -23,12 +27,46 @@ function AddNewProject({open,onClose}) {
     setOpenCopyDialog(false);
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Submit the data to your backend here
-    console.log('Project name:', projectName);
-    console.log('Sales order:', salesOrder);
-  };
+  
+ 
+    
+  const handleSubmit = async () => {
+    const firstchar = projectSalesOrder.charAt(0);
+    const withSpace = projectSalesOrder.length;
+
+    if (projectSalesOrder === '') {
+        setErrorMessage("Please enter project sales order");
+    } else if (firstchar !== '2' && firstchar !== "I") {
+        setErrorMessage("Please enter project sales order with first letter must be '2' or 'I'");
+      } else if (withSpace !== 6) {
+        setErrorMessage("Sales order length must be equal to 6 characters");
+    } else if (projectName === '') {
+        setErrorMessage("Please enter project name");
+    } else {
+        try {
+            const response = await axios.post("http://localhost:3001/api/addProject", {
+                ProjectName: projectName,
+                sales_order: projectSalesOrder
+            });
+            if (response.data === "Project exist") {
+                setErrorMessage("This project name is already used");
+            } else if (response.data === "Error") {
+                setErrorMessage("Unable to create a new project");
+            } else {
+                setSuccessMessage("Project created successfully");
+                setProjectName('');
+                setProjectSalesOrder('');
+            }
+        } catch (error) {
+            setErrorMessage("Error: Unable to create a new project");
+        }
+    }
+
+    setTimeout(() => {
+        setErrorMessage('');
+        setSuccessMessage('');
+    }, 5000);
+};
 
   return (
     <>
@@ -50,6 +88,8 @@ function AddNewProject({open,onClose}) {
               type="text"
               fullWidth
               inputProps={{ style: { padding: '25px', fontFamily: 'Nunito' } }}
+              value={projectSalesOrder}
+              onChange={(e) => setProjectSalesOrder(e.target.value)}
             />
             <InputLabel style={{ fontFamily: 'Nunito', color:'black', fontWeight:'700', fontSize:'18px', }}>Project Name</InputLabel>
             <TextField
@@ -60,7 +100,14 @@ function AddNewProject({open,onClose}) {
               type="text"
               fullWidth
               inputProps={{ style: { padding: '25px', fontFamily: 'Nunito' } }}
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
             />
+            {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem' }}>{errorMessage}</p>}
+                          {!errorMessage && (
+                            <div className="text-center">
+                              <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
+                            </div>)}
           </DialogContent>
           <DialogActions>
             <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={onClose} color="primary">
