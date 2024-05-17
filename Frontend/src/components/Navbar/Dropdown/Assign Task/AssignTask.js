@@ -10,7 +10,9 @@ const AssignTaskDialog = ({ open, onClose }) => {
   const [date, setDate] = useState('');
   const [activity, setActivity] = useState('');
   const [projects, setProjects] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
+  
   const handleSave = () => {
     onClose();
   };
@@ -23,6 +25,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
   //select project api 
   useEffect(() => {
     fetchProjects();
+    fetchEmployees();
   }, []);
 
   //api 
@@ -34,6 +37,20 @@ const AssignTaskDialog = ({ open, onClose }) => {
       console.error('Error fetching projects:', error);
     }
   };
+
+  //Select Employee api 
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.post('http://localhost:3001/api/empDropdown', {
+        token: localStorage.getItem('token'),
+      });
+      setSelectedEmployee('');
+      setEmployees(response.data);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg">
       <DialogTitle id="assigntask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>
@@ -63,8 +80,11 @@ const AssignTaskDialog = ({ open, onClose }) => {
               value={selectedEmployee}
               onChange={(e) => setSelectedEmployee(e.target.value)}
             >
-              <MenuItem value="">Select Employee</MenuItem>
-              <MenuItem value="55">Saurabh Patil</MenuItem>
+              {employees.map((employee) => (
+                <MenuItem key={employee.id} value={employee.Name}>
+                  {employee.Name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </div>
