@@ -37,10 +37,95 @@ function decryptToken(token) {
   return userData;
 }
 
+
+// API endpoint to handle createTask POST request FAMT
+app.post('/api/createTask', (req, res) => {
+  const { ProjectName, TaskName, Emplname, islasttask, taskdetails, hr, min, token } = req.body;
+  
+  const userData = decryptToken(token);
+  const AssignBy = userData.id;
+
+  // Calculate task completion time in seconds
+  const taskcompleteat = (parseInt(hr) * 3600) + (parseInt(min) * 60);
+
+  // SQL query to check if the last task exists
+  let sql = `SELECT ProjectName FROM projects WHERE ProjectName = ? AND lasttask = '1'`;
+  db.query(sql, [ProjectName], (err, result) => {
+    if (err) {
+      console.error('Error executing SQL:', err);
+      res.status(500).send('Error');
+    } else {
+      if (result.length > 0) {
+        const lasttaskchange = req.body.lasttaskchange || 0;
+        if (lasttaskchange == 1) {
+          let updateProjectSql = `UPDATE projects SET lasttask = ? WHERE ProjectName = ?`;
+          db.query(updateProjectSql, [islasttask, ProjectName], (err, result) => {
+            if (err) {
+              console.error('Error updating project:', err);
+              res.status(500).send('Error');
+            } else {
+              // Insert task details into Task table
+              insertTask();
+            }
+          });
+        } else {
+          res.send('Last Task exist');
+        }
+      } else {
+        // Update projects table if last task doesn't exist
+        let updateProjectSql = `UPDATE projects SET lasttask = ? WHERE ProjectName = ?`;
+        db.query(updateProjectSql, [islasttask, ProjectName], (err, result) => {
+          if (err) {
+            console.error('Error updating project:', err);
+            res.status(500).send('Error');
+          } else {
+            insertTask();
+          }
+        });
+      }
+    }
+  });
+
+function insertTask() {
+  let insertTaskSql = `INSERT INTO Task (projectName, TaskName, TaskTime, taskDetails, AssignBy, timetocomplete) VALUES (?, ?, NOW(), ?, ?, ?)`;
+  db.query(insertTaskSql, [ProjectName, TaskName, taskdetails, AssignBy, taskcompleteat], (err, result) => {
+    if (err) {
+      console.error('Error inserting task:', err);
+      res.status(500).send('Error');
+    } else {
+      // Get the inserted task id
+      const taskId = result.insertId;
+      // Update projects table with the task id
+      let updateProjectSql = `UPDATE projects SET lasttask = ?, taskid = ? WHERE ProjectName = ?`;
+      db.query(updateProjectSql, [islasttask, taskId, ProjectName], (err, result) => {
+        if (err) {
+          console.error('Error updating project:', err);
+          res.status(500).send('Error');
+        } else {
+          // Insert task employee details into Taskemp table if Emplname is provided
+          if (Emplname !== 'Selectedemp') {
+            let insertTaskEmpSql = `INSERT INTO Taskemp (taskid, tasktimeemp, AssignedTo_emp, timetocomplete_emp) VALUES (?, NOW(), ?, ?)`;
+            db.query(insertTaskEmpSql, [taskId, AssignBy, taskcompleteat], (err, result) => {
+              if (err) {
+                console.error('Error inserting task employee:', err);
+                res.status(500).send('Error');
+              } else {
+                res.send('Success');
+              }
+            });
+          } else {
+            res.send('Success');
+          }
+        }
+      });
+    }
+  });
+}
+});
+
 // API Endpoint for Decrypted Token
 app.post('/api/empDropdown', (req, res) => {
   const { token } = req.body;
-  console.log('Request body:', req.body);
   const userData = decryptToken(token);
   if (userData.Type !== 'Admin' && userData.Type !== 'Team Leader') {
     const query = `SELECT * FROM Logincrd WHERE id='${userData.id}' AND disableemp!='1' ORDER BY Name ASC`;
