@@ -64,7 +64,7 @@ function Login() {
         setSuccessMessage("Login Successful!")
         setTimeout(function () {
           window.location = '/task';
-        }, 3000);
+        }, 1500);
       } else {
         setErrorMessage('Please enter a valid email or password');
         setEmail('');
