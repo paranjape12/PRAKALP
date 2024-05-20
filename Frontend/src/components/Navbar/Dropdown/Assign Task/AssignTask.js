@@ -1,34 +1,69 @@
-import React, { useState,useEffect } from 'react';
-import {Dialog,DialogTitle,DialogContent,DialogActions,TextField,Button,Select,MenuItem,FormControl,InputLabel } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogTitle, InputAdornment, DialogContent, DialogActions, TextField, Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import './AssignTask.css'
 import axios from 'axios';
-
 
 const AssignTaskDialog = ({ open, onClose }) => {
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
   const [date, setDate] = useState('');
   const [activity, setActivity] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [projects, setProjects] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [selectedTask, setSelectedTask] = useState('');
 
-  
   const handleSave = () => {
-    onClose();
+    const data = {
+      valuetask: selectedTask,
+      inputminaray: minutes,
+      inputhraray: hours,
+      Activity: activity,
+      Dateassign: date,
+      token: localStorage.getItem('token'),
+    };
+
+    axios.post('http://localhost:3001/api/assignTask', data)
+      .then(response => {
+        setSuccessMessage(response.data);
+        setTimeout(() => {
+          onClose();
+        }, 1500);
+      })
+      .catch(error => {
+        console.error('Error assigning task:', error);
+        setErrorMessage('Failed to assign task. Please try again.');
+      });
   };
 
   const handleClose = () => {
     onClose();
   };
 
-
-  //select project api 
+  // Select project API
   useEffect(() => {
     fetchProjects();
     fetchEmployees();
   }, []);
 
-  //api 
+  useEffect(() => {
+    if (selectedProject) {
+      // Fetch tasks based on the selected project
+      axios.get(`http://localhost:3001/api/task?projectName=${selectedProject}`)
+        .then((response) => {
+          setTasks(response.data);
+        })
+        .catch((error) => {
+          console.error('Error fetching tasks:', error);
+        });
+    }
+  }, [selectedProject]);
+
+  // API to fetch projects
   const fetchProjects = async () => {
     try {
       const response = await axios.get('http://localhost:3001/api/getProjectNames');
@@ -38,7 +73,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
     }
   };
 
-  //Select Employee api 
+  // API to fetch employees
   const fetchEmployees = async () => {
     try {
       const response = await axios.post('http://localhost:3001/api/empDropdown', {
@@ -54,10 +89,11 @@ const AssignTaskDialog = ({ open, onClose }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg">
       <DialogTitle id="assigntask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>
-        Assign Task</DialogTitle>
+        Assign Task
+      </DialogTitle>
       <DialogContent>
         <div>
-          <FormControl style={{ marginTop: '1rem' , marginRight:'3rem', marginBottom: '1rem' }}>
+          <FormControl style={{ marginTop: '1rem', marginRight: '3rem', marginBottom: '1rem' }}>
             <InputLabel>Select Project</InputLabel>
             <Select
               label="Select Project"
@@ -72,24 +108,41 @@ const AssignTaskDialog = ({ open, onClose }) => {
               ))}
             </Select>
           </FormControl>
-          <FormControl style={{ marginTop: '1rem'}}>
+          {selectedProject && (
+            <FormControl style={{ marginTop: '1rem', marginRight: '3rem', marginBottom: '1rem' }}>
+              <InputLabel>Select Task</InputLabel>
+              <Select
+                label="Select Task"
+                id="taskdrop"
+                value={selectedTask}
+                onChange={(e) => setSelectedTask(e.target.value)}
+              >
+                {tasks.map((task, index) => (
+                  <MenuItem key={index} value={task.id}>
+                    {task.TaskName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+          <FormControl style={{ marginTop: '1rem', marginBottom: '1rem' }}>
             <InputLabel>Select Employee</InputLabel>
             <Select
-            id="selempdrop"
+              id="selempdrop"
               label="Select Employee"
               value={selectedEmployee}
               onChange={(e) => setSelectedEmployee(e.target.value)}
             >
               {employees.map((employee) => (
-                <MenuItem key={employee.id} value={employee.Name}>
+                <MenuItem key={employee.id} value={employee.id}>
                   {employee.Name}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
         </div>
-        
-        <InputLabel style={{ fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '18px', marginBottom:'1rem' }}>Task Details</InputLabel>
+
+        <InputLabel style={{ fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '18px', marginBottom: '1rem' }}>Task Details</InputLabel>
         <div style={{ display: 'flex' }}>
           <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginRight: '2.5rem' }}>Date</InputLabel>
           <TextField
@@ -100,29 +153,72 @@ const AssignTaskDialog = ({ open, onClose }) => {
             InputLabelProps={{
               shrink: true,
             }}
-            style={{ marginBottom: '2rem' }}
+            style={{ marginBottom: '0.5rem' }}
           />
         </div>
         <div style={{ display: 'flex' }}>
           <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginRight: '1rem' }}>Activity</InputLabel>
           <TextField
-          id="activitytxtfield"
+            id="activitytxtfield"
             value={activity}
             onChange={(e) => setActivity(e.target.value)}
             placeholder='Enter Activity Name'
             multiline
             rows={2}
-            style={{ width: '75%' }}            
+            style={{ width: '75%', marginBottom: '0.5rem' }}
           />
         </div>
+        {selectedEmployee && (
+          <div style={{ display: 'flex' }}>
+            <TextField
+              style={{ marginRight: '1rem' }}
+              margin="dense"
+              id="addprojhr"
+              type="number"
+              value={hours}
+              onChange={(e) => setHours(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end" style={{ outline: 'none' }}>Hr</InputAdornment>
+                ),
+                style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
+                inputProps: { min: 0, max: 12, style: { padding: '25px' } }
+              }}
+            />
+            <TextField
+              margin="dense"
+              id="addprojmin"
+              type="number"
+              value={minutes}
+              onChange={(e) => setMinutes(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end" style={{ outline: 'none', }}>Min</InputAdornment>
+                ),
+                style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
+                inputProps: { min: 0, max: 59, style: { padding: '25px' } }
+              }}
+            />
+          </div>
+        )}
+
+        {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
+        {successMessage && (
+          <div className="text-center">
+            <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
+          </div>
+        )}
+
       </DialogContent>
-      <DialogActions>        
-      <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={handleClose} color="primary">
+      <DialogActions>
+        <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={handleClose} color="primary">
           Close
         </Button>
-        <Button style={{ fontFamily: 'Nunito', backgroundColor: '#1cc88a', color: 'white' }} onClick={handleClose} color="primary">
-          Save
-        </Button>
+        {selectedTask && (
+          <Button style={{ fontFamily: 'Nunito', backgroundColor: '#1cc88a', color: 'white' }} onClick={handleSave} color="primary">
+            Save
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );
