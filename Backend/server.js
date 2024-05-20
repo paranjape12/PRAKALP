@@ -5,9 +5,9 @@ const bodyParser = require('body-parser');
 
 
 const app = express();
-const port = 3001; 
+const port = 3001;
 
-app.use(cors()); 
+app.use(cors());
 
 
 // Create a MySQL db
@@ -32,16 +32,15 @@ app.use(bodyParser.json());
 
 // Decrypt Token Function
 function decryptToken(token) {
-  const decodedToken =  Buffer.from(token, 'base64').toString('utf-8');
+  const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
   const userData = JSON.parse(decodedToken)[0];
   return userData;
 }
 
-
-// API endpoint to handle createTask POST request FAMT
+// FAMT API endpoint to handle createTask POST request
 app.post('/api/createTask', (req, res) => {
   const { ProjectName, TaskName, Emplname, islasttask, taskdetails, hr, min, token } = req.body;
-  
+
   const userData = decryptToken(token);
   const AssignBy = userData.id;
 
@@ -86,44 +85,44 @@ app.post('/api/createTask', (req, res) => {
     }
   });
 
-function insertTask() {
-  let insertTaskSql = `INSERT INTO Task (projectName, TaskName, TaskTime, taskDetails, AssignBy, timetocomplete) VALUES (?, ?, NOW(), ?, ?, ?)`;
-  db.query(insertTaskSql, [ProjectName, TaskName, taskdetails, AssignBy, taskcompleteat], (err, result) => {
-    if (err) {
-      console.error('Error inserting task:', err);
-      res.status(500).send('Error');
-    } else {
-      // Get the inserted task id
-      const taskId = result.insertId;
-      // Update projects table with the task id
-      let updateProjectSql = `UPDATE projects SET lasttask = ?, taskid = ? WHERE ProjectName = ?`;
-      db.query(updateProjectSql, [islasttask, taskId, ProjectName], (err, result) => {
-        if (err) {
-          console.error('Error updating project:', err);
-          res.status(500).send('Error');
-        } else {
-          // Insert task employee details into Taskemp table if Emplname is provided
-          if (Emplname !== 'Selectedemp') {
-            let insertTaskEmpSql = `INSERT INTO Taskemp (taskid, tasktimeemp, AssignedTo_emp, timetocomplete_emp) VALUES (?, NOW(), ?, ?)`;
-            db.query(insertTaskEmpSql, [taskId, AssignBy, taskcompleteat], (err, result) => {
-              if (err) {
-                console.error('Error inserting task employee:', err);
-                res.status(500).send('Error');
-              } else {
-                res.send('Success');
-              }
-            });
+  function insertTask() {
+    let insertTaskSql = `INSERT INTO Task (projectName, TaskName, TaskTime, taskDetails, AssignBy, timetocomplete) VALUES (?, ?, NOW(), ?, ?, ?)`;
+    db.query(insertTaskSql, [ProjectName, TaskName, taskdetails, AssignBy, taskcompleteat], (err, result) => {
+      if (err) {
+        console.error('Error inserting task:', err);
+        res.status(500).send('Error');
+      } else {
+        // Get the inserted task id
+        const taskId = result.insertId;
+        // Update projects table with the task id
+        let updateProjectSql = `UPDATE projects SET lasttask = ?, taskid = ? WHERE ProjectName = ?`;
+        db.query(updateProjectSql, [islasttask, taskId, ProjectName], (err, result) => {
+          if (err) {
+            console.error('Error updating project:', err);
+            res.status(500).send('Error');
           } else {
-            res.send('Success');
+            // Insert task employee details into Taskemp table if Emplname is provided
+            if (Emplname !== 'Selectedemp') {
+              let insertTaskEmpSql = `INSERT INTO Taskemp (taskid, tasktimeemp, AssignedTo_emp, timetocomplete_emp) VALUES (?, NOW(), ?, ?)`;
+              db.query(insertTaskEmpSql, [taskId, AssignBy, taskcompleteat], (err, result) => {
+                if (err) {
+                  console.error('Error inserting task employee:', err);
+                  res.status(500).send('Error');
+                } else {
+                  res.send('Success');
+                }
+              });
+            } else {
+              res.send('Success');
+            }
           }
-        }
-      });
-    }
-  });
-}
+        });
+      }
+    });
+  }
 });
 
-// API Endpoint for Decrypted Token
+// FAMT API Endpoint for Decrypted Token
 app.post('/api/empDropdown', (req, res) => {
   const { token } = req.body;
   const userData = decryptToken(token);
@@ -151,7 +150,27 @@ app.post('/api/empDropdown', (req, res) => {
 });
 
 
-// api endpoint to register new user
+// FAMT API to fetch task data 
+app.get('/api/task', (req, res) => {
+  const projectName = req.query.projectName;
+
+  if (!projectName) {
+    return res.status(400).send('Project name is required');
+  }
+
+  const query = 'SELECT * FROM `Task` WHERE `projectName` = ?';
+  db.query(query, [projectName], (err, results) => {
+    if (err) {
+      console.error('Error fetching tasks:', err);
+      return res.status(500).send('Error fetching tasks');
+    }
+
+    res.json(results);
+  });
+});
+
+
+// FAMT API endpoint to register new user
 app.post('/api/register', (req, res) => {
   const { email, fname, lname, slectedval, passwd } = req.body;
   console.log("req.body : ", req);
@@ -184,7 +203,7 @@ app.post('/api/register', (req, res) => {
 
 ///////Projects Table////////
 
-// Endpoint to add a new project
+//  FAMT API Endpoint to add a new project
 app.post('/api/addProject', (req, res) => {
   const { ProjectName, sales_order } = req.body;
 
@@ -201,35 +220,77 @@ app.post('/api/addProject', (req, res) => {
 });
 
 
-//Save api 
+//FAMT API Save api 
 app.post('/saveProject', (req, res) => {
   const { ProjectName, ProjectSalesOrder } = req.body;
   const firstchar = ProjectSalesOrder.charAt(0);
   const withSpace = ProjectSalesOrder.length;
-  
+
   const query = 'INSERT INTO projects (name, sales_order, first_char, length_with_space) VALUES (?, ?, ?, ?)';
   db.query(query, [ProjectName, ProjectSalesOrder, firstchar, withSpace], (err, result) => {
-      if (err) {
-          return res.status(500).send(err);
-      }
-      res.send('Project saved!');
+    if (err) {
+      return res.status(500).send(err);
+    }
+    res.send('Project saved!');
   });
 });
 
 
-// Endpoint to fetch projects table data from the database
-app.get('/api/getProjects', (req, res) => {
-  const sql = 'SELECT * FROM projects';
-  db.query(sql, (err, result) => {
-    if (err) {
-      console.error('Error fetching projects from database:', err);
-      res.status(500).send('Internal Server Error');
+// FAMT API Endpoint to assign task to employee
+app.post('/api/assignTask', (req, res) => {
+  const {
+    valuetask,
+    inputminaray,
+    inputhraray,
+    Activity,
+    Dateassign,
+    token
+  } = req.body;
+
+  const userData = decryptToken(token);
+  const empid = userData.id;
+  
+  const date = new Date(Dateassign);
+  date.setHours(0, 0, 1); // Set hours, minutes, seconds to 00:00:01
+  const todaydatetime = date.toISOString().split('T')[0] + ' 00:00:01';
+  const todaydatetime2 = date.toISOString().replace('T', ' ').slice(0, 19);
+
+  const selectQuery = `SELECT * FROM Taskemp WHERE DATE(tasktimeemp) = ? AND taskid = ? AND AssignedTo_emp = ?`;
+  db.query(selectQuery, [todaydatetime.split(' ')[0], valuetask, empid], (err, result) => {
+    if (err) throw err;
+
+    const taskcomleteat = parseInt(inputhraray) * 3600 + parseInt(inputminaray) * 60;
+
+    if (result.length > 0) {
+      const updateQuery = `UPDATE Taskemp SET timetocomplete_emp = ?, Activity = ? WHERE DATE(tasktimeemp) = ? AND taskid = ? AND AssignedTo_emp = ?`;
+      db.query(updateQuery, [taskcomleteat, Activity, todaydatetime.split(' ')[0], valuetask, empid], (err, result) => {
+        if (err) throw err;
+
+        const query = `SELECT * FROM Logincrd WHERE id = ?`;
+        db.query(query, [empid], (err, queryResult) => {
+          if (err) throw err;
+          const rowqueryResult = queryResult[0];
+          const finalmsg = 'Task already assigned to ' + rowqueryResult.Name + '.';
+          res.send(finalmsg);
+        });
+      });
     } else {
-      console.log('Projects fetched from database');
-      res.status(200).json(result);
+      const insertQuery = `INSERT INTO Taskemp (taskid, tasktimeemp, timetocomplete_emp, taskDetails_emp, AssignedTo_emp, Activity) VALUES (?, ?, ?, ?, ?, ?)`;
+      db.query(insertQuery, [valuetask, todaydatetime, taskcomleteat, '', empid, Activity], (err, result) => {
+        if (err) throw err;
+
+        const query = `SELECT * FROM Logincrd WHERE id = ?`;
+        db.query(query, [empid], (err, queryResult) => {
+          if (err) throw err;
+          const rowqueryResult = queryResult[0];
+          const finalmsg = 'Task assigned successfully to ' + rowqueryResult.Name + '.';
+          res.send(finalmsg);
+        });
+      });
     }
   });
 });
+
 
 // Endpoint to fetch project lists of a particular employee
 // app.get('/getProjectsByEmployee', (req, res) => {
@@ -643,7 +704,7 @@ app.get('/api/getProjectsByEmployee/:employeeId', (req, res) => {
 
 
 
-// Endpoint to fetch project names 
+// FAMT API Endpoint to fetch project names 
 app.get('/api/getProjectNames', (req, res) => {
   const sql = 'SELECT projectName FROM projects ORDER BY `projectName` ASC'; // Assuming 'projectName' is the column containing project names
   db.query(sql, (err, results) => {
@@ -764,12 +825,13 @@ app.get('/api/tasksByDate/:date', (req, res) => {
   });
 });
 
+// FAMT API for email login
 app.post('/api/getLogin', (req, res) => {
   const { email, pass, rememberMe } = req.body;
 
   const selectlogin = `SELECT * FROM Logincrd WHERE Email=? AND Password=?`;
 
-  db.query(selectlogin,[email,pass], (err, result) => {
+  db.query(selectlogin, [email, pass], (err, result) => {
     if (err) {
       console.error(err);
       res.status(500).send('Error');
@@ -780,47 +842,16 @@ app.post('/api/getLogin', (req, res) => {
       return res.status(401).send('Error: Invalid credentials');
     }
 
-      if (rememberMe === 'true') {
-        res.cookie('username', email, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
-        res.cookie('password', pass, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
-      } else {
-        res.clearCookie('username');
-        res.clearCookie('password');
-      }
-      res.send({ message: 'Success', result: result });
+    if (rememberMe === 'true') {
+      res.cookie('username', email, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
+      res.cookie('password', pass, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
+    } else {
+      res.clearCookie('username');
+      res.clearCookie('password');
+    }
+    res.send({ message: 'Success', result: result });
   });
 });
-
-// GJC
-// app.post('/api/getLogin', (req, res) => {
-//   const { email, password } = req.body;
-
-//   // Query the database to retrieve the user's data
-//   const sql = 'SELECT * FROM logincrd WHERE Email = ?';
-//   db.query(sql, [email], (err, results) => {
-//     if (err) {
-//       console.error('Error retrieving user data:', err);
-//       return res.status(500).json({ success: false, message: 'An error occurred while processing your request' });
-//     }
-
-//     // Check if the user exists
-//     if (results.length === 0) {
-//       return res.status(401).json({ success: false, message: 'Invalid username or password' });
-//     }
-
-//     const user = results[0];
-
-//     // Verify the password
-//     if (password === user.password) {
-//       // Passwords match, login successful
-//       return res.status(200).json({ success: true, message: 'Login successful', user });
-//     } else {
-//       // Passwords don't match
-//       return res.status(401).json({ success: false, message: 'Invalid username or password' });
-//     }
-//   });
-// });
-
 
 app.get('/api/fetchAllLoginData', (req, res) => {
   // Query the database to retrieve all data from the login table
