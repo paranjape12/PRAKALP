@@ -3,6 +3,10 @@
     padding-right: 10rem;
 }
 
+#taskdrop {
+    padding-right: 7rem;
+}
+
 #activitytxtfield{
     border-radius: 0;
 }
