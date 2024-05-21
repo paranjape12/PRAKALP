@@ -236,6 +236,79 @@ app.post('/saveProject', (req, res) => {
 });
 
 
+// FAMT API to fetch task data 
+app.get('/api/task', (req, res) => {
+  const projectName = req.query.projectName;
+
+  if (!projectName) {
+    return res.status(400).send('Project name is required');
+  }
+
+  const query = 'SELECT * FROM Task WHERE projectName = ?';
+  db.query(query, [projectName], (err, results) => {
+    if (err) {
+      console.error('Error fetching tasks:', err);
+      return res.status(500).send('Error fetching tasks');
+    }
+
+    res.json(results);
+  });
+});
+
+
+
+
+// FAMT API endpoint to create Copy project
+app.post('/api/createCopyProject', (req, res) => {
+  const { projectName, salesOrder, taskNames, taskValues } = req.body;
+
+  if (!projectName || !salesOrder) {
+    return res.status(400).send('Project name and sales order are required');
+  }
+
+  const checkProjectQuery = 'SELECT * FROM projects WHERE ProjectName = ? OR sales_order = ?';
+  db.query(checkProjectQuery, [projectName, salesOrder], (err, results) => {
+    if (err) {
+      console.error('Error querying the database:', err);
+      return res.status(500).send('Database error');
+    }
+
+    if (results.length > 0) {
+      return res.status(200).send('Project exist');
+    }
+
+    const insertProjectQuery = 'INSERT INTO projects (ProjectName, sales_order) VALUES (?, ?)';
+    db.query(insertProjectQuery, [projectName, salesOrder], (err, result) => {
+      if (err) {
+        console.error('Error inserting into the database:', err);
+        return res.status(500).send('Database error');
+      }
+
+      const projectId = result.insertId;
+      const insertTaskQueries = taskNames.map((taskName, index) => {
+        const taskValue = taskValues[index];
+        return new Promise((resolve, reject) => {
+          const insertTaskQuery = 'INSERT INTO Task (projectName, TaskName, timetocomplete) VALUES (?, ?, ?)';
+          db.query(insertTaskQuery, [projectName, taskName, taskValue], (err, result) => {
+            if (err) {
+              return reject(err);
+            }
+            resolve(result);
+          });
+        });
+      });
+
+      Promise.all(insertTaskQueries)
+        .then(() => res.status(200).send('Success'))
+        .catch(err => {
+          console.error('Error inserting tasks into the database:', err);
+          res.status(500).send('Database error');
+        });
+    });
+  });
+});
+
+
 // FAMT API Endpoint to assign task to employee
 app.post('/api/assignTask', (req, res) => {
   const {
@@ -287,6 +360,22 @@ app.post('/api/assignTask', (req, res) => {
           res.send(finalmsg);
         });
       });
+    }
+  });
+});
+
+
+
+// Endpoint to fetch projects table data from the database
+app.get('/api/getProjects', (req, res) => {
+  const sql = 'SELECT * FROM projects';
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error('Error fetching projects from database:', err);
+      res.status(500).send('Internal Server Error');
+    } else {
+      console.log('Projects fetched from database');
+      res.status(200).json(result);
     }
   });
 });
