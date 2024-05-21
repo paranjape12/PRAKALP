@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faUsers, faBars, faCircleUser, faDiagramProject, faRightFromBracket, faHouse } from '@fortawesome/free-solid-svg-icons';
@@ -21,9 +22,40 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
-  const [showAddEmployee, setShowAddEmployee] = useState(false);
+  const [availabepages, setAvailablePages] = useState([]); //add-emp3
+  const [openDialog, setOpenDialog] = useState(false);  //add-emp3
+  const [openAddEmployeeDialog, setOpenAddEmployeeDialog] = useState(false); // State to manage the AddEmployee dialog open/close
+
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Function to handle opening AddEmployee dialog
+  const handleOpenAddEmployeeDialog = () => {
+    setOpenAddEmployeeDialog(true);
+  };
+  // Function to handle closing AddEmployee dialog
+  const handleCloseAddEmployeeDialog = () => {
+    setOpenAddEmployeeDialog(false);
+  };
+
+  const pages = [
+    { PageName: 'Project' },
+    { PageName: 'Epmloyee' },
+    { PageName: 'Task' },
+    // Add more pages as needed
+  ];
+  
+  useEffect(() => {
+    // Fetch pages
+    axios.get('http://localhost:3001/api/pages')
+  .then(response => {
+    console.log('Pages fetched successfully:', response.data);
+  })
+  .catch(error => {
+    console.error('There was an error fetching the pages!', error);
+  });
+
+  }, []);
 
   const handleOpenAddProjectDialog = () => {
     setAddProjectDialogOpen(true);
@@ -43,7 +75,7 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const handleCloseAssignTaskDialog = () => {
     setAssignTaskDialogOpen(false);
   };
-  
+
   const handleOpenSettingsDialog = () => {
     setSettingsDialogOpen(true);
   };
@@ -77,6 +109,7 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const handleLogout = () => {
     navigate('/');
   };
+
 
   const background = isPopupVisible ? 'blurred-background' : '';
 
@@ -151,8 +184,8 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
                   <div><button onClick={handleOpenAddProjectDialog}>Add Project</button>
                     <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} /></div>
                   <div>
-                    <button onClick={() => setShowAddEmployee(true)}>Manage Employee</button>
-                    {showAddEmployee && <AddEmployee onClose={() => setShowAddEmployee(false)} />}
+                    <button onClick={() => setOpenDialog(true)}>Manage Employee</button>
+                    <AddEmployee openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} />
                   </div>
                   <div><button onClick={handleOpenAddTaskDialog}>Add Task</button>
                     <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} /></div>
@@ -165,26 +198,26 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
             )}
           </div>
 
-            <div className='dropdown'>
-              <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
-                <FontAwesomeIcon icon={faCircleUser} size='2x' color='white' />
-                {showProfileDropdown && (
-                  <div className="dropdown-content">
-                    <div>
-                      <div><button><Link to="/profile" style={{ textDecoration: 'none', color: 'black' }}>
-                        <FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile
-                      </Link></button>
-                      </div>
-                      
-                      <div onClick={handleLogout}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
+          <div className='dropdown'>
+            <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
+              <FontAwesomeIcon icon={faCircleUser} size='2x' color='white' />
+              {showProfileDropdown && (
+                <div className="dropdown-content">
+                  <div>
+                    <div><button><Link to="/profile" style={{ textDecoration: 'none', color: 'black' }}>
+                      <FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile
+                    </Link></button>
                     </div>
+
+                    <div onClick={handleLogout}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
                   </div>
-                )}
-              </button>
-            </div>
+                </div>
+              )}
+            </button>
           </div>
         </div>
       </div>
+    </div>
   );
 }
 export default Navbar;
