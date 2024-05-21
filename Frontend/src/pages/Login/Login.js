@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import eyeIcon from "../../assets/eye.svg";
 import eyeIconSlash from "../../assets/eye-slash.svg";
@@ -6,7 +6,6 @@ import googleIcon from "../../assets/google.svg";
 import axios from "axios";
 import { Buffer } from "buffer";
 import "./Login.css";
-
 
 function Login() {
   const [password, setPassword] = useState("");
@@ -16,12 +15,31 @@ function Login() {
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('savedEmail');
+    const savedPassword = localStorage.getItem('savedPassword');
+    const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
+
+    if (savedEmail && savedPassword && savedRememberMe) {
+      setEmail(savedEmail);
+      setPassword(Buffer.from(savedPassword, 'base64').toString('utf-8'));
+      setRememberMe(savedRememberMe);
+    }
+  }, []);
+
+  const saveCredentials = () => {
+    if (rememberMe) {
+      localStorage.setItem('savedEmail', email);
+      localStorage.setItem('savedPassword', Buffer.from(password).toString('base64'));
+      localStorage.setItem('rememberMe', 'true');
+    }
+  };
+
   const generateToken = (userData) => {
     const userDataString = JSON.stringify(userData);
     const token = Buffer.from(userDataString).toString('base64');
     localStorage.setItem('token', token);
   };
-
 
   const handleLogin = async () => {
     try {
@@ -59,10 +77,9 @@ function Login() {
       if (response.data.message === 'Success') {
         const userData = response.data.result;
         generateToken(userData);
-        console.log('Token :', localStorage.getItem('token')); 
-        console.log('Response Data Result :', response.data);
-        setSuccessMessage("Login Successful!")
-        setTimeout(function () {
+        saveCredentials();
+        setSuccessMessage("Login Successful!");
+        setTimeout(() => {
           window.location = '/task';
         }, 1500);
       } else {
@@ -94,7 +111,7 @@ function Login() {
           aria-hidden="true"
         >
           <div className="modal-dialog modal-sm" role="document">
-            <div className="modal-content  p-1">
+            <div className="modal-content p-1">
               <div className="modal-header p-1">
                 <h6 className="text-danger m-0" id="Errormsgtext"></h6>
                 <button
@@ -142,7 +159,6 @@ function Login() {
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                             />
-
                             <div className="input-group-prepend">
                               <span
                                 className="input-group-text"
@@ -220,10 +236,6 @@ function Login() {
                           <strong>Login with Protovec Account.</strong>
                         </a>
                       </form>
-
-                      {/* <div className="text-center">
-                              <Link to="/forgot-password" className="small">Forgot Password?</Link>
-                          </div> */}
                       <hr />
                       <div className="text-center">
                         <Link to="/register" className="small">
