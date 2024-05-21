@@ -27,6 +27,8 @@ const AddTaskModal = ({ open, onClose }) => {
     // Clear previous messages
     setErrorMessage('');
     setSuccessMessage('');
+   
+   
     // Validation checks
     if (selectedProject === '') {
       setErrorMessage('Select at least one project');
@@ -100,7 +102,7 @@ const AddTaskModal = ({ open, onClose }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} aria-labelledby="addnewTitle">
+    <Dialog open={open} onClose={handleClose} aria-labelledby="addnewTitle" maxWidth='lg'>
       <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>
         Add New Task</DialogTitle>
       <DialogContent>
