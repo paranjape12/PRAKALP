@@ -1,362 +1,314 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Assuming you use axios for API requests
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button'; 
+import axios from 'axios';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, FormControl, InputLabel, Select, MenuItem, Checkbox, FormControlLabel } from '@material-ui/core';
 import AddEmployee from './AddEmployee';
-import './EditEmployee.css';
 
-const EditEmployee = () => {
-  const [employees, setEmployees] = useState([]);
-  const [empName, setEmpName] = useState('');
-  const [empEmail, setEmpEmail] = useState('');
-  const [role, setRole] = useState('');
-  const [location, setLocation] = useState('');
-  const [useEmailForLogin, setUseEmailForLogin] = useState(false);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [open, setOpen] = useState(false);
-  const [showAddEmployee, setShowAddEmployee] = useState(false);
+const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, pages }) => {
 
-  const handleOpen = () => {
-      setOpen(true);
-  };
+  const [selectedEmployee, setSelectedEmployee] = useState([]);
+  // const [loading, setLoading] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
 
-  const handleClose = () => {
-      setOpen(false);
-  };
+
+  const [formData, setFormData] = useState({
+    id : '',
+    Name: '',
+    Email: '',
+    Type: '',
+    Location: '',
+    Nickname: '',
+    Password: '',
+    confirmPassword: '',
+    useEmailForLogin: false,
+    access: {}
+  });
+
   useEffect(() => {
-    fetchEmployees();
-  }, []);
+    if (employeeDetails) {
+      setFormData({
+        name: employeeDetails.name || '',
+        email: employeeDetails.email || '',
+        role: employeeDetails.role || '',
+        location: employeeDetails.location || '',
+        nickname: employeeDetails.nickname || '',
+        password: '',
+        confirmPassword: '',
+        useEmailForLogin: false,
+        access: employeeDetails.access || {}
+      });
+    }
+  }, [employeeDetails]);
 
-  const handleAddEmployeeClick = () => {
-    // Handle logic for adding employee here
-    handleClose(); // Close dialog after adding employee
-};
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value
+    });
+  };
+
+  const handleAccessChange = (pageName, accessType) => {
+    setFormData(prevState => ({
+      ...prevState,
+      access: {
+        ...prevState.access,
+        [pageName]: {
+          ...prevState.access[pageName],
+          [accessType]: !prevState.access[pageName]?.[accessType]
+        }
+      }
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    axios.post('http://localhost:3001/api/update-employee', formData)
+      .then(response => {
+        console.log(response.data);
+        setOpenEditDialog(false);
+      })
+      .catch(error => {
+        console.error('There was an error updating the employee!', error);
+      });
+  };
+
+  //select project api 
+  useEffect(() => {
+    fetchEmployees(); // Add this line for debugging
+  }, []);
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get('API_URL_TO_FETCH_EMPLOYEES');
-      if (response.status === 200) {
-        setEmployees(response.data);
-      } else {
-        throw new Error('Failed to fetch employees');
-      }
+      const response = await axios.post('http://localhost:3001/api/empDropdown', {
+        token: localStorage.getItem('token'),
+      });
+      setSelectedEmployee([]);
+      setSelectedEmployee(response.data);
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
   };
 
-  const handleSaveEmployee = async () => {
-    try {
-      // Perform validation checks here (e.g., check if passwords match)
-      if (password !== confirmPassword) {
-        throw new Error('Passwords do not match');
-      }
-
-      // Prepare employee data for submission
-      const employeeData = {
-        name: empName,
-        email: empEmail,
-        role,
-        location,
-        useEmailForLogin,
-        password,
-      };
-
-      // Make API call to save employee data
-      const response = await axios.post('API_URL_TO_SAVE_EMPLOYEE', employeeData);
-      if (response.status === 200) {
-        // Employee saved successfully, handle any UI changes or notifications
-        console.log('Employee saved successfully');
-      } else {
-        throw new Error('Failed to save employee');
-      }
-    } catch (error) {
-      console.error('Error saving employee:', error);
-      // Handle error (e.g., display error message to user)
-    }
+  const handleDelete = () => {
+    axios.delete(`http://localhost:3001/api/delete-employee/${employeeDetails.id}`)
+      .then(response => {
+        console.log(response.data);
+        setOpenEditDialog(false);
+        fetchEmployees(); // Refresh the employee list after deleting
+      })
+      .catch(error => {
+        console.error('There was an error deleting the employee!', error);
+      });
   };
 
-  
-    const [pages, setPages] = useState([]);
-
-    // Simulate fetching pages from an API
-    useEffect(() => {
-        fetchPages();
-    }, []);
-
-    const fetchPages = async () => {
-      try {
-          const response = await fetch('/api/pages');
-          const contentType = response.headers.get('content-type');
-          if (response.ok && contentType && contentType.includes('application/json')) {
-              const data = await response.json();
-              setPages(data.pages);
-          } else {
-              console.error('Failed to fetch pages:', response.statusText);
-          }
-      } catch (error) {
-          console.error('Error fetching pages:', error);
-      }
-  };
-  
-
-    const handleCheckboxChange = (pageName, value) => {
-        // Handle checkbox change logic here
-        console.log(`Checkbox ${pageName} changed to ${value}`);
-    };
-     
-      
-  
   return (
-
-    <Dialog open={true} onClose={handleClose} fullWidth>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-      <DialogTitle>
-      <h2>Edit Employee Details</h2>
+    <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth='md'>
+      <DialogTitle>Edit Employee
+        <Button className='editEmp-btn' style={{ marginLeft: '35rem' }} onClick={() => setOpenDialog(true)}>Add Employee</Button>
+        <AddEmployee openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} />
       </DialogTitle>
-      <div>
-          <button type='Button' className="button" onClick={() => setShowAddEmployee(true)} >Add New Employee</button>
-          {showAddEmployee && <AddEmployee onClose={() => setShowAddEmployee(false)} />}
-        </div>
-      </div>
-      <DialogContent style={{}}>
-        <div >
-          <div className="modal-body">
-            <form className="row">
-            <div className="col-md-6">
-          <select className="col-md-12 form-select border border-primary rounded">
-            <option value="Selectedemp" selected disabled>Select Employee</option>
-            {employees.map((employee) => (
-              <option key={employee.id} value={`edit~${employee.id}`} name={employee.Name}>
-                {employee.Name}
-              </option>
-            ))}
-          </select>
-
-          <div className="row form-group">
-            <div className="col col-md-6">
-              <label htmlFor="Empname" className="form-control-label text-dark font-weight-bold">Name</label>
-            </div>
-            <div className="col-12 col-md-12">
-              <input
-                type="text"
-                id="Empname"
-                name="Empname"
-                placeholder="Enter Name"
-                className="form-control border-primary"
-                value={empName}
-                onChange={(e) => setEmpName(e.target.value)}
-              />
-              <small className="form-text text-danger" id="Empnamemsgname" style={{ display: 'none' }}></small>
-            </div>
-          </div>
-
-          <div className="row form-group">
-            <div className="col col-md-6">
-              <label htmlFor="EmpnameEmail" className="form-control-label text-dark font-weight-bold">Email</label>
-            </div>
-            <div className="col-12 col-md-12">
-              <input
-                type="email"
-                id="EmpnameEmail"
-                name="EmpnameEmail"
-                placeholder="Enter Email eg. Abc@Protovec.com"
-                className="form-control border-primary"
-                value={empEmail}
-                onChange={(e) => setEmpEmail(e.target.value)}
-              />
-              <small className="form-text text-danger" id="EmpnamemsgEmail" style={{ display: 'none' }}></small>
-            </div>
-          </div>
-
-          <div className="row form-group">
-            <div className="col col-md-4">
-              <select
-                className="col-md-12 form-select border border-primary rounded p-1"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
+      <DialogContent>
+        <form onSubmit={handleSubmit} className='row'>
+          <div className='col-md-6'>
+            <FormControl fullWidth required variant="outlined" margin="normal">
+              <InputLabel>select employee</InputLabel>
+              <Select
+                id="selempdrop"
+                label="Select Employee"
+                value={selectedEmployee}
+                onChange={(e) => setSelectedEmployee(e.target.value)}
               >
-                <option disabled value="unset">Select Role</option>
-                <option value="Admin">Admin</option>
-                <option value="Team Leader">Team Leader</option>
-                <option value="Employee">Employee</option>
-              </select>
-            </div>
-            <div className="col col-md-4">
-              <select
-                className="col-md-12 form-select border border-primary rounded p-1"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              >
-                <option disabled value="unset">Select Location</option>
-                <option value="Mumbai">Mumbai</option>
-                <option value="Ratnagiri">Ratnagiri</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="form-check col-md-16">
-            <input
-              className="form-check-input mt-2 emonly"
-              type="checkbox"
-              checked={useEmailForLogin}
-              onChange={(e) => setUseEmailForLogin(e.target.checked)}
-            />
-            <label className="form-check-label text-dark p-1" htmlFor="emailonly">
-              Use Email For Login
+                {selectedEmployee.length > 0 && selectedEmployee.map((employee) => (
+                  <MenuItem key={employee.id} value={employee.Name}>
+                    {employee.Name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {/* Name Field */}
+            <label htmlFor="Empnm" className="form-control-label text-dark font-weight-bold">
+              Name
             </label>
-          </div>
-
-          <div className="form-group passdiv">
-            <label htmlFor="Emppass" className="form-control-label text-dark font-weight-bold">Password</label>
-            <div className="input-group flex-nowrap">
-              <input
-                type="password"
-                className="form-control border-primary"
-                id="Emppass"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter Password eg. Abc@123"
-              />
-              <div className="input-group-prepend">
-                <span className="input-group-text" id="showeye">
-                  <i className="fa fa-eye"></i>
-                </span>
+            <TextField
+              label="Name"
+              variant="outlined"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              fullWidth
+              required
+              margin="normal"
+            />
+            {/* Email Field */}
+            <label htmlFor="EmpnameEmail" className="form-control-label text-dark font-weight-bold">
+              Email
+            </label>
+            <TextField
+              label="Email"
+              variant="outlined"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              fullWidth
+              required
+              margin="normal"
+              type="email"
+            />
+            <div className='row form-group1'>
+              {/* Role Field */}
+              <div className='col-md-6'>
+                <div className='row'>
+                  <div className='col-md-12'>
+                    <label htmlFor="dropRole" className="form-control-label text-dark font-weight-bold">
+                      Role
+                    </label>
+                    <FormControl fullWidth required variant="outlined" margin="normal">
+                      <InputLabel>Role</InputLabel>
+                      <Select
+                        value={formData.role}
+                        onChange={handleChange}
+                        name="role"
+                        label="Role"
+                      >
+                        <MenuItem value="unset" disabled>Select Role</MenuItem>
+                        <MenuItem value="Admin">Admin</MenuItem>
+                        <MenuItem value="Team Leader">Team Leader</MenuItem>
+                        <MenuItem value="Employee">Employee</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+                </div>
+              </div>
+              {/* Location Field */}
+              <div className='col-md-6'>
+                <div className='row'>
+                  <div className='col-md-12'>
+                    <label htmlFor="dropLocation" className="form-control-label text-dark font-weight-bold">
+                      Location
+                    </label>
+                    <FormControl fullWidth required variant="outlined" margin="normal">
+                      <InputLabel>Location</InputLabel>
+                      <Select
+                        value={formData.location}
+                        onChange={handleChange}
+                        name="location"
+                        label="Location"
+                      >
+                        <MenuItem value="unset" disabled>Select Location</MenuItem>
+                        <MenuItem value="Mumbai">Mumbai</MenuItem>
+                        <MenuItem value="Ratnagiri">Ratnagiri</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+                </div>
               </div>
             </div>
-            <small className="form-text text-danger" id="Empnamemsgpass" style={{ display: 'none' }}></small>
-          </div>
-
-          <div className="form-group passdiv">
-            <label htmlFor="EmpCpass" className="form-control-label text-dark font-weight-bold">Confirm Password</label>
-            <div className="input-group flex-nowrap">
-              <input
-                type="password"
-                className="form-control border-primary"
-                id="EmpCpass"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm Password"
-              />
-            </div>
-            <small className="form-text text-danger" id="Empnamemsgcpass" style={{ display: 'none' }}></small>
-          </div>
-        </div>
-
-        {/* Additional Form Fields (e.g., Nickname, Access To table) */}
-        {/* Implement other form fields similarly */}
-        <div className="col-md-6">
-            <div className="row form-group">
-                <div className="col col-md-6">
-                    <label htmlFor="Nickname" className="form-control-label text-dark font-weight-bold">
-                        Nickname
-                    </label>
-                </div>
-                <div className="col-12 col-md-12">
-                    <input
-                        type="text"
-                        id="Nickname"
-                        name="text-input"
-                        placeholder="Enter Nickname"
-                        className="form-control border-primary"
-                        title="Name"
-                    />
-                    <small className="form-text text-danger Empnamemsg" id="EmpnamemsgNickname" style={{ display: 'none' }}></small>
-                </div>
+            <div className='col-md-12'>
+              {/* Use Email For Login Checkbox */}
+              <FormControlLabel
+                control={<Checkbox checked={formData.loginusinggmail} onChange={handleChange} name="loginusinggmail" />}
+                label="Use Email For Login"
+              >
+              </FormControlLabel>
             </div>
 
-            <div className="row form-group">
-                <div className="col-md-4">
-                    <label htmlFor="AccessTo" className="form-control-label text-dark font-weight-bold">
-                        Access To
-                    </label>
-                </div>
-                <div className="table-responsive">
-            <table className="table table-bordered">
+            {/* Password Field */}
+            <label htmlFor="Emppass" className="form-control-label text-dark font-weight-bold">
+              Password
+            </label>
+            <TextField
+              label="Password"
+              variant="outlined"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              fullWidth
+              required
+              margin="normal"
+              type="password"
+            />
+            {/* Confirm Password Field */}
+            <label htmlFor="EmpCpass" className="form-control-label text-dark font-weight-bold">
+              Confirm Password
+            </label>
+            <TextField
+              label="Confirm Password"
+              variant="outlined"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              fullWidth
+              required
+              margin="normal"
+              type="password"
+            />
+          </div>
+
+          <div className='col-md-6'>
+            {/* Nickname Field */}
+            <label htmlFor="Empnicnm" className="form-control-label text-dark font-weight-bold">
+              NickName
+            </label>
+            <TextField
+              label="Nickname"
+              variant="outlined"
+              name="nickname"
+              value={formData.nickname}
+              onChange={handleChange}
+              fullWidth
+              required
+              margin="normal"
+            />
+            {/* Access To Table */}
+            <label htmlFor="text-input1" className="form-control-label text-dark font-weight-bold">Access To</label>
+            <div className="table-responsive text-dark">
+              <table className="table table-bordered text-dark" id="tableeditsave">
                 <thead className="bg-primary text-white">
-                    <tr>
-                        <th>Page Name</th>
-                        <th>Add</th>
-                        <th>Edit</th>
-                        <th>View</th>
-                        <th style={{ display: 'none' }}>No Access</th>
-                    </tr>
+                  <tr>
+                    <th></th>
+                    <th>Add</th>
+                    <th>Edit</th>
+                    <th>View</th>
+                  </tr>
                 </thead>
                 <tbody>
-                    {pages.map((page, index) => (
-                        <tr key={index}>
-                            <td className="text-left pagenametable">{page.PageName}</td>
-                            <td className="text-center">
-                                <input
-                                    name={`${page.PageName}-add-${index}`}
-                                    className={page.PageName.replace(' ', '')}
-                                    type="checkbox"
-                                    value="0"
-                                    title="add"
-                                    onChange={(e) => handleCheckboxChange(page.PageName, e.target.checked)}
-                                />
-                            </td>
-                            <td className="text-center">
-                                <input
-                                    name={`${page.PageName}-edit-${index}`}
-                                    className={page.PageName.replace(' ', '')}
-                                    type="checkbox"
-                                    value="3"
-                                    title="edit"
-                                    onChange={(e) => handleCheckboxChange(page.PageName, e.target.checked)}
-                                />
-                            </td>
-                            <td className="text-center">
-                                <input
-                                    name={`${page.PageName}-view-${index}`}
-                                    className={page.PageName.replace(' ', '')}
-                                    type="checkbox"
-                                    value="1"
-                                    title="view"
-                                    onChange={(e) => handleCheckboxChange(page.PageName, e.target.checked)}
-                                />
-                            </td>
-                            <td className="text-center" style={{ display: 'none' }}>
-                                <input
-                                    name={`${page.PageName}-none-${index}`}
-                                    className={page.PageName.replace(' ', '')}
-                                    type="checkbox"
-                                    value="2"
-                                    title="none"
-                                    checked
-                                    onChange={(e) => handleCheckboxChange(page.PageName, e.target.checked)}
-                                />
-                            </td>
-                        </tr>
-                    ))}
+                  {pages && pages.map(page => (
+                    <tr key={page.PageName}>
+                      <th className="text-left pagenametable">{page.PageName}</th>
+                      <td className="text-center" name='project'>
+                        <input type="checkbox" title='Add' value={0} onChange={() => handleAccessChange(page.PageName, 'add')} checked={formData.access[page.PageName]?.add || false} />
+                      </td>
+                      <td className="text-center" name='employee'>
+                        <input type="checkbox" title='Edit' value={3} onChange={() => handleAccessChange(page.PageName, 'edit')} checked={formData.access[page.PageName]?.edit || false} />
+                      </td>
+                      <td className="text-center" name='task'>
+                        <input type="checkbox" title='View' value={1} onChange={() => handleAccessChange(page.PageName, 'view')} checked={formData.access[page.PageName]?.view || false} />
+                      </td>
+                      <td className="text-center" name='none' style={{ display: 'none' }}>
+                        <input type="checkbox" title='none' value={2} onChange={() => handleAccessChange(page.PageName, 'none')} checked={formData.access[page.PageName]?.none || false} />
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
-            </table>
-        </div>
-</div>
-</div>
-            </form>
+              </table>
+            </div>
           </div>
-        </div>
+        </form>
+
       </DialogContent>
       <DialogActions>
-        <button type="button" className="btn btn-danger" onClick={handleClose}>
+        <Button onClick={() => setOpenEditDialog(false)} color="primary">
           Close
-        </button>
-        <button type="button" id="empremove" className="btn btn-danger">
+        </Button>
+        <Button onClick={handleDelete} color="primary">
           Remove
-        </button>
-        <button type="button" className="btn btn-success" onClick={handleSaveEmployee}>
+        </Button>
+        <Button onClick={handleSubmit} color="primary">
           Save
-        </button>
+        </Button>
       </DialogActions>
     </Dialog>
-   
   );
 };
 
 export default EditEmployee;
-
