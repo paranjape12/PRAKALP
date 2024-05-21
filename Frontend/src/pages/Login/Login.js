@@ -78,10 +78,7 @@ function Login() {
         const userData = response.data.result;
         generateToken(userData);
         saveCredentials();
-        setSuccessMessage("Login Successful!");
-        setTimeout(() => {
-          window.location = '/task';
-        }, 1500);
+        window.location = '/task';
       } else {
         setErrorMessage('Please enter a valid email or password');
         setEmail('');
