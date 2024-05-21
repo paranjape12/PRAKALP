@@ -5,7 +5,8 @@ import axios from 'axios';
 
 const AssignTaskDialog = ({ open, onClose }) => {
   const [selectedProject, setSelectedProject] = useState('');
-  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+  const [selectedEmployeeName, setSelectedEmployeeName] = useState('');
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [date, setDate] = useState('');
@@ -18,6 +19,24 @@ const AssignTaskDialog = ({ open, onClose }) => {
   const [selectedTask, setSelectedTask] = useState('');
 
   const handleSave = () => {
+
+    if (!selectedTask) {
+      setErrorMessage("Please select a task.");
+      return;
+    }
+    if (!selectedEmployeeId) {
+      setErrorMessage("Please select an employee.");
+      return;
+    }
+    if (!activity.trim()) {
+      setErrorMessage("Please enter activity details.");
+      return;
+    }
+    if (hours < 0 || hours > 8 || minutes < 0 || minutes > 59 || (!hours && !minutes)) {
+      setErrorMessage("Expected time range: hour (0 - 8); minutes (0 - 59)");
+      return;
+    }
+
     const data = {
       valuetask: selectedTask,
       inputminaray: minutes,
@@ -79,11 +98,19 @@ const AssignTaskDialog = ({ open, onClose }) => {
       const response = await axios.post('http://localhost:3001/api/empDropdown', {
         token: localStorage.getItem('token'),
       });
-      setSelectedEmployee('');
+      setSelectedEmployeeId('');
+      setSelectedEmployeeName('');
       setEmployees(response.data);
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
+  };
+
+  const handleEmployeeChange = (e) => {
+    const selectedId = e.target.value;
+    const employee = employees.find(emp => emp.id === selectedId);
+    setSelectedEmployeeId(selectedId);
+    setSelectedEmployeeName(employee ? employee.Name : '');
   };
 
   return (
@@ -100,6 +127,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
               id="addprojdrop"
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
+              required
             >
               {projects.map((project, index) => (
                 <MenuItem key={index} value={project}>
@@ -130,8 +158,8 @@ const AssignTaskDialog = ({ open, onClose }) => {
             <Select
               id="selempdrop"
               label="Select Employee"
-              value={selectedEmployee}
-              onChange={(e) => setSelectedEmployee(e.target.value)}
+              value={selectedEmployeeId}
+              onChange={handleEmployeeChange}
             >
               {employees.map((employee) => (
                 <MenuItem key={employee.id} value={employee.id}>
@@ -168,8 +196,9 @@ const AssignTaskDialog = ({ open, onClose }) => {
             style={{ width: '75%', marginBottom: '0.5rem' }}
           />
         </div>
-        {selectedEmployee && (
+        {selectedEmployeeName && (
           <div style={{ display: 'flex' }}>
+            <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginRight: '1rem' }}>{selectedEmployeeName}</InputLabel>
             <TextField
               style={{ marginRight: '1rem' }}
               margin="dense"
