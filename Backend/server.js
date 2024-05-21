@@ -999,6 +999,156 @@ app.put('/api/updateEmployee/:employeeId', (req, res) => {
     });
 });
 
+// ********Add Employee Table Apis********** Pratibha
+
+// // API endpoint to save data to Logincrd table
+// app.post('/api/logincrd', (req, res) => {
+//   const employeeData = req.body; // Assuming the data sent from frontend is JSON
+//   // Insert data into Logincrd table
+//   const query = 'INSERT INTO logincrd SET ?';
+//   db.query(query, employeeData, (err, result) => {
+//     if (err) {
+//       console.error('Error saving data:', err);
+//       res.status(500).send('Error saving data');
+//       return;
+//     }
+//     console.log('Data saved successfully');
+//     res.status(200).send('Data saved successfully');
+//   });
+// });
+
+
+// Get all employees names
+app.get('/api/employees-name', (req, res) => {
+  const sql = 'SELECT Name FROM logincrd';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching employees:', err);
+      res.status(500).json({ message: 'Internal server error' });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+
+// Get all employees
+app.get('/api/employees', (req, res) => {
+  const sql = 'SELECT * FROM logincrd';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching employees:', err);
+      res.status(500).json({ message: 'Internal server error' });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+// Get all pages
+app.get('/api/pages', (req, res) => {
+  const sql = 'SELECT * FROM pages';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching pages:', err);
+      res.status(500).json({ message: 'Internal server error' });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+// Add new employee
+app.post('/api/add-employee', (req, res) => {
+  const { name, email, role, location, nickname, password, useEmailForLogin } = req.body;
+  const sql = 'INSERT INTO logincrd (Name, Email, Type, Location, nickname, Password, loginusinggmail) VALUES (?, ?, ?, ?, ?, ?, ?)';
+  const values = [name, email, role, location, nickname, password, useEmailForLogin];
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error('Error adding employee:', err);
+      res.status(500).json({ message: 'Internal server error' });
+      return;
+    }
+    res.status(201).json({ message: 'Employee added successfully' });
+  });
+});
+
+// // API Endpoint for Decrypted Token
+// app.post('/api/empDropdown', (req, res) => {
+//   const { token } = req.body;
+//   const userData = decryptToken(token);
+//   const query = userData.Type === 'Admin' || userData.Type === 'Team Leader'
+//     ? `SELECT * FROM Logincrd WHERE disableemp!='1' ORDER BY Name ASC`
+//     : `SELECT * FROM Logincrd WHERE id='${userData.id}' AND disableemp!='1' ORDER BY Name ASC`;
+//   db.query(query, (err, result) => {
+//     if (err) {
+//       res.status(500).send('Internal Server Error');
+//     } else {
+//       res.json(result);
+//     }
+//   });
+// });
+
+// Update employee
+app.post('/api/update-employee', (req, res) => {
+  const { id, name, email, role, location, nickname, password, useEmailForLogin } = req.body;
+  const sql = 'UPDATE logincrd SET name=?, email=?, role=?, location=?, nickname=?, password=?, use_email_for_login=? WHERE id=?';
+  const values = [name, email, role, location, nickname, password, useEmailForLogin, id];
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error('Error updating employee:', err);
+      res.status(500).json({ message: 'Internal server error' });
+      return;
+    }
+    res.json({ message: 'Employee updated successfully' });
+  });
+});
+
+// // Delete employee
+// app.delete('/api/delete-employee/:id', (req, res) => {
+//   const id = req.params.id;
+//   const sql = 'DELETE FROM logincrd WHERE id=?';
+//   db.query(sql, id, (err, result) => {
+//     if (err) {
+//       console.error('Error deleting employee:', err);
+//       res.status(500).json({ message: 'Internal server error' });
+//       return;
+//     }
+//     res.json({ message: 'Employee deleted successfully' });
+//   });
+// });
+
+app.delete('/api/delete-employee/:id', (req, res) => {
+  const id = req.params.id;
+  const checkSql = 'SELECT * FROM logincrd WHERE id = ?';
+  const deleteSql = 'DELETE FROM logincrd WHERE id = ?';
+
+  // Check if the employee exists
+  db.query(checkSql, [id], (err, results) => {
+    if (err) {
+      console.error('Error fetching employee:', err);
+      res.status(500).json({ message: 'Internal server error' });
+      return;
+    }
+
+    if (results.length === 0) {
+      res.status(404).json({ message: 'Employee not found' });
+      return;
+    }
+
+    // If the employee exists, proceed to delete
+    db.query(deleteSql, [id], (err, result) => {
+      if (err) {
+        console.error('Error deleting employee:', err);
+        res.status(500).json({ message: 'Internal server error' });
+        return;
+      }
+      res.json({ message: 'Employee deleted successfully' });
+    });
+  });
+});
+
+
 
 // Start the server
 app.listen(port, () => {
