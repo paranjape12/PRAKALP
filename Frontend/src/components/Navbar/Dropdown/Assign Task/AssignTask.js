@@ -9,7 +9,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
   const [selectedEmployeeName, setSelectedEmployeeName] = useState('');
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().substr(0, 10));
   const [activity, setActivity] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -19,21 +19,26 @@ const AssignTaskDialog = ({ open, onClose }) => {
   const [selectedTask, setSelectedTask] = useState('');
 
   const handleSave = () => {
+    const showMessage = (setMessage, message) => {
+      setMessage(message);
+      setTimeout(() => setMessage(''), 1500);
+    };
 
+    // Validation checks
     if (!selectedTask) {
-      setErrorMessage("Please select a task.");
+      showMessage(setErrorMessage, "Please select a task.");
       return;
     }
     if (!selectedEmployeeId) {
-      setErrorMessage("Please select an employee.");
+      showMessage(setErrorMessage, "Please select an employee.");
       return;
     }
     if (!activity.trim()) {
-      setErrorMessage("Please enter activity details.");
+      showMessage(setErrorMessage, "Please enter activity details.");
       return;
     }
     if (hours < 0 || hours > 8 || minutes < 0 || minutes > 59 || (!hours && !minutes)) {
-      setErrorMessage("Expected time range: hour (0 - 8); minutes (0 - 59)");
+      showMessage(setErrorMessage, "Expected time range: hour (0 - 8); minutes (0 - 59)");
       return;
     }
 
@@ -48,16 +53,15 @@ const AssignTaskDialog = ({ open, onClose }) => {
 
     axios.post('http://localhost:3001/api/assignTask', data)
       .then(response => {
-        setSuccessMessage(response.data);
-        setTimeout(() => {
-          onClose();
-        }, 1500);
+        showMessage(setSuccessMessage, response.data);
+        setTimeout(onClose, 1500); // Close after 1500 ms
       })
       .catch(error => {
         console.error('Error assigning task:', error);
-        setErrorMessage('Failed to assign task. Please try again.');
+        showMessage(setErrorMessage, 'Failed to assign task. Please try again.');
       });
   };
+
 
   const handleClose = () => {
     onClose();
@@ -177,7 +181,6 @@ const AssignTaskDialog = ({ open, onClose }) => {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            label="Date"
             InputLabelProps={{
               shrink: true,
             }}
