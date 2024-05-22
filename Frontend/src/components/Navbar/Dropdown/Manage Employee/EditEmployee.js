@@ -5,13 +5,13 @@ import AddEmployee from './AddEmployee';
 
 const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, pages }) => {
 
-  const [selectedEmployee, setSelectedEmployee] = useState([]);
-  // const [loading, setLoading] = useState(true);
+  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [employees, setEmployees] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
-
+  const [showPasswordFields, setShowPasswordFields] = useState(true);
 
   const [formData, setFormData] = useState({
-    id : '',
+    id: '',
     Name: '',
     Email: '',
     Type: '',
@@ -19,23 +19,25 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
     Nickname: '',
     Password: '',
     confirmPassword: '',
-    useEmailForLogin: false,
+    loginusinggmail: 0,
     access: {}
   });
 
   useEffect(() => {
     if (employeeDetails) {
       setFormData({
-        name: employeeDetails.name || '',
-        email: employeeDetails.email || '',
-        role: employeeDetails.role || '',
-        location: employeeDetails.location || '',
-        nickname: employeeDetails.nickname || '',
-        password: '',
+        id: employeeDetails.id || '',
+        Name: employeeDetails.Name || '',
+        Email: employeeDetails.Email || '',
+        Type: employeeDetails.Type || '',
+        Location: employeeDetails.Location || '',
+        Nickname: employeeDetails.Nickname || '',
+        Password: '',
         confirmPassword: '',
-        useEmailForLogin: false,
+        loginusinggmail: employeeDetails.loginusinggmail || false,
         access: employeeDetails.access || {}
       });
+      setSelectedEmployee(employeeDetails.Name);
     }
   }, [employeeDetails]);
 
@@ -45,7 +47,14 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
       ...formData,
       [name]: type === 'checkbox' ? checked : value
     });
+
+    // Check if the "Use Email For Login" checkbox is checked, and hide/show password fields accordingly
+    if (name === 'loginusinggmail') {
+      setShowPasswordFields(!checked);
+    }
   };
+
+
 
   const handleAccessChange = (pageName, accessType) => {
     setFormData(prevState => ({
@@ -62,7 +71,24 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post('http://localhost:3001/api/update-employee', formData)
+
+    // Validate password and confirmPassword
+    if (formData.Password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    // Transform access object into pagename and pagevalue arrays
+    const pagename = Object.keys(formData.access);
+    const pagevalue = pagename.map(page => formData.access[page]);
+
+    const requestData = {
+      ...formData,
+      pagename,
+      pagevalue
+    };
+
+    axios.put('http://localhost:3001/api/update-employee', requestData)
       .then(response => {
         console.log(response.data);
         setOpenEditDialog(false);
@@ -72,29 +98,42 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
       });
   };
 
-  //select project api 
   useEffect(() => {
-    fetchEmployees(); // Add this line for debugging
-  }, []);
-
-  const fetchEmployees = async () => {
-    try {
-      const response = await axios.post('http://localhost:3001/api/empDropdown', {
-        token: localStorage.getItem('token'),
+    // Fetch employees
+    axios.post('http://localhost:3001/api/empDropdown', {
+      token: localStorage.getItem('token'),
+    })
+      .then(response => {
+        if (Array.isArray(response.data)) {
+          setEmployees(response.data);
+        } else {
+          console.error('Error: Expected an array but got', response.data);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching employees:', error);
       });
-      setSelectedEmployee([]);
-      setSelectedEmployee(response.data);
-    } catch (error) {
-      console.error('Error fetching employees:', error);
-    }
-  };
+  }, []);
 
   const handleDelete = () => {
     axios.delete(`http://localhost:3001/api/delete-employee/${employeeDetails.id}`)
       .then(response => {
         console.log(response.data);
         setOpenEditDialog(false);
-        fetchEmployees(); // Refresh the employee list after deleting
+        // Fetch the updated list of employees after deletion
+        axios.post('http://localhost:3001/api/empDropdown', {
+          token: localStorage.getItem('token'),
+        })
+          .then(response => {
+            if (Array.isArray(response.data)) {
+              setEmployees(response.data);
+            } else {
+              console.error('Error: Expected an array but got', response.data);
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching employees:', error);
+          });
       })
       .catch(error => {
         console.error('There was an error deleting the employee!', error);
@@ -111,14 +150,14 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
         <form onSubmit={handleSubmit} className='row'>
           <div className='col-md-6'>
             <FormControl fullWidth required variant="outlined" margin="normal">
-              <InputLabel>select employee</InputLabel>
+              <InputLabel>Select Employee</InputLabel>
               <Select
                 id="selempdrop"
                 label="Select Employee"
                 value={selectedEmployee}
                 onChange={(e) => setSelectedEmployee(e.target.value)}
               >
-                {selectedEmployee.length > 0 && selectedEmployee.map((employee) => (
+                {employees.map((employee) => (
                   <MenuItem key={employee.id} value={employee.Name}>
                     {employee.Name}
                   </MenuItem>
@@ -132,8 +171,8 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
             <TextField
               label="Name"
               variant="outlined"
-              name="name"
-              value={formData.name}
+              name="Name"
+              value={formData.Name}
               onChange={handleChange}
               fullWidth
               required
@@ -146,8 +185,8 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
             <TextField
               label="Email"
               variant="outlined"
-              name="email"
-              value={formData.email}
+              name="Email"
+              value={formData.Email}
               onChange={handleChange}
               fullWidth
               required
@@ -165,9 +204,9 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
                     <FormControl fullWidth required variant="outlined" margin="normal">
                       <InputLabel>Role</InputLabel>
                       <Select
-                        value={formData.role}
+                        value={formData.Type}
                         onChange={handleChange}
-                        name="role"
+                        name="Type"
                         label="Role"
                       >
                         <MenuItem value="unset" disabled>Select Role</MenuItem>
@@ -189,9 +228,9 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
                     <FormControl fullWidth required variant="outlined" margin="normal">
                       <InputLabel>Location</InputLabel>
                       <Select
-                        value={formData.location}
+                        value={formData.Location}
                         onChange={handleChange}
-                        name="location"
+                        name="Location"
                         label="Location"
                       >
                         <MenuItem value="unset" disabled>Select Location</MenuItem>
@@ -208,52 +247,55 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
               <FormControlLabel
                 control={<Checkbox checked={formData.loginusinggmail} onChange={handleChange} name="loginusinggmail" />}
                 label="Use Email For Login"
-              >
-              </FormControlLabel>
+              />
             </div>
 
-            {/* Password Field */}
-            <label htmlFor="Emppass" className="form-control-label text-dark font-weight-bold">
-              Password
-            </label>
-            <TextField
-              label="Password"
-              variant="outlined"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              fullWidth
-              required
-              margin="normal"
-              type="password"
-            />
-            {/* Confirm Password Field */}
-            <label htmlFor="EmpCpass" className="form-control-label text-dark font-weight-bold">
-              Confirm Password
-            </label>
-            <TextField
-              label="Confirm Password"
-              variant="outlined"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              fullWidth
-              required
-              margin="normal"
-              type="password"
-            />
+            {showPasswordFields && (
+              <>
+                {/* Password Field */}
+                <label htmlFor="Emppass" className="form-control-label text-dark font-weight-bold">
+                  Password
+                </label>
+                <TextField
+                  label="Password"
+                  variant="outlined"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  margin="normal"
+                  type="password"
+                />
+                {/* Confirm Password Field */}
+                <label htmlFor="EmpCpass" className="form-control-label text-dark font-weight-bold">
+                  Confirm Password
+                </label>
+                <TextField
+                  label="Confirm Password"
+                  variant="outlined"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  fullWidth
+                  required
+                  margin="normal"
+                  type="password"
+                />
+              </>
+            )}
           </div>
 
           <div className='col-md-6'>
             {/* Nickname Field */}
             <label htmlFor="Empnicnm" className="form-control-label text-dark font-weight-bold">
-              NickName
+              Nickname
             </label>
             <TextField
               label="Nickname"
               variant="outlined"
-              name="nickname"
-              value={formData.nickname}
+              name="Nickname"
+              value={formData.Nickname}
               onChange={handleChange}
               fullWidth
               required
@@ -294,7 +336,6 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
             </div>
           </div>
         </form>
-
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setOpenEditDialog(false)} color="primary">
