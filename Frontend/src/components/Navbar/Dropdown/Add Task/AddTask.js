@@ -11,6 +11,9 @@ const AddTaskModal = ({ open, onClose }) => {
   const [lastTask, setLastTask] = useState(false);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
+  const [minAssign, setMinAssign] = useState(0);
+  const [assignDate, setAssignDate] = useState(new Date().toISOString().substr(0, 10));
+  const [hrAssign, setHrAssign] = useState(0);
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
@@ -24,30 +27,31 @@ const AddTaskModal = ({ open, onClose }) => {
   };
 
   const handleSave = async () => {
+
+    const showMessage = (setMessage, message) => {
+      setMessage(message);
+      setTimeout(() => setMessage(''), 1500);
+    };
+
     // Clear previous messages
     setErrorMessage('');
     setSuccessMessage('');
-   
-   
+
     // Validation checks
     if (selectedProject === '') {
-      setErrorMessage('Select at least one project');
+      showMessage(setErrorMessage, 'Select at least one project');
       return;
     }
     if (hours === 0 && minutes === 0) {
-      setErrorMessage('Please enter time required to complete the task');
+      showMessage(setErrorMessage, 'Please enter time required to complete the task');
       return;
     }
     if (hours > 99 || minutes > 59) {
-      setErrorMessage('Hours limit must be less than 100 and minutes limit must be less than 60');
+      showMessage(setErrorMessage, 'Hours limit must be less than 100 and minutes limit must be less than 60');
       return;
     }
     if (taskName === '') {
-      setErrorMessage('Please enter task name');
-      return;
-    }
-    if (hours === 0 && minutes === 0) {
-      setErrorMessage('Please enter time required to complete the task for the selected employee');
+      showMessage(setErrorMessage, 'Please enter task name');
       return;
     }
 
@@ -55,24 +59,27 @@ const AddTaskModal = ({ open, onClose }) => {
       const response = await axios.post('http://localhost:3001/api/createTask', {
         ProjectName: selectedProject,
         TaskName: taskName,
-        Emplname: selectedEmployee,
+        Empname: selectedEmployee,
         islasttask: lastTask ? 1 : 0,
         taskdetails: taskDetails,
         hr: hours,
         min: minutes,
+        assignDate: assignDate,
+        hrAssign: hrAssign,
+        minAssign: minAssign,
         token: localStorage.getItem('token'),
       });
-      
+
       if (response.data === 'Success') {
-        setSuccessMessage("Task added Successfully !")
-        setTimeout(function () {
-          onClose();
-        }, 2000);
+        showMessage(setSuccessMessage, "Task added Successfully !");
+        setTimeout(onClose, 2500);
       }
     } catch (error) {
       console.error('Error saving task:', error);
+      showMessage(setErrorMessage, 'Error saving task');
     }
   };
+
 
   useEffect(() => {
     fetchProjects();
@@ -114,6 +121,7 @@ const AddTaskModal = ({ open, onClose }) => {
               id="addprojdrop"
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
+              style={{ fontFamily: 'Nunito'}}
             >
               {projects.map((project, index) => (
                 <MenuItem key={index} value={project}>
@@ -191,6 +199,59 @@ const AddTaskModal = ({ open, onClose }) => {
             inputProps: { min: 0, max: 59, style: { padding: '25px' } }
           }}
         />
+
+        {selectedEmployee && (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', marginRight: '2.5rem' }}>
+                <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginTop: '0.5rem' }}>Assign Date</InputLabel>
+                <TextField
+                  type="date"
+                  value={assignDate}
+                  onChange={(e) => setAssignDate(e.target.value)}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  style={{ marginBottom: '0.5rem' }}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginTop: '0.5rem' }}>Required Time</InputLabel>
+                <div style={{ display: 'flex' }}>
+                  <TextField
+                    margin="dense"
+                    id="addprojmin_emp_assign"
+                    type="number"
+                    value={minAssign}
+                    onChange={(e) => setMinAssign(e.target.value)}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end" style={{ outline: 'none' }}>Hr</InputAdornment>
+                      ),
+                      style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
+                      inputProps: { min: 0, max: 12, style: { padding: '25px' } }
+                    }}
+                    style={{ marginRight: '1rem' }}
+                  />
+                  <TextField
+                    margin="dense"
+                    id="addprojhr_emp_assign"
+                    type="number"
+                    value={hrAssign}
+                    onChange={(e) => setHrAssign(e.target.value)}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end" style={{ outline: 'none' }}>Min</InputAdornment>
+                      ),
+                      style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
+                      inputProps: { min: 0, max: 59, style: { padding: '25px' } }
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <TextField
           margin="dense"
           id="addtaskdetails"
@@ -201,7 +262,8 @@ const AddTaskModal = ({ open, onClose }) => {
           onChange={(e) => setTaskDetails(e.target.value)}
         />
 
-        {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign:'center' }}>{errorMessage}</p>}
+
+        {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
         {successMessage && (
           <div className="text-center">
             <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>

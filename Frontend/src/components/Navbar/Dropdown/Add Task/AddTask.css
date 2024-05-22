@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 
 
-#addprojhr, #addprojmin,#addtaskdetails{
-    border: none; 
-    
+#addprojhr, #addprojmin, #addtaskdetails, #addprojhr_emp_assign, #addprojmin_emp_assign{
+    border: none;
+    border-radius: 0; 
 }
 
 #addprojdrop {
