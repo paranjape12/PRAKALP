@@ -37,6 +37,41 @@ function decryptToken(token) {
   return userData;
 }
 
+
+// FAMT Profile Api
+app.post('/api/profile', (req, res) => {
+  const { U_id } = req.body;
+  const query = "SELECT * FROM Logincrd WHERE id = ?";
+  db.query(query, [U_id], (err, result) => {
+      if (err) return res.status(500).send(err);
+      if (result.length > 0) {
+          const user = result[0];
+          user.password = Buffer.from(user.Password, 'base64').toString('utf8');
+          if (!user.Location) user.Location = 'Ratnagiri';
+          res.json(user);
+      } else {
+          res.status(404).send('User not found');
+      }
+  });
+});
+
+// Endpoint to update user profile
+app.put('/api/profile', (req, res) => {
+  const { U_id, name, email, password, location } = req.body;
+  const encodedPassword = Buffer.from(password).toString('base64');
+  const query = `
+      UPDATE Logincrd
+      SET Name = ?, Email = ?, Password = ?, Location = ?
+      WHERE id = ?
+  `;
+  db.query(query, [name, email, encodedPassword, location, U_id], (err, result) => {
+      if (err) return res.status(500).send(err);
+      res.send('Profile updated successfully');
+  });
+});
+
+
+
 // FAMT API endpoint to handle createTask POST request
 app.post('/api/createTask', (req, res) => {
   const { ProjectName, TaskName, Empname, islasttask, taskdetails, hr, min, assignDate, hrAssign, minAssign, token } = req.body;
