@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHouse, faCircleUser, faUser, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate,Link } from 'react-router-dom';
+import axios from 'axios';
 import './Profile.css';
 
 
@@ -18,15 +19,54 @@ const Profile = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [location, setLocation] = useState('Mumbai'); // Default location
-    const emailuse = "1"; // Define emailuse here or replace with your logic
+    // const emailuse = "1"; // Define emailuse here or replace with your logic
+    const [emailuse, setEmailuse] = useState("1"); // Default email use
 
-    const handleSave = () => {
-        // Handle form submission logic here
-        console.log('Name:', name);
-        console.log('Email:', email);
-        console.log('Location:', location);
-        // Add logic to handle password and confirm password if needed
-      };
+//API profile fetch
+      const [user, setUser] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const U_id = "user_id_here"; // Replace with actual user ID
+  
+      useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await axios.post('http://localhost:5000/api/profile', { U_id });
+                const user = response.data;
+                setName(user.fname ? `${user.fname} ${user.lname}` : user.Name);
+                setEmail(user.Email);
+                setPassword(user.Password);
+                setLocation(user.Location);
+                setEmailuse(user.loginusinggmail);
+            } catch (error) {
+                console.error('Error fetching user data', error);
+            }
+        };
+
+        fetchUser();
+    }, []);
+
+    const handleSave = async () => {
+        try {
+            const updatedProfile = {
+                U_id,
+                name,
+                email,
+                password,
+                location
+            };
+            await axios.put('http://localhost:5000/api/profile', updatedProfile);
+            alert('Profile updated successfully');
+        } catch (error) {
+            console.error('Error updating profile', error);
+        }
+    };
+
+
+
+
+
+
+
     const handleProfileButtonClick = () => {
         setShowProfileDropdown(!showProfileDropdown);
         setShowSettingsDropdown(false);
