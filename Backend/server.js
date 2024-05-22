@@ -39,13 +39,14 @@ function decryptToken(token) {
 
 // FAMT API endpoint to handle createTask POST request
 app.post('/api/createTask', (req, res) => {
-  const { ProjectName, TaskName, Emplname, islasttask, taskdetails, hr, min, token } = req.body;
+  const { ProjectName, TaskName, Empname, islasttask, taskdetails, hr, min, assignDate, hrAssign, minAssign, token } = req.body;
 
   const userData = decryptToken(token);
   const AssignBy = userData.id;
 
   // Calculate task completion time in seconds
-  const taskcompleteat = (parseInt(hr) * 3600) + (parseInt(min) * 60);
+  const taskcompletedat = (parseInt(hr) * 3600) + (parseInt(min) * 60);
+  const taskcompleteat_assign = (parseInt(hrAssign) * 3600) + (parseInt(minAssign) * 60);
 
   // SQL query to check if the last task exists
   let sql = `SELECT ProjectName FROM projects WHERE ProjectName = ? AND lasttask = '1'`;
@@ -87,7 +88,7 @@ app.post('/api/createTask', (req, res) => {
 
   function insertTask() {
     let insertTaskSql = `INSERT INTO Task (projectName, TaskName, TaskTime, taskDetails, AssignBy, timetocomplete) VALUES (?, ?, NOW(), ?, ?, ?)`;
-    db.query(insertTaskSql, [ProjectName, TaskName, taskdetails, AssignBy, taskcompleteat], (err, result) => {
+    db.query(insertTaskSql, [ProjectName, TaskName, taskdetails, AssignBy, taskcompletedat], (err, result) => {
       if (err) {
         console.error('Error inserting task:', err);
         res.status(500).send('Error');
@@ -101,10 +102,10 @@ app.post('/api/createTask', (req, res) => {
             console.error('Error updating project:', err);
             res.status(500).send('Error');
           } else {
-            // Insert task employee details into Taskemp table if Emplname is provided
-            if (Emplname !== 'Selectedemp') {
-              let insertTaskEmpSql = `INSERT INTO Taskemp (taskid, tasktimeemp, AssignedTo_emp, timetocomplete_emp) VALUES (?, NOW(), ?, ?)`;
-              db.query(insertTaskEmpSql, [taskId, AssignBy, taskcompleteat], (err, result) => {
+            // Insert task employee details into Taskemp table if Empname is provided
+            if (Empname !== 'Selectedemp') {
+              let insertTaskEmpSql = `INSERT INTO Taskemp (taskid, tasktimeemp, AssignedTo_emp, timetocomplete_emp) VALUES (?, ?, ?, ?)`;
+              db.query(insertTaskEmpSql, [taskId, assignDate, AssignBy, taskcompleteat_assign], (err, result) => {
                 if (err) {
                   console.error('Error inserting task employee:', err);
                   res.status(500).send('Error');
