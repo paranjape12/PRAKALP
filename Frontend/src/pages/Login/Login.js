@@ -73,7 +73,7 @@ function Login() {
         pass: encodedPassword, // Send the encoded password to the backend
         rememberMe: rememberMe.toString() // Convert rememberMe boolean to string
       });
-      
+
       if (response.data.message === 'Success') {
         const userData = response.data.result;
         generateToken(userData);
@@ -155,6 +155,7 @@ function Login() {
                               placeholder="Password"
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
+                              style={{ height: "3.1rem", paddingLeft: '1.5rem' }}
                             />
                             <div className="input-group-prepend">
                               <span
@@ -164,6 +165,7 @@ function Login() {
                                   borderRadius: "0rem 10rem 10rem 0rem",
                                   height: "3.1rem",
                                   width: "43px",
+                                  cursor: "pointer"
                                 }}
                                 onClick={togglePasswordVisibility}
                               >
