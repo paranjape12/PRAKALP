@@ -22,21 +22,10 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
-  const [availabepages, setAvailablePages] = useState([]); //add-emp3
   const [openDialog, setOpenDialog] = useState(false);  //add-emp3
-  const [openAddEmployeeDialog, setOpenAddEmployeeDialog] = useState(false); // State to manage the AddEmployee dialog open/close
 
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Function to handle opening AddEmployee dialog
-  const handleOpenAddEmployeeDialog = () => {
-    setOpenAddEmployeeDialog(true);
-  };
-  // Function to handle closing AddEmployee dialog
-  const handleCloseAddEmployeeDialog = () => {
-    setOpenAddEmployeeDialog(false);
-  };
 
   const pages = [
     { PageName: 'Project' },
@@ -45,17 +34,17 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
     // Add more pages as needed
   ];
   
-  useEffect(() => {
-    // Fetch pages
-    axios.get('http://localhost:3001/api/pages')
-  .then(response => {
-    console.log('Pages fetched successfully:', response.data);
-  })
-  .catch(error => {
-    console.error('There was an error fetching the pages!', error);
-  });
+  // useEffect(() => {
+  //   // Fetch pages
+  //   axios.get('http://localhost:3001/api/pages')
+  // .then(response => {
+  //   console.log('Pages fetched successfully:', response.data);
+  // })
+  // .catch(error => {
+  //   console.error('There was an error fetching the pages!', error);
+  // });
 
-  }, []);
+  // }, []);
 
   const handleOpenAddProjectDialog = () => {
     setAddProjectDialogOpen(true);
