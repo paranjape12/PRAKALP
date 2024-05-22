@@ -1033,16 +1033,30 @@ app.get('/api/employees-name', (req, res) => {
 });
 
 
-// Get all employees
+// // Get all employees
+// app.get('/api/employees', (req, res) => {
+//   const sql = 'SELECT * FROM logincrd';
+//   db.query(sql, (err, results) => {
+//     if (err) {
+//       console.error('Error fetching employees:', err);
+//       res.status(500).json({ message: 'Internal server error' });
+//       return;
+//     }
+//     res.json(results);
+//   });
+// });
+
+// Endpoint to fetch employees
 app.get('/api/employees', (req, res) => {
-  const sql = 'SELECT * FROM logincrd';
-  db.query(sql, (err, results) => {
+  const query = "SELECT * FROM `Logincrd` WHERE `disableemp`!='1' ORDER BY `Name` ASC";
+
+  db.query(query, (err, results) => {
     if (err) {
-      console.error('Error fetching employees:', err);
-      res.status(500).json({ message: 'Internal server error' });
-      return;
+      console.error(err);
+      res.status(500).json({ error: 'Failed to fetch employees' });
+    } else {
+      res.json(results);
     }
-    res.json(results);
   });
 });
 
@@ -1061,9 +1075,9 @@ app.get('/api/pages', (req, res) => {
 
 // Add new employee
 app.post('/api/add-employee', (req, res) => {
-  const { name, email, role, location, nickname, password, useEmailForLogin } = req.body;
-  const sql = 'INSERT INTO logincrd (Name, Email, Type, Location, nickname, Password, loginusinggmail) VALUES (?, ?, ?, ?, ?, ?, ?)';
-  const values = [name, email, role, location, nickname, password, useEmailForLogin];
+  const { Name, Email, Type, Location, Nickname, Password, loginusinggmail } = req.body;
+  const sql = 'INSERT INTO logincrd (Name, Email, Type, Location, Nickname, Password, loginusinggmail) VALUES (?, ?, ?, ?, ?, ?, ?)';
+  const values = [Name, Email, Type, Location, Nickname, Password, loginusinggmail];
   db.query(sql, values, (err, result) => {
     if (err) {
       console.error('Error adding employee:', err);
