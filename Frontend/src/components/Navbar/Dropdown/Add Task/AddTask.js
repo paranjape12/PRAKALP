@@ -50,6 +50,10 @@ const AddTaskModal = ({ open, onClose }) => {
       showMessage(setErrorMessage, 'Hours limit must be less than 100 and minutes limit must be less than 60');
       return;
     }
+    if (selectedEmployee === '') {
+      showMessage(setErrorMessage, 'Select an employee');
+      return;
+    }
     if (taskName === '') {
       showMessage(setErrorMessage, 'Please enter task name');
       return;
