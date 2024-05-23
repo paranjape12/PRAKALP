@@ -148,8 +148,18 @@ const AddTaskModal = ({ open, onClose }) => {
             <Select
               id="selempdrop"
               label="Select Employee"
+              size='small'
               value={selectedEmployee}
               onChange={(e) => setSelectedEmployee(e.target.value)}
+              style={{ fontFamily: 'Nunito', width: '15rem' }}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 400,
+                    width: '10rem',
+                  },
+                },
+              }}
             >
               {employees.map((employee) => (
                 <MenuItem key={employee.id} value={employee.Name}>
