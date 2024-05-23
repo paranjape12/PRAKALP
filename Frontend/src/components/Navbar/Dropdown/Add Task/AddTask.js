@@ -137,7 +137,7 @@ const AddTaskModal = ({ open, onClose }) => {
               }}
             >
               {projects.map((project, index) => (
-                <MenuItem key={index} value={project}>
+                <MenuItem key={index} value={project} dense>
                   {project}
                 </MenuItem>
               ))}
@@ -162,7 +162,7 @@ const AddTaskModal = ({ open, onClose }) => {
               }}
             >
               {employees.map((employee) => (
-                <MenuItem key={employee.id} value={employee.Name}>
+                <MenuItem key={employee.id} value={employee.Name} dense>
                   {employee.Name}
                 </MenuItem>
               ))}
