@@ -124,49 +124,51 @@ const AssignTaskDialog = ({ open, onClose }) => {
       </DialogTitle>
       <DialogContent>
         <div>
-          <FormControl style={{ marginTop: '1rem', marginRight: '3rem', marginBottom: '1rem' }}>
-            <InputLabel>Select Project</InputLabel>
+          <FormControl style={{ marginTop: '1rem', marginRight: '3rem' }}>
+            <InputLabel >Select Project</InputLabel>
             <Select
               label="Select Project"
               id="addprojdrop"
+              size='small'
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
-              required
+              style={{ fontFamily: 'Nunito', width: '15rem' }}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 400,
+                    width: '25rem',
+                  },
+                },
+              }}
             >
               {projects.map((project, index) => (
-                <MenuItem key={index} value={project}>
+                <MenuItem key={index} value={project} dense>
                   {project}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          {selectedProject && (
-            <FormControl style={{ marginTop: '1rem', marginRight: '3rem', marginBottom: '1rem' }}>
-              <InputLabel>Select Task</InputLabel>
-              <Select
-                label="Select Task"
-                id="taskdrop"
-                value={selectedTask}
-                onChange={(e) => setSelectedTask(e.target.value)}
-              >
-                {tasks.map((task, index) => (
-                  <MenuItem key={index} value={task.id}>
-                    {task.TaskName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-          <FormControl style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-            <InputLabel>Select Employee</InputLabel>
+          <FormControl style={{ marginTop: '1rem' }}>
+            <InputLabel >Select Employee</InputLabel>
             <Select
               id="selempdrop"
               label="Select Employee"
+              size='small'
               value={selectedEmployeeId}
-              onChange={handleEmployeeChange}
+              onChange={(e) => setSelectedEmployeeId(e.target.value)}
+              style={{ fontFamily: 'Nunito', width: '15rem' }}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 400,
+                    width: '10rem',
+                  },
+                },
+              }}
             >
               {employees.map((employee) => (
-                <MenuItem key={employee.id} value={employee.id}>
+                <MenuItem key={employee.id} value={employee.Name} dense>
                   {employee.Name}
                 </MenuItem>
               ))}
@@ -174,12 +176,13 @@ const AssignTaskDialog = ({ open, onClose }) => {
           </FormControl>
         </div>
 
-        <InputLabel style={{ fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '18px', marginBottom: '1rem' }}>Task Details</InputLabel>
+        <InputLabel style={{ fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '18px', marginBottom: '1rem',marginTop: '1rem' }}>Task Details</InputLabel>
         <div style={{ display: 'flex' }}>
           <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginRight: '2.5rem' }}>Date</InputLabel>
           <TextField
             type="date"
             value={date}
+            size='small'
             onChange={(e) => setDate(e.target.value)}
             InputLabelProps={{
               shrink: true,
