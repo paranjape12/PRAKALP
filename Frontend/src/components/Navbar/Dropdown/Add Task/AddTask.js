@@ -204,7 +204,7 @@ const AddTaskModal = ({ open, onClose }) => {
               <InputAdornment position="end" style={{ outline: 'none' }}>Hr</InputAdornment>
             ),
             style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
-            inputProps: { min: 0, max: 12, style: { padding: '25px' } }
+            inputProps: { min: 0, max: 12, style: { padding: '1.3rem' } }
           }}
         />
         <TextField
@@ -219,7 +219,7 @@ const AddTaskModal = ({ open, onClose }) => {
               <InputAdornment position="end" style={{ outline: 'none', }}>Min</InputAdornment>
             ),
             style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
-            inputProps: { min: 0, max: 59, style: { padding: '25px' } }
+            inputProps: { min: 0, max: 59, style: { padding: '1.3rem' } }
           }}
         />
 
