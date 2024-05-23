@@ -123,9 +123,18 @@ const AddTaskModal = ({ open, onClose }) => {
             <Select
               label="Select Project"
               id="addprojdrop"
+              size='small'
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
-              style={{ fontFamily: 'Nunito'}}
+              style={{ fontFamily: 'Nunito', width: '15rem' }}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 400,
+                    width: '25rem',
+                  },
+                },
+              }}
             >
               {projects.map((project, index) => (
                 <MenuItem key={index} value={project}>
