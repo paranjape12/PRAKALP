@@ -232,6 +232,7 @@ const AddTaskModal = ({ open, onClose }) => {
                   type="date"
                   value={assignDate}
                   onChange={(e) => setAssignDate(e.target.value)}
+                  size="small"
                   InputLabelProps={{
                     shrink: true,
                   }}
@@ -239,23 +240,18 @@ const AddTaskModal = ({ open, onClose }) => {
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginTop: '0.5rem' }}>Required Time</InputLabel>
-                <div style={{ display: 'flex' }}>
-                  <TextField
-                    margin="dense"
-                    id="addprojmin_emp_assign"
-                    type="number"
-                    value={minAssign}
-                    onChange={(e) => setMinAssign(e.target.value)}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end" style={{ outline: 'none' }}>Hr</InputAdornment>
-                      ),
-                      style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
-                      inputProps: { min: 0, max: 12, style: { padding: '25px' } }
-                    }}
-                    style={{ marginRight: '1rem' }}
-                  />
+                <InputLabel
+                  style={{
+                    fontFamily: 'Nunito',
+                    color: 'Black',
+                    fontWeight: '700',
+                    fontSize: '18px',
+                    marginTop: '0.25rem',
+                    marginBottom: '0',
+                  }}>
+                  Required Time
+                </InputLabel>
+                <div style={{ display: 'flex', marginTop: '0.25rem' }}>
                   <TextField
                     margin="dense"
                     id="addprojhr_emp_assign"
@@ -264,10 +260,39 @@ const AddTaskModal = ({ open, onClose }) => {
                     onChange={(e) => setHrAssign(e.target.value)}
                     InputProps={{
                       endAdornment: (
+                        <InputAdornment position="end" style={{ outline: 'none' }}>Hr</InputAdornment>
+                      ),
+                      style: {
+                        fontFamily: 'Nunito',
+                        color: 'black',
+                        fontWeight: '700',
+                        fontSize: '18px',
+                        border: 'none',
+                        marginTop: '0'
+                      },
+                      inputProps: { min: 0, max: 12, style: { padding: '1.3rem' } }
+                    }}
+                    style={{ marginRight: '1rem' }}
+                  />
+                  <TextField
+                    margin="dense"
+                    size="small"
+                    id="addprojmin_emp_assign"
+                    type="number"
+                    value={minAssign}
+                    onChange={(e) => setMinAssign(e.target.value)}
+                    InputProps={{
+                      endAdornment: (
                         <InputAdornment position="end" style={{ outline: 'none' }}>Min</InputAdornment>
                       ),
-                      style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
-                      inputProps: { min: 0, max: 59, style: { padding: '25px' } }
+                      style: {
+                        fontFamily: 'Nunito',
+                        color: 'black',
+                        fontWeight: '700',
+                        fontSize: '18px',
+                        border: 'none'
+                      },
+                      inputProps: { min: 0, max: 59, style: { padding: '1.3rem' } }
                     }}
                   />
                 </div>
