@@ -1,14 +1,15 @@
 /* styles.css */
 
-.custom-text-field {
-    
-  padding-top: 7px;
-  padding-right: 14px;
-  padding-bottom: 10px;
-
-}
 
 input[type="checkbox"] {
   margin-bottom: 5px !important;
   margin-left: -13px !important;
+}
+
+.save-btn {
+  background-color: #008000 !important;
+}
+
+.close-btn {
+  background-color: #ff0000 !important;
 }
