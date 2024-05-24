@@ -97,6 +97,7 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
 
   const handleLogout = () => {
     navigate('/');
+    localStorage.removeItem('token')
   };
 
 
