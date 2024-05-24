@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, FormControl, InputLabel, Select, MenuItem, Checkbox, FormControlLabel } from '@material-ui/core';
 import AddEmployee from './AddEmployee';
 
-const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, pages }) => {
+const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails }) => {
 
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [employees, setEmployees] = useState([]);
@@ -22,6 +22,13 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
     loginusinggmail: 0,
     access: {}
   });
+
+  const pages = [
+    { PageName: 'Project' },
+    { PageName: 'Epmloyee' },
+    { PageName: 'Task' },
+    // Add more pages as needed
+  ];
 
   useEffect(() => {
     if (employeeDetails) {
@@ -43,18 +50,36 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    });
-
-    // Check if the "Use Email For Login" checkbox is checked, and hide/show password fields accordingly
+    // If the checkbox "Use Email For Login" is changed
     if (name === 'loginusinggmail') {
+      // If checked, set loginusinggmail to 1, otherwise set it to 0
+      setFormData({
+        ...formData,
+        [name]: checked ? 1 : 0
+      });
+      // Show/hide password fields based on the checkbox state
       setShowPasswordFields(!checked);
+    } else {
+      // For other fields, update the form data as usual
+      setFormData({
+        ...formData,
+        [name]: type === 'checkbox' ? checked : value
+      });
     }
   };
 
 
+  useEffect(() => {
+    // Fetch pages
+    axios.get('http://localhost:3001/api/pages')
+  .then(response => {
+    console.log('Pages fetched successfully:', response.data);
+  })
+  .catch(error => {
+    console.error('There was an error fetching the pages!', error);
+  });
+
+  }, []);
 
   const handleAccessChange = (pageName, accessType) => {
     setFormData(prevState => ({
@@ -143,7 +168,7 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
   return (
     <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth='md'>
       <DialogTitle>Edit Employee
-        <Button className='editEmp-btn' style={{ marginLeft: '35rem' }} onClick={() => setOpenDialog(true)}>Add Employee</Button>
+        <Button className='addEmp-btn' style={{ marginLeft: '35rem' }} onClick={() => setOpenDialog(true)} color='primary' variant='contained'>Add Employee</Button>
         <AddEmployee openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} />
       </DialogTitle>
       <DialogContent>
@@ -338,13 +363,13 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, page
         </form>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setOpenEditDialog(false)} color="primary">
+        <Button className='close-btn' onClick={() => setOpenEditDialog(false)} color="danger" variant='contained'>
           Close
         </Button>
-        <Button onClick={handleDelete} color="primary">
+        <Button className='btn-remove' onClick={handleDelete} variant='contained'>
           Remove
         </Button>
-        <Button onClick={handleSubmit} color="primary">
+        <Button className='save-btn' onClick={handleSubmit} variant='contained'>
           Save
         </Button>
       </DialogActions>
