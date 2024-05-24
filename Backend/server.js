@@ -978,6 +978,48 @@ app.post('/api/getLogin', (req, res) => {
   });
 });
 
+// FAMT API Endpoint to update user profile
+app.post('/api/updateUser', (req, res) => {
+  const { id, name, Email, Password, location } = req.body;
+  const passwordBase64 = Buffer.from(Password).toString('base64');
+
+  // Check if the user is trying to update with unchanged data
+  const checkQuery = `SELECT * FROM Logincrd WHERE id='${id}'`;
+  db.query(checkQuery, (err, results) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      res.status(500).send('Error');
+      return;
+    }
+
+    if (results.length > 0) {
+      const user = results[0];
+      if (
+        user.Name === name &&
+        user.Email === Email &&
+        user.Password === passwordBase64 &&
+        user.Location === location
+      ) {
+        res.status(400).send('User already exists');
+        return;
+      }
+
+      // Update query if data is changed
+      const updateQuery = `UPDATE Logincrd SET Name='${name}', Email='${Email}', Password='${passwordBase64}', Location='${location}' WHERE id='${id}'`;
+      db.query(updateQuery, (err, result) => {
+        if (err) {
+          console.error('Error updating user:', err);
+          res.status(500).send('Error');
+          return;
+        }
+        res.status(200).send('Success');
+      });
+    } else {
+      res.status(404).send('User not found');
+    }
+  });
+});
+
 app.get('/api/fetchAllLoginData', (req, res) => {
   // Query the database to retrieve all data from the login table
   const sql = 'SELECT * FROM employees';
