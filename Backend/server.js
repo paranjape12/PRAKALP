@@ -1108,20 +1108,20 @@ app.get('/api/pages', (req, res) => {
   });
 });
 
-// Add new employee
-app.post('/api/add-employee', (req, res) => {
-  const { Name, Email, Type, Location, Nickname, Password, loginusinggmail } = req.body;
-  const sql = 'INSERT INTO logincrd (Name, Email, Type, Location, Nickname, Password, loginusinggmail) VALUES (?, ?, ?, ?, ?, ?, ?)';
-  const values = [Name, Email, Type, Location, Nickname, Password, loginusinggmail];
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      console.error('Error adding employee:', err);
-      res.status(500).json({ message: 'Internal server error' });
-      return;
-    }
-    res.status(201).json({ message: 'Employee added successfully' });
-  });
-});
+// // Add new employee
+// app.post('/api/add-employee', (req, res) => {
+//   const { Name, Email, Type, Location, Nickname, Password, loginusinggmail } = req.body;
+//   const sql = 'INSERT INTO logincrd (Name, Email, Type, Location, Nickname, Password, loginusinggmail) VALUES (?, ?, ?, ?, ?, ?, ?)';
+//   const values = [Name, Email, Type, Location, Nickname, Password, loginusinggmail];
+//   db.query(sql, values, (err, result) => {
+//     if (err) {
+//       console.error('Error adding employee:', err);
+//       res.status(500).json({ message: 'Internal server error' });
+//       return;
+//     }
+//     res.status(201).json({ message: 'Employee added successfully' });
+//   });
+// });
 
 // // API Endpoint for Decrypted Token
 // app.post('/api/empDropdown', (req, res) => {
@@ -1153,6 +1153,50 @@ app.post('/api/add-employee', (req, res) => {
 //     res.json({ message: 'Employee updated successfully' });
 //   });
 // });
+
+app.post('/api/add-employee', (req, res) => {
+  const { Name, fname, lname, Nickname, Email, Password, Type, Location, loginusinggmail } = req.body;
+
+  const emp = {
+    Name,
+    fname,
+    lname,
+    Nickname,
+    Email,
+    Password,
+    Type,
+    Location,
+    loginusinggmail
+  };
+
+  const sql = 'INSERT INTO logincrd SET ?';
+  db.query(sql, emp, (err, result) => {
+    if (err) throw err;
+    console.log('New employee inserted');
+    
+    // Fetch the ID of the latest created employee
+    const fetchLatestId = 'SELECT id FROM logincrd ORDER BY id DESC LIMIT 1';
+    db.query(fetchLatestId, (err, result) => {
+      if (err) throw err;
+
+      const latestId = result[0].id;
+
+      // Insert the latest employee ID into MySQL table empaccess
+      const empAccess = {
+        Empid: latestId,
+        AcessTo: 'some_value', // You need to specify the access details
+        accesstype: 'some_type' // You need to specify the access type
+      };
+
+      const insertEmpAccess = 'INSERT INTO empaccess SET ?';
+      db.query(insertEmpAccess, empAccess, (err, result) => {
+        if (err) throw err;
+        console.log('Employee access inserted');
+        res.send('Employee and access inserted successfully');
+      });
+    });
+  });
+});
 
 app.put('/api/update-employee', (req, res) => {
   const { Email, Password, Type, selctloc, loginusinggmail, empid, Name, Nickname, pagename, pagevalue } = req.body;
