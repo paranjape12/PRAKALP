@@ -1,46 +1,108 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 
 
-  .title {
-    text-align: left;
-    padding-left: 35px;
-    font-family: "Nunito", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 700;
-    font-size: 24px;
-  }
-  .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 130px;
-   
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    z-index: 200;
-    margin: 0;
-    padding: 0;
-    right: 0;
-  }
+.title {
+  text-align: left;
+  padding-left: 35px;
+  font-family: "Nunito", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 130px;
+
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 200;
+  margin: 0;
+  padding: 0;
+  right: 0;
+}
+
 .profile_bg {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #ff8f2ef7;
-    padding-right: 2rem;
-    height: 38px;
-    /* Adjust padding as needed */
-  }
-  
- 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ff8f2ef7;
+  padding-right: 2rem;
+  height: 38px;
+  /* Adjust padding as needed */
+}
 
+#profileInputPassword {
+  display: block;
+  width: 90%;
+  height: calc(1.5em + .75rem + 2px);
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #6e707e;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #d1d3e2;
+  border-radius: .35rem 0 0 .35rem;
+}
 
+#profileInputPrepend {
+  display: flex;
+  align-items: center;
+  height: calc(1.5em + .75rem + 2px);
+  padding-left: 1rem;
+  padding-right: 1rem;
+  background-color: #f8f9fc;
+  border: 1px solid #d1d3e2;
+  border-left: none;
+  border-radius: 0 .35rem .35rem 0;
+}
 
-  
+.profile-input-group-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(1.5em + .75rem + 2px);
+  font-size: 1rem;
+  color: #6e707e;
+  cursor: pointer;
+}
 
+#profileInputEyeIcon {
+  font-size: 1.25rem;
+}
 
+#profileRepeatPasswordGroup {
+  margin-bottom: 1rem;
+}
 
+#profileRepeatPasswordLabel {
+  display: block;
+  margin-bottom: .5rem;
+  font-size: 1rem;
+  color: #343a40;
+}
+
+#profileRepeatPassword {
+  display: block;
+  width: 100%;
+  height: calc(1.5em + .75rem + 2px);
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #6e707e;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #d1d3e2;
+  border-radius: .35rem;
+  margin-bottom: 1rem;
+}
 
