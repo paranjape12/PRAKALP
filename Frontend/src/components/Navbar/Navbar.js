@@ -72,13 +72,6 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
     setSettingsDialogOpen(false);
   };
 
-  const handleOpenProfileDialog = () => {
-    setAssignTaskDialogOpen(true);
-  };
-  const handleCloseProfileDialog = () => {
-    setAssignTaskDialogOpen(false);
-  };
-
   const onTodayClick = () => {
     window.location.reload(false);
   }
@@ -88,7 +81,6 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
     setShowSettingsDropdown(false);
     setShowProfileDropdown(false);
   };
-
   const handleProfileButtonClick = () => {
     setShowProfileDropdown(!showProfileDropdown);
     setShowSettingsDropdown(false);
