@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
-import eyeIcon from '../../assets/eye-white.svg'
-import eyeSlashIcon from '../../assets/eye-slash-white.svg'
 import '../../pages/TaskOverview/TaskOverview.css';
 import Footer from '../../components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -21,9 +19,9 @@ const daysOfWeek = [
 
 function TaskOverview() {
   const [showComplete, setShowComplete] = useState(true);
-  
+
   const toggleShowComplete = (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     setShowComplete(prevShowComplete => !prevShowComplete);
   };
 
@@ -33,9 +31,8 @@ function TaskOverview() {
   useEffect(() => {
     const newDates = [];
     let currentDate = new Date(today);
-    const startIndex = startDateIndex; // Start index for the new dates array
     for (let i = 0; i < 7; i++) {
-      const newDate = new Date(currentDate.setDate(currentDate.getDate() + startIndex + i)); // Adjusted date calculation
+      const newDate = new Date(currentDate.setDate(currentDate.getDate() + startDateIndex + i));
       newDates.push({
         date: newDate,
         dateString: newDate.toLocaleDateString('en-US', {
@@ -71,27 +68,27 @@ function TaskOverview() {
       )}
       <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito" }}>
         <thead className="text-white" id="theader">
-          <tr className="text-center small" style={{}}>
-            <th style={{ width: '20rem', verticalAlign: 'revert', color: 'white', alignItems: 'center' }}>Projects</th>
-            <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '1rem' }}>
-                <span>Task Details</span>
-                <div className="taskEye" style={{ marginLeft: '7rem'}}>
-                  {showComplete ? (
-                    <img className='eyeicon' src={eyeIcon} alt="Eye Icon" width={18} style={{ cursor: 'pointer', color: 'white', pointerEvents: 'auto' }} onClick={toggleShowComplete}/>
-                  ) : (
-                    <img src={eyeSlashIcon} alt="Eye Slash Icon" width={18} style={{ cursor: 'pointer', color: 'white', pointerEvents: 'auto' }} onClick={toggleShowComplete}/>
-                  )}
+          <tr className="text-center small">
+            <th style={{ width: '20rem', verticalAlign: 'revert', color: 'white' }}>Projects</th>
+            <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <span style={{ flexGrow: 1, textAlign: 'center' }}>Task Details</span>
+                <div className="taskEye" style={{ position: 'absolute', right: '1rem' }}>
+                  <FontAwesomeIcon
+                    icon={showComplete ? faEye : faEyeSlash}
+                    className="eyeicon"
+                    style={{ cursor: 'pointer', color: 'white' }}
+                    onClick={toggleShowComplete}
+                  />
                 </div>
               </div>
             </th>
-
-            {dates.slice(startDateIndex, startDateIndex + 7).map((date, index) => {
+            {dates.map((date, index) => {
               const currentDate = new Date(date.date);
               const isSunday = currentDate.getDay() === 0;
               return (
                 <th
-                  key={index} // Use index as key since dates may repeat across different weeks
+                  key={index}
                   className={isSunday ? 'th1th' : `th${date.day}`}
                   style={{ backgroundColor: isSunday ? 'red' : '', color: 'white' }}
                 >
@@ -101,7 +98,6 @@ function TaskOverview() {
                 </th>
               );
             })}
-
           </tr>
         </thead>
         <tbody id="projectviewtbody">
