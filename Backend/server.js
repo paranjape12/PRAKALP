@@ -43,15 +43,15 @@ app.post('/api/profile', (req, res) => {
   const { U_id } = req.body;
   const query = "SELECT * FROM Logincrd WHERE id = ?";
   db.query(query, [U_id], (err, result) => {
-      if (err) return res.status(500).send(err);
-      if (result.length > 0) {
-          const user = result[0];
-          user.password = Buffer.from(user.Password, 'base64').toString('utf8');
-          if (!user.Location) user.Location = 'Ratnagiri';
-          res.json(user);
-      } else {
-          res.status(404).send('User not found');
-      }
+    if (err) return res.status(500).send(err);
+    if (result.length > 0) {
+      const user = result[0];
+      user.password = Buffer.from(user.Password, 'base64').toString('utf8');
+      if (!user.Location) user.Location = 'Ratnagiri';
+      res.json(user);
+    } else {
+      res.status(404).send('User not found');
+    }
   });
 });
 
@@ -65,8 +65,8 @@ app.put('/api/profile', (req, res) => {
       WHERE id = ?
   `;
   db.query(query, [name, email, encodedPassword, location, U_id], (err, result) => {
-      if (err) return res.status(500).send(err);
-      res.send('Profile updated successfully');
+    if (err) return res.status(500).send(err);
+    res.send('Profile updated successfully');
   });
 });
 
@@ -358,7 +358,7 @@ app.post('/api/assignTask', (req, res) => {
 
   const userData = decryptToken(token);
   const empid = userData.id;
-  
+
   const date = new Date(Dateassign);
   date.setHours(0, 0, 1); // Set hours, minutes, seconds to 00:00:01
   const todaydatetime = date.toISOString().split('T')[0] + ' 00:00:01';
@@ -545,6 +545,101 @@ app.post('/api/updateProjectSorting', (req, res) => {
   }
 });
 
+
+// FAMT API to fetch projects table column data according to user preference
+app.post('/api/projectcell', (req, res) => {
+  const token = req.body.token;
+  const is_complete = req.body.is_complete;
+
+  if (!token) {
+    return res.status(400).send('Token is required');
+  }
+
+  const userData = decryptToken(token);
+  const U_type = userData.Type;
+  const u_id = userData.id;
+  let arrselectemptask = [];
+
+  if (U_type !== 'Admin' && U_type !== 'Team Leader') {
+    const selectTaskEmpQuery = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`;
+    db.query(selectTaskEmpQuery, [u_id], (err, taskResults) => {
+      if (err) {
+        console.error('Error executing task query:', err.stack);
+        return res.status(500).send('Database query error');
+      }
+
+      arrselectemptask = taskResults.map(row => row.taskid);
+
+      getProjSortingAndProjects();
+    });
+  } else {
+    getProjSortingAndProjects();
+  }
+
+  function getProjSortingAndProjects() {
+    const loginQuerySort = `SELECT projsorting FROM Logincrd WHERE id = ?`;
+    db.query(loginQuerySort, [u_id], (err, loginResults) => {
+      if (err) {
+        console.error('Error executing login query:', err.stack);
+        return res.status(500).send('Database query error');
+      }
+
+      const proj_sort_str = loginResults.length > 0 ? loginResults[0].projsorting : '';
+      const proj_sort = proj_sort_str ? proj_sort_str.split(' ') : [];
+
+      let selectProjectQuery;
+      if (proj_sort_str === '') {
+        selectProjectQuery = `SELECT * FROM projects`;
+      } else {
+        const sort_Status = proj_sort.map(status => `'${status}'`).join(',');
+        selectProjectQuery = `SELECT * FROM projects WHERE Status IN (${sort_Status})`;
+      }
+
+      db.query(selectProjectQuery, (err, projectResults) => {
+        if (err) {
+          console.error('Error executing project query:', err.stack);
+          return res.status(500).send('Database query error');
+        }
+
+        let response = [];
+        let count = 0;
+        projectResults.forEach(project => {
+          const projectName = project.ProjectName;
+          const projectSalesOrder = project.sales_order;
+          const proj_status = project.Status;
+
+          let selcttask;
+          if (U_type !== 'Admin' && U_type !== 'Team Leader') {
+            const ids = arrselectemptask.map(id => `'${id}'`).join(',');
+            selcttask = `SELECT * FROM Task WHERE projectName = ? AND id IN (${ids}) AND aproved = ?`;
+          } else {
+            selcttask = `SELECT * FROM Task WHERE projectName = ? AND aproved = ?`;
+          }
+
+          db.query(selcttask, [projectName, is_complete], (err, taskResults) => {
+            if (err) {
+              console.error('Error executing task query:', err.stack);
+              return res.status(500).send('Database query error');
+            }
+
+            let assigntaskpresent = taskResults.length > 0;
+            response.push({
+              projectName,
+              projectSalesOrder,
+              assigntaskpresent,
+              proj_status
+            });
+
+            count++;
+            if (count === projectResults.length) {
+              res.json(response);
+            }
+          });
+        });
+      });
+    });
+  }
+});
 
 
 // =================================  APIs by GJC for ref. START =====================================
@@ -1258,7 +1353,7 @@ app.post('/api/add-employee', (req, res) => {
   db.query(sql, emp, (err, result) => {
     if (err) throw err;
     console.log('New employee inserted');
-    
+
     // Fetch the ID of the latest created employee
     const fetchLatestId = 'SELECT id FROM logincrd ORDER BY id DESC LIMIT 1';
     db.query(fetchLatestId, (err, result) => {
