@@ -3,7 +3,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import '../../pages/TaskOverview/TaskOverview.css';
 import Footer from '../../components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const today = new Date();
 
@@ -19,6 +19,7 @@ const daysOfWeek = [
 
 function TaskOverview() {
   const [showComplete, setShowComplete] = useState(true);
+  const [projects, setProjects] = useState([]);
 
   const toggleShowComplete = (e) => {
     e.stopPropagation();
@@ -55,6 +56,49 @@ function TaskOverview() {
   const handlePreviousDayClick = () => {
     const previousIndex = startDateIndex - 7;
     setStartDateIndex(previousIndex);
+  };
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/projectcell', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            token: localStorage.getItem('token'),
+            is_complete: showComplete ? '1' : '0'
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setProjects(data);
+        } else {
+          console.error('Failed to fetch projects');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchProjects();
+  }, [showComplete]);
+
+  const getBackgroundColor = (proj_status) => {
+    switch (proj_status) {
+      case 1:
+        return '#ADD8E6';
+      case 2:
+        return '#ffff00ad';
+      case 3:
+        return '#ff8d00b8';
+      case 4:
+        return '#04ff00b8';
+      default:
+        return '#FFFFFF';
+    }
   };
 
   return (
@@ -101,7 +145,21 @@ function TaskOverview() {
           </tr>
         </thead>
         <tbody id="projectviewtbody">
-          {/* Your logic for populating the table body with task data */}
+          {projects.map((project, index) => (
+            <tr key={index}>
+              <td className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', padding: '0 0 0 0.5rem', fontSize: '13.44px' }}>
+                {project.assigntaskpresent && (<FontAwesomeIcon icon={faPlus} style={{ cursor: 'pointer' }} />)} [{project.projectSalesOrder}]
+                <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid}>
+                  <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
+                </a>
+                <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.proid} name={project.projectName} value={project.proj_status}>
+                  <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
+                </a>
+                <br />
+                {project.projectName}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
       <Footer />
