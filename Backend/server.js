@@ -610,13 +610,12 @@ app.post('/api/projectcell', (req, res) => {
 
           let selcttask;
           if (U_type !== 'Admin' && U_type !== 'Team Leader') {
-            const ids = arrselectemptask.map(id => `'${id}'`).join(',');
-            selcttask = `SELECT * FROM Task WHERE projectName = ? AND id IN (${ids}) AND aproved = ?`;
+            selcttask = `SELECT DISTINCT te.taskid FROM Taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?;`;
           } else {
-            selcttask = `SELECT * FROM Task WHERE projectName = ? AND aproved = ?`;
+            selcttask = `SELECT * FROM Task WHERE projectName = ?`;
           }
 
-          db.query(selcttask, [projectName, is_complete], (err, taskResults) => {
+          db.query(selcttask, [u_id, projectName], (err, taskResults) => {
             if (err) {
               console.error('Error executing task query:', err.stack);
               return res.status(500).send('Database query error');
