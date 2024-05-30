@@ -622,17 +622,34 @@ app.post('/api/projectcell', (req, res) => {
             }
 
             let assigntaskpresent = taskResults.length > 0;
-            response.push({
-              projectName,
-              projectSalesOrder,
-              assigntaskpresent,
-              proj_status
-            });
+            let noofassigntasks = taskResults.length;
 
-            count++;
-            if (count === projectResults.length) {
-              res.json(response);
-            }
+            // New query to get the required and taken time
+            const timeQuery = `SELECT sum(te.timetocomplete_emp) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
+            db.query(timeQuery, [u_id, projectName], (err, timeResults) => {
+              if (err) {
+                console.error('Error executing time query:', err.stack);
+                return res.status(500).send('Database query error');
+              }
+
+              const requiredTime = timeResults[0].required || 0;
+              const takenTime = timeResults[0].taken || 0;
+
+              response.push({
+                projectName,
+                projectSalesOrder,
+                assigntaskpresent,
+                noofassigntasks,
+                proj_status,
+                requiredTime,
+                takenTime
+              });
+
+              count++;
+              if (count === projectResults.length) {
+                res.json(response);
+              }
+            });
           });
         });
       });
