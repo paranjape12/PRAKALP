@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import '../../pages/TaskOverview/TaskOverview.css';
 import Footer from '../../components/Footer';
+import EditProjectPopup from '../../components/TaskOverview/EditProjectPopup';
+import DeleteProjectPopup from '../../components/TaskOverview/DeleteProjectPopup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import axios from 'axios';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const today = new Date();
@@ -30,15 +33,36 @@ const seconds2dayhrmin = (ss) => {
   return ` ${formattedD} : ${formattedH} : ${formattedM} `;
 };
 
+const getBackgroundColor = (proj_status) => {
+  switch (proj_status) {
+    case 1:
+      return '#ADD8E6';
+    case 2:
+      return '#ffff00ad';
+    case 3:
+      return '#ff8d00b8';
+    case 4:
+      return '#04ff00b8';
+    default:
+      return '#FFFFFF';
+  }
+};
+
 function TaskOverview() {
   const [showComplete, setShowComplete] = useState(true);
   const [showTimeComplete, setShowTimeComplete] = useState(true);
-  const [projects, setProjects] = useState([]);
+  const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [projects, setProjects] = useState([]); const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [projectName, setProjectName] = useState(null);
+
 
   const toggleShowComplete = (e) => {
     e.stopPropagation();
     setShowComplete(prevShowComplete => !prevShowComplete);
   };
+
   const toggleShowTimeComplete = (e) => {
     e.stopPropagation();
     setShowTimeComplete(prevShowTimeComplete => !prevShowTimeComplete);
@@ -76,48 +100,42 @@ function TaskOverview() {
     setStartDateIndex(previousIndex);
   };
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/api/projectcell', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            token: localStorage.getItem('token'),
-            is_complete: showComplete ? '1' : '0'
-          })
-        });
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/taskOverview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          token: localStorage.getItem('token'),
+          is_complete: showComplete ? '1' : '0'
+        })
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          setProjects(data);
-        } else {
-          console.error('Failed to fetch projects');
-        }
-      } catch (error) {
-        console.error('Error:', error);
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(data);
+      } else {
+        console.error('Failed to fetch projects');
       }
-    };
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchProjects();
   }, [showComplete]);
 
-  const getBackgroundColor = (proj_status) => {
-    switch (proj_status) {
-      case 1:
-        return '#ADD8E6';
-      case 2:
-        return '#ffff00ad';
-      case 3:
-        return '#ff8d00b8';
-      case 4:
-        return '#04ff00b8';
-      default:
-        return '#FFFFFF';
-    }
-  };
+  // Fetch projects every 4 second to update colors
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchProjects();
+    }, 4000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   function getTaskStatusColor(requiredTime, takenTime) {
     if (requiredTime < takenTime) {
@@ -129,6 +147,58 @@ function TaskOverview() {
     }
   }
 
+  const handleOpenEditProjectDialog = (project) => {
+    setSelectedProject({
+      salesOrder: project.projectSalesOrder,
+      projectName: project.projectName,
+      projectStatus: project.proj_status,
+      projectId: project.projectId,
+    });
+    setEditProjectDialogOpen(true);
+  };
+
+  const handleCloseEditProjectDialog = () => {
+    setEditProjectDialogOpen(false);
+    setSelectedProject(null);
+  };
+
+  const handleSaveEditProject = async (updatedProject) => {
+    try {
+      const response = await axios.post('http://localhost:3001/api/updateProject', {
+        ProjectName: updatedProject.projectName,
+        Projectid: updatedProject.projectId,
+        projstatus: updatedProject.projectStatus,
+        editprojmodalisalesval: updatedProject.salesOrder
+      });
+
+      if (response.data === 'Success') {
+        // Update the projects state after saving
+        setProjects((prevProjects) =>
+          prevProjects.map((proj) =>
+            proj.projectSalesOrder === updatedProject.salesOrder
+              ? { ...proj, projectName: updatedProject.projectName, proj_status: updatedProject.projectStatus }
+              : proj
+          )
+        );
+      } else {
+        console.error('Failed to update project:', response.data);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleOpenDeleteProjectDialog = (projectId, projectName) => {
+    setSelectedProjectId(projectId);
+    setDeleteProjectDialogOpen(true);
+    setProjectName(projectName);
+  };
+
+  const handleCloseDeleteProjectDialog = () => {
+    setSelectedProjectId(null);
+    setDeleteProjectDialogOpen(false);
+  };
+  
 
   return (
     <div>
@@ -178,10 +248,10 @@ function TaskOverview() {
             <tr key={index}>
               <td className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', padding: '0 0 0 0.5rem', fontSize: '13.44px' }}>
                 {project.assigntaskpresent && (<FontAwesomeIcon icon={faPlus} style={{ cursor: 'pointer' }} title='Expand Tasks' />)} [{project.projectSalesOrder}]
-                <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid}>
+                <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
                   <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
                 </a>
-                <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.proid} name={project.projectName} value={project.proj_status}>
+                <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.projectId} name={project.projectName} value={project.proj_status} onClick={() => handleOpenEditProjectDialog(project)}>
                   <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
                 </a>
                 <br />
@@ -218,16 +288,30 @@ function TaskOverview() {
                       </td>
                     </div>
                   </td>
-
                 </>
               )}
-              {!project.assigntaskpresent && (<td className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px' }} colSpan="9">No Task Found today</td>)}
+              {!project.assigntaskpresent && (<td className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle' }} colSpan="9">No Task Found today</td>)}
             </tr>
           ))}
         </tbody>
       </table>
+      {selectedProject && (
+        <EditProjectPopup
+          open={editProjectDialogOpen}
+          handleClose={handleCloseEditProjectDialog}
+          projectDetails={selectedProject}
+          onSave={handleSaveEditProject}
+        />
+      )}
+      {selectedProjectId && (
+        <DeleteProjectPopup
+          open={deleteProjectDialogOpen}
+          handleClose={handleCloseDeleteProjectDialog}
+          selectedProjectId={selectedProjectId} 
+        />
+      )}
       <Footer />
-    </div >
+    </div>
   );
 }
 
