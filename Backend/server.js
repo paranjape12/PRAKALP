@@ -659,6 +659,163 @@ app.post('/api/taskOverview', (req, res) => {
 });
 
 
+// FAMT API to edit project details
+app.post('/api/updateProject', async (req, res) => {
+  const { ProjectName, Projectid, projstatus, editprojmodalisalesval } = req.body;
+
+  if (!projstatus) {
+    return res.status(400).send('Project status is missing');
+  }
+
+  const status = projstatus.planning ? 1 : 
+                 projstatus.execution ? 2 : 
+                 projstatus.lastLap ? 3 : 
+                 projstatus.complete ? 4 : 0;
+
+  // Check if the sales order exists in other projects
+  const query = "SELECT * FROM `projects` WHERE `sales_order` = ?";
+  db.query(query, [editprojmodalisalesval], (err, result) => {
+    if (err) {
+      return res.status(500).send('Error querying database');
+    }
+
+    // Get the current project details
+    const query2 = "SELECT * FROM `projects` WHERE `id` = ?";
+    db.query(query2, [Projectid], (err, result2) => {
+      if (err) {
+        return res.status(500).send('Error querying database');
+      }
+
+      if (result2.length === 0) {
+        return res.status(404).send('Project not found');
+      }
+
+      const ProjectNameold = result2[0].ProjectName;
+      const sid_old = result2[0].sales_order;
+
+      if ((result.length > 0 && ProjectName !== ProjectNameold) && sid_old !== editprojmodalisalesval) {
+        return res.status(400).send('Project exists');
+      } else if (result.length > 0 && editprojmodalisalesval !== sid_old) {
+        return res.status(400).send('Project exists');
+      } else {
+        const query3 = "SELECT * FROM `Task` WHERE `projectName` = ?";
+        db.query(query3, [ProjectNameold], (err, result3) => {
+          if (err) {
+            return res.status(500).send('Error querying database');
+          }
+
+          if (result3.length > 0) {
+            const updateQuery1 = "UPDATE `projects` SET `ProjectName` = ?, `sales_order` = ?, `Status` = ? WHERE `id` = ?";
+            const updateQuery2 = "UPDATE `Task` SET `projectName` = ? WHERE `projectName` = ?";
+            db.query(updateQuery1, [ProjectName, editprojmodalisalesval, status, Projectid], (err, result1) => {
+              if (err) {
+                return res.status(500).send('Error updating project');
+              }
+              db.query(updateQuery2, [ProjectName, ProjectNameold], (err, result2) => {
+                if (err) {
+                  return res.status(500).send('Error updating tasks');
+                }
+                return res.send('Success');
+              });
+            });
+          } else {
+            const updateQuery1 = "UPDATE `projects` SET `ProjectName` = ?, `sales_order` = ?, `Status` = ? WHERE `id` = ?";
+            db.query(updateQuery1, [ProjectName, editprojmodalisalesval, status, Projectid], (err, result1) => {
+              if (err) {
+                return res.status(500).send('Error updating project');
+              }
+              return res.send('Success');
+            });
+          }
+        });
+      }
+    });
+  });
+});
+
+
+// FAMT API Endpoint for deleting project and associated tasks
+app.post('/api/deleteProject', (req, res) => {
+  const projid = req.body.projid;
+
+  // Fetch project details
+  db.query(
+    'SELECT * FROM `projects` WHERE `id` = ?',
+    [projid],
+    (error, results) => {
+      if (error) {
+        console.error('Error fetching project: ' + error);
+        return res.status(500).json({ message: 'Error fetching project' });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+
+      const proname = results[0].ProjectName;
+
+      // Delete project and associated tasks
+      db.beginTransaction(error => {
+        if (error) {
+          console.error('Error starting transaction: ' + error);
+          return res.status(500).json({ message: 'Error starting transaction' });
+        }
+
+        db.query(
+          'DELETE FROM `projects` WHERE `id` = ?',
+          [projid],
+          error => {
+            if (error) {
+              return db.rollback(() => {
+                console.error('Error deleting project: ' + error);
+                res.status(500).json({ message: 'Error deleting project' });
+              });
+            }
+
+            db.query(
+              'DELETE FROM `Task` WHERE `projectName` = ?',
+              [proname],
+              error => {
+                if (error) {
+                  return db.rollback(() => {
+                    console.error('Error deleting tasks: ' + error);
+                    res.status(500).json({ message: 'Error deleting tasks' });
+                  });
+                }
+
+                db.query(
+                  'DELETE FROM `Taskemp` WHERE `taskid` IN (SELECT DISTINCT `id` FROM `Task` WHERE `projectName` = ?)',
+                  [proname],
+                  error => {
+                    if (error) {
+                      return db.rollback(() => {
+                        console.error('Error deleting task employees: ' + error);
+                        res.status(500).json({ message: 'Error deleting task employees' });
+                      });
+                    }
+
+                    db.commit(error => {
+                      if (error) {
+                        return db.rollback(() => {
+                          console.error('Error committing transaction: ' + error);
+                          res.status(500).json({ message: 'Error committing transaction' });
+                        });
+                      }
+
+                      res.status(200).send({ message: 'Success' });
+                    });
+                  }
+                );
+              }
+            );
+          }
+        );
+      });
+    }
+  );
+});
+
+
 // =================================  APIs by GJC for ref. START =====================================
 
 // // Endpoint to fetch project lists of a particular employee
