@@ -249,7 +249,6 @@ app.post('/api/addProject', (req, res) => {
       console.error('Error adding project to database:', err);
       res.status(500).send('Internal Server Error');
     } else {
-      console.log('Project added to database');
       res.status(200).send('Project added successfully');
     }
   });
@@ -546,8 +545,8 @@ app.post('/api/updateProjectSorting', (req, res) => {
 });
 
 
-// FAMT API to fetch projects table column data according to user preference
-app.post('/api/projectcell', (req, res) => {
+// FAMT API to fetch data displayed on task overview page
+app.post('/api/taskOverview', (req, res) => {
   const token = req.body.token;
   const is_complete = req.body.is_complete;
 
@@ -604,6 +603,7 @@ app.post('/api/projectcell', (req, res) => {
         let response = [];
         let count = 0;
         projectResults.forEach(project => {
+          const projectId = project.id;
           const projectName = project.ProjectName;
           const projectSalesOrder = project.sales_order;
           const proj_status = project.Status;
@@ -636,6 +636,7 @@ app.post('/api/projectcell', (req, res) => {
               const takenTime = timeResults[0].taken || 0;
 
               response.push({
+                projectId,
                 projectName,
                 projectSalesOrder,
                 assigntaskpresent,
