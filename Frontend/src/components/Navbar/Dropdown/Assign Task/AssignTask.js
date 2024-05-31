@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, InputAdornment, DialogContent, DialogActions, TextField, Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import './AssignTask.css'
 import axios from 'axios';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+const theme = createTheme({
+  typography: {
+    fontFamily: 'Nunito, sans-serif',
+  },
+});
 
 const AssignTaskDialog = ({ open, onClose }) => {
   const [selectedProject, setSelectedProject] = useState('');
@@ -118,6 +125,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
   };
 
   return (
+    <ThemeProvider theme={theme}>
     <Dialog open={open} onClose={onClose} maxWidth="lg">
       <DialogTitle id="assigntask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>
         Assign Task
@@ -256,6 +264,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
         )}
       </DialogActions>
     </Dialog>
+    </ThemeProvider>
   );
 };
 

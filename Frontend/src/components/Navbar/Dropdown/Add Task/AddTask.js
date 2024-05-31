@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {
   Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputAdornment, FormControlLabel, InputLabel, MenuItem, Select,
   TextField,
 } from '@mui/material';
 import './AddTask.css'
 import axios from 'axios';
+
+const theme = createTheme({
+  typography: {
+    fontFamily: 'Nunito, sans-serif',
+  },
+});
 
 const AddTaskModal = ({ open, onClose }) => {
   const [taskName, setTaskName] = useState('');
@@ -113,6 +120,7 @@ const AddTaskModal = ({ open, onClose }) => {
   };
 
   return (
+    <ThemeProvider theme={theme}>
     <Dialog open={open} onClose={handleClose} aria-labelledby="addnewTitle" maxWidth='lg'>
       <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>
         Add New Task</DialogTitle>
@@ -327,6 +335,7 @@ const AddTaskModal = ({ open, onClose }) => {
         </Button>
       </DialogActions>
     </Dialog>
+    </ThemeProvider>
   );
 };
 
