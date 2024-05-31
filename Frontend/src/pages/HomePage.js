@@ -5,7 +5,7 @@ import '../cssfiles/HomePage.css';
 import deletebtn from '../assets/delete.png';
 import editbtn from '../assets/edit-text.png';
 import axios from 'axios';
-import EditProject from '../components/EditProject';
+import EditProject from '../components/TaskOverview/EditProjectPopup';
 //import WeeklyCalender from './WeeklyCalender';
 import Navbar from '../components/Navbar/Navbar';
 import AddNewProject from '../components/Navbar/Dropdown/Add Project/AddNewProject';
