@@ -4,9 +4,11 @@ import '../../pages/TaskOverview/TaskOverview.css';
 import Footer from '../../components/Footer';
 import EditProjectPopup from '../../components/TaskOverview/EditProjectPopup';
 import DeleteProjectPopup from '../../components/TaskOverview/DeleteProjectPopup';
+import AggregateTaskView from '../../components/TaskOverview/AggregateTaskView';
+import IndividualTaskView from '../../components/TaskOverview/IndividualTaskView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
-import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 
 const today = new Date();
 
@@ -49,24 +51,48 @@ const getBackgroundColor = (proj_status) => {
 };
 
 function TaskOverview() {
-  const [showComplete, setShowComplete] = useState(true);
+  const [showComplete, setShowComplete] = useState(() => {
+    // Get initial state from localStorage or set default value to true
+    const storedValue = localStorage.getItem('showComplete');
+    return storedValue ? JSON.parse(storedValue) : true;
+  });
   const [showTimeComplete, setShowTimeComplete] = useState(true);
+  const [expandedProjects, setExpandedProjects] = useState({});
   const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [projects, setProjects] = useState([]); const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [projectName, setProjectName] = useState(null);
-
+  const [showTimeDetails, setShowTimeDetails] = useState(true);
+  const [projectTimeDetails, setProjectTimeDetails] = useState({});
 
   const toggleShowComplete = (e) => {
     e.stopPropagation();
-    setShowComplete(prevShowComplete => !prevShowComplete);
+    setShowComplete((prevShowComplete) => {
+      const newValue = !prevShowComplete;
+      // Store new value in localStorage
+      localStorage.setItem('showCompletedTasks', JSON.stringify(newValue));
+      return newValue;
+    });
   };
 
-  const toggleShowTimeComplete = (e) => {
-    e.stopPropagation();
-    setShowTimeComplete(prevShowTimeComplete => !prevShowTimeComplete);
+  // Modify the toggleShowTimeComplete function to toggle time details for a specific project
+  const toggleShowTimeComplete = (projectId) => {
+    setProjectTimeDetails((prevState) => ({
+      ...prevState,
+      [projectId]: !prevState[projectId] || false,
+    }));
   };
+
+  // Inside the useEffect hook for fetching projects, initialize the projectTimeDetails state with default values
+  useEffect(() => {
+    const initialProjectTimeDetails = {};
+    projects.forEach((project) => {
+      initialProjectTimeDetails[project.projectId] = showTimeDetails;
+    });
+    setProjectTimeDetails(initialProjectTimeDetails);
+  }, [projects, showTimeDetails]);
 
   const [dates, setDates] = useState([]);
   const [startDateIndex, setStartDateIndex] = useState(0);
@@ -89,6 +115,13 @@ function TaskOverview() {
     }
     setDates(newDates);
   }, [startDateIndex]);
+
+  const handleExpandTasks = (projectId) => {
+    setExpandedProjects((prevState) => ({
+      ...prevState,
+      [projectId]: !prevState[projectId],
+    }));
+  };
 
   const handleTodayClick = () => {
     setStartDateIndex(0);
@@ -202,12 +235,13 @@ function TaskOverview() {
     setSelectedProjectId(null);
     setDeleteProjectDialogOpen(false);
   };
-  
+
 
   return (
     <div>
       {dates.length > 0 && (
         <Navbar
+          onTodayClick={handleTodayClick}
           onPreviousDayClick={handlePreviousDayClick}
           onNextDayClick={handleNextDayClick}
           dates={dates}
@@ -217,7 +251,7 @@ function TaskOverview() {
         <thead className="text-white" id="theader">
           <tr className="text-center small">
             <th style={{ width: '20rem', verticalAlign: 'revert', color: 'white' }}>Projects</th>
-            <th style={{ width: '10rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
+            <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 <span style={{ flexGrow: 1, textAlign: 'center' }}>Task Details</span>
                 <div className="taskEye" style={{ position: 'absolute', right: '1rem' }}>
@@ -251,7 +285,15 @@ function TaskOverview() {
           {projects.map((project, index) => (
             <tr key={index}>
               <td className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', padding: '0 0 0 0.5rem', fontSize: '13.44px' }}>
-                {project.assigntaskpresent && (<FontAwesomeIcon icon={faPlus} style={{ cursor: 'pointer' }} title='Expand Tasks' />)} [{project.projectSalesOrder}]
+                {project.assigntaskpresent && (
+                  <FontAwesomeIcon
+                    icon={expandedProjects[project.projectId] ? faMinus : faPlus}
+                    style={{ cursor: 'pointer' }}
+                    title='Expand Tasks'
+                    onClick={() => handleExpandTasks(project.projectId)}
+                  />
+                )} 
+                [{project.projectSalesOrder}]
                 <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
                   <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
                 </a>
@@ -263,38 +305,25 @@ function TaskOverview() {
               </td>
               {project.assigntaskpresent && (
                 <>
-                  <td style={{ width: '15rem', verticalAlign: 'unset', height: '100%', display: 'flex', alignItems: 'center' }} className="p-0">
-                    <div className="card" style={{ flex: '1', height: '100%' }}>
-                      <div className="card-header p-0">
-                        <h6 className={`m-0 text-center font-weight-bold text-white ${getTaskStatusColor(project.requiredTime, project.takenTime)}`} style={{ fontSize: '11px' }}>
-                          Total Task: {project.noofassigntasks}
-                          <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time" name="31">
-                            <div className="taskEye" style={{ position: 'absolute', right: '1rem' }}>
-                              <FontAwesomeIcon
-                                icon={showTimeComplete ? faEye : faEyeSlash}
-                                className="eyeicon"
-                                style={{ cursor: 'pointer', color: 'blue' }}
-                                onClick={toggleShowTimeComplete}
-                              />
-                            </div>
-                          </a>
-                        </h6>
-                      </div>
-                      <div className="card-body text-left p-0">
-                        <h6 title="Required" className="text-left m-0 Required" style={{ fontSize: '11px' }}>R : {seconds2dayhrmin(project.requiredTime)}</h6>
-                        <h6 title="Taken" className="text-left m-0 Taken" style={{ fontSize: '11px' }}>T : {seconds2dayhrmin(project.takenTime)}</h6>
-                      </div>
-                    </div>
-                    <div style={{ verticalAlign: 'middle', flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <td style={{ padding: '0 0.4rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px' }}>P
-                      </td>
-                      <td style={{ padding: '0 0.35rem', fontSize: '13.44px' }}>A
-                      </td>
-                    </div>
-                  </td>
+                  {expandedProjects[project.projectId] ? (
+                    <IndividualTaskView project={project} />
+                  ) : (
+                    <AggregateTaskView
+                      project={project}
+                      showTimeComplete={showTimeComplete}
+                      toggleShowTimeComplete={() => toggleShowTimeComplete(project.projectId)}
+                      showTimeDetails={projectTimeDetails[project.projectId]} 
+                      getTaskStatusColor={getTaskStatusColor}
+                      seconds2dayhrmin={seconds2dayhrmin}
+                    />
+                  )}
                 </>
               )}
-              {!project.assigntaskpresent && (<td className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle' }} colSpan="9">No Task Found today</td>)}
+              {!project.assigntaskpresent && (
+                <td className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle' }} colSpan="9">
+                  No Task Found today
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -311,7 +340,7 @@ function TaskOverview() {
         <DeleteProjectPopup
           open={deleteProjectDialogOpen}
           handleClose={handleCloseDeleteProjectDialog}
-          selectedProjectId={selectedProjectId} 
+          selectedProjectId={selectedProjectId}
         />
       )}
       <Footer />
