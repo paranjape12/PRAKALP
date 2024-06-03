@@ -11,7 +11,7 @@ import Profile from '../../pages/Profile/Profile';
 import SettingsDialog from '../Navbar/Dropdown/Settings/SettingsDialog';
 import AddEmployee from '../Navbar/Dropdown/Manage Employee/AddEmployee';
 
-function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
+function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
   const [activeButton, setActiveButton] = useState(null);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showMenuDropdown, setShowMenuDropdown] = useState(false);
@@ -71,10 +71,6 @@ function Navbar({ onNextDayClick, onPreviousDayClick, dates }) {
   const handleCloseSettingsDialog = () => {
     setSettingsDialogOpen(false);
   };
-
-  const onTodayClick = () => {
-    window.location.reload(false);
-  }
 
   const handleMenuButtonClick = () => {
     setShowMenuDropdown(!showMenuDropdown);

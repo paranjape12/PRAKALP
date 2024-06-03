@@ -90,6 +90,10 @@ function TaskOverview() {
     setDates(newDates);
   }, [startDateIndex]);
 
+  const handleTodayClick = () => {
+    setStartDateIndex(0);
+  };
+
   const handleNextDayClick = () => {
     const nextIndex = startDateIndex + 7;
     setStartDateIndex(nextIndex);
