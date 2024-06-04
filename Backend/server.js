@@ -610,7 +610,7 @@ app.post('/api/taskOverview', (req, res) => {
 
           let selcttask;
           if (U_type !== 'Admin' && U_type !== 'Team Leader') {
-            selcttask = `SELECT DISTINCT te.taskid FROM Taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?;`;
+            selcttask = `SELECT p.TaskName, te.taskid FROM taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY p.TaskName, te.taskid ORDER BY te.taskid;`;
           } else {
             selcttask = `SELECT * FROM Task WHERE projectName = ?`;
           }
@@ -623,8 +623,12 @@ app.post('/api/taskOverview', (req, res) => {
 
             let assigntaskpresent = taskResults.length > 0;
             let noofassigntasks = taskResults.length;
+            // Prepare task details for each task
+            const tasks = taskResults.map(task => ({
+              taskName: task.TaskName,
+              taskId: task.taskid
+            }));
 
-            // New query to get the required and taken time
             const timeQuery = `SELECT sum(te.timetocomplete_emp) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
             db.query(timeQuery, [u_id, projectName], (err, timeResults) => {
               if (err) {
@@ -643,7 +647,8 @@ app.post('/api/taskOverview', (req, res) => {
                 noofassigntasks,
                 proj_status,
                 requiredTime,
-                takenTime
+                takenTime,
+                tasks
               });
 
               count++;
@@ -657,6 +662,7 @@ app.post('/api/taskOverview', (req, res) => {
     });
   }
 });
+
 
 
 // FAMT API to edit project details
