@@ -306,7 +306,17 @@ function TaskOverview() {
               {project.assigntaskpresent && (
                 <>
                   {expandedProjects[project.projectId] ? (
-                    <IndividualTaskView project={project} />
+                    project.tasks.map(task => (
+                      <IndividualTaskView
+                        key={task.taskId}
+                        project={project}
+                        task={task}
+                        toggleShowTimeComplete={toggleShowTimeComplete}
+                        showTimeDetails={showTimeDetails}
+                        getTaskStatusColor={getTaskStatusColor}
+                        seconds2dayhrmin={seconds2dayhrmin}
+                      />
+                    ))
                   ) : (
                     <AggregateTaskView
                       project={project}
