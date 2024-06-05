@@ -610,7 +610,7 @@ app.post('/api/taskOverview', (req, res) => {
 
           let selcttask;
           if (U_type !== 'Admin' && U_type !== 'Team Leader') {
-            selcttask = `SELECT p.TaskName, te.taskid FROM taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY p.TaskName, te.taskid ORDER BY te.taskid;`;
+            selcttask = `SELECT te.taskid, p.TaskName, te.timetocomplete_emp, SUM(te.actualtimetocomplete_emp) AS total_actual_time,p.Status, p.aproved FROM taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
           } else {
             selcttask = `SELECT * FROM Task WHERE projectName = ?`;
           }
@@ -625,8 +625,12 @@ app.post('/api/taskOverview', (req, res) => {
             let noofassigntasks = taskResults.length;
             // Prepare task details for each task
             const tasks = taskResults.map(task => ({
+              taskId: task.taskid,
               taskName: task.TaskName,
-              taskId: task.taskid
+              taskGivenTime: task.timetocomplete_emp,
+              taskActualTime: task.total_actual_time,              
+              taskStatus: task.Status,              
+              taskAproved: task.aproved              
             }));
 
             const timeQuery = `SELECT sum(te.timetocomplete_emp) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
