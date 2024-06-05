@@ -292,7 +292,7 @@ function TaskOverview() {
                     title='Expand Tasks'
                     onClick={() => handleExpandTasks(project.projectId)}
                   />
-                )} 
+                )}
                 [{project.projectSalesOrder}]
                 <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
                   <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
@@ -312,18 +312,13 @@ function TaskOverview() {
                         project={project}
                         task={task}
                         toggleShowTimeComplete={toggleShowTimeComplete}
-                        showTimeDetails={showTimeDetails}
-                        getTaskStatusColor={getTaskStatusColor}
                         seconds2dayhrmin={seconds2dayhrmin}
                       />
                     ))
                   ) : (
                     <AggregateTaskView
                       project={project}
-                      showTimeComplete={showTimeComplete}
                       toggleShowTimeComplete={() => toggleShowTimeComplete(project.projectId)}
-                      showTimeDetails={projectTimeDetails[project.projectId]} 
-                      getTaskStatusColor={getTaskStatusColor}
                       seconds2dayhrmin={seconds2dayhrmin}
                     />
                   )}
