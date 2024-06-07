@@ -32,7 +32,7 @@ const sampleStaticData = [
   }
 ];
 
-const TaskInfoDialog = ({ open, handleClose }) => {
+const TaskInfoDialog = ({ open, project, task, seconds2dayhrmin, handleClose }) => {
   const [page, setPage] = useState(0);
   const rowsPerPage = 5;
   const [order, setOrder] = useState('asc');
@@ -56,40 +56,41 @@ const TaskInfoDialog = ({ open, handleClose }) => {
     <ThemeProvider theme={theme}>
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Typography component="span" color="primary" variant="h6" fontSize={'20px'} fontWeight={'700'} textAlign={'left'}>
-              Dummy Project Name &gt;
+          <Box display="flex" alignItems="center" justifyContent="space-between" padding="4px">
+            <Typography component="span" color="primary" variant="h6" fontSize="20px" fontWeight="700" textAlign="left">
+              {project.projectName} &gt;
             </Typography>
-            <Typography component="span" color="#b35513" variant="h6" fontSize={'15px'} fontWeight={'700'} textAlign={'left'}>
-              &nbsp; Dummy Task Name
+            <Typography component="span" color="#b35513" variant="h6" fontSize="15px" fontWeight="700" textAlign="left">
+              &nbsp; {task.taskName}
             </Typography>
             <IconButton
               aria-label="close"
               onClick={handleClose}
-              style={{ marginLeft: 'auto' }}
+              style={{ marginLeft: 'auto', padding: '4px' }}
             >
               <FontAwesomeIcon icon={faClose} />
             </IconButton>
           </Box>
         </DialogTitle>
         <DialogContent dividers>
-          <Typography variant="body2" color="textSecondary">
-            Dummy Task Name
+          <Typography variant="body2" color="textSecondary" padding="4px">
+            {task.taskDetails}
           </Typography>
-          <Box display="flex" justifyContent="flex-end" my={1}>
+          <Box display="flex" justifyContent="flex-end" my={1} padding="4px">
             <TextField
               margin="dense"
               id="search"
               type="text"
-              placeholder='Enter..'
-              inputProps={{ style: { padding: '0.5rem', fontFamily: 'Nunito' } }}
+              placeholder="Type to search.."
+              inputProps={{ style: { padding: '4px', fontFamily: 'Nunito' } }}
+              style={{ padding: '4px' }}
             />
           </Box>
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} style={{ padding: '4px' }}>
             <Table aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell align="center" sx={{ paddingRight: '3rem' }}>
+                  <TableCell align="center" sx={{ padding: '4px' }}>
                     <TableSortLabel
                       active={orderBy === 'date'}
                       direction={orderBy === 'date' ? order : 'asc'}
@@ -98,10 +99,10 @@ const TaskInfoDialog = ({ open, handleClose }) => {
                       Date
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell align="center" sx={{ padding: '4px' }}>
                     Employee Name
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell align="center" sx={{ padding: '4px' }}>
                     <TableSortLabel
                       active={orderBy === 'timeRequired'}
                       direction={orderBy === 'timeRequired' ? order : 'asc'}
@@ -110,7 +111,7 @@ const TaskInfoDialog = ({ open, handleClose }) => {
                       Time required (Hr:Min)
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell align="center" sx={{ padding: '4px' }}>
                     <TableSortLabel
                       active={orderBy === 'timeTaken'}
                       direction={orderBy === 'timeTaken' ? order : 'asc'}
@@ -119,7 +120,7 @@ const TaskInfoDialog = ({ open, handleClose }) => {
                       Time Taken (Hr:Min)
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell align="left">
+                  <TableCell align="left" sx={{ padding: '4px' }}>
                     <TableSortLabel
                       active={orderBy === 'activity'}
                       direction={orderBy === 'activity' ? order : 'asc'}
@@ -128,7 +129,7 @@ const TaskInfoDialog = ({ open, handleClose }) => {
                       Activity
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell align="left">
+                  <TableCell align="left" sx={{ padding: '4px' }}>
                     <TableSortLabel
                       active={orderBy === 'logs'}
                       direction={orderBy === 'logs' ? order : 'asc'}
@@ -142,12 +143,12 @@ const TaskInfoDialog = ({ open, handleClose }) => {
               <TableBody>
                 {sampleStaticData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow key={index}>
-                    <TableCell align="center">{row.date}</TableCell>
-                    <TableCell align="left">{row.employeeName}</TableCell>
-                    <TableCell align="center">{row.timeRequired}</TableCell>
-                    <TableCell align="center">{row.timeTaken}</TableCell>
-                    <TableCell align="left">{row.activity}</TableCell>
-                    <TableCell align="left">{row.logs}</TableCell>
+                    <TableCell align="center" sx={{ padding: '4px' }}>{row.date}</TableCell>
+                    <TableCell align="left" sx={{ padding: '4px' }}>{row.employeeName}</TableCell>
+                    <TableCell align="center" sx={{ padding: '4px' }}>{row.timeRequired}</TableCell>
+                    <TableCell align="center" sx={{ padding: '4px' }}>{row.timeTaken}</TableCell>
+                    <TableCell align="left" sx={{ padding: '4px' }}>{row.activity}</TableCell>
+                    <TableCell align="left" sx={{ padding: '4px' }}>{row.logs}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -163,11 +164,13 @@ const TaskInfoDialog = ({ open, handleClose }) => {
             page={page}
             onPageChange={handleChangePage}
             labelDisplayedRows={({ from, to, count }) => `Showing ${from} to ${to} of ${count} entries`}
+            style={{ padding: '4px' }}
           />
         </DialogActions>
       </Dialog>
-    </ThemeProvider >
+    </ThemeProvider>
   );
+  
 };
 
 export default TaskInfoDialog;
