@@ -610,7 +610,7 @@ app.post('/api/taskOverview', (req, res) => {
 
           let selcttask;
           if (U_type !== 'Admin' && U_type !== 'Team Leader') {
-            selcttask = `SELECT te.taskid, p.TaskName, te.timetocomplete_emp, SUM(te.actualtimetocomplete_emp) AS total_actual_time,p.Status, p.aproved FROM taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
+            selcttask = `SELECT te.taskid, p.TaskName, te.timetocomplete_emp, SUM(te.actualtimetocomplete_emp) AS total_actual_time,p.taskDetails,p.Status, p.aproved FROM taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
           } else {
             selcttask = `SELECT * FROM Task WHERE projectName = ?`;
           }
@@ -629,6 +629,7 @@ app.post('/api/taskOverview', (req, res) => {
               taskName: task.TaskName,
               taskGivenTime: task.timetocomplete_emp,
               taskActualTime: task.total_actual_time,              
+              taskDetails: task.taskDetails,              
               taskStatus: task.Status,              
               taskAproved: task.aproved              
             }));
@@ -823,6 +824,38 @@ app.post('/api/deleteProject', (req, res) => {
       });
     }
   );
+});
+
+// FAMT API endpoint to display data in task info dialog
+app.post('/api/taskInfoDialog', (req, res) => {
+  const { token, taskId } = req.body;
+
+  if (!token || !taskId) {
+    return res.status(400).json({ error: 'Token and taskId are required' });
+  }
+
+  try {
+    const userData = decryptToken(token);
+    const userId = userData.id;
+    const userType = userData.Type;
+
+    let query = '';
+
+    if (userType === 'Employee') {
+      query = `SELECT * FROM Taskemp WHERE AssignedTo_emp = '${userId}' AND taskid = '${taskId}'`;
+    } else {
+      query = `SELECT * FROM Taskemp WHERE taskid = '${taskId}'`;
+    }
+
+    db.query(query, (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: 'Database query failed' });
+      }
+      return res.status(200).json(results);
+    });
+  } catch (err) {
+    return res.status(400).json({ error: 'Invalid token' });
+  }
 });
 
 
