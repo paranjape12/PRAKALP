@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import TaskInfoDialog from './TaskInfoDialog';
 import { faEye, faEyeSlash, faCopyright, faEdit, faCircleInfo, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
 
 function getTaskStatusColor(status, aproved) {
   if (aproved === 1) {
@@ -17,9 +18,20 @@ function getTaskStatusColor(status, aproved) {
 const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2dayhrmin }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(false);
   const [taskInfoDialogOpen, setTaskInfoDialogOpen] = useState(false);
+  const [taskDetails, setTaskDetails] = useState(null);
 
-  const handleTaskInfoDialogOpen = () => {
-    setTaskInfoDialogOpen(true);
+  const handleTaskInfoDialogOpen = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:3001/api/taskInfoDialog', {
+        token,
+        taskId: task.taskId,
+      });
+      setTaskDetails(response.data);
+      setTaskInfoDialogOpen(true);
+    } catch (error) {
+      console.error('Failed to fetch task details:', error);
+    }
   };
 
   const handleTaskInfoDialogClose = () => {
@@ -47,7 +59,13 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
           />
         </div>
         
-      <TaskInfoDialog open={taskInfoDialogOpen} handleClose={handleTaskInfoDialogClose} />
+      <TaskInfoDialog 
+      key={task.taskId}
+      open={taskInfoDialogOpen} 
+      project={project}
+      task={task}
+      seconds2dayhrmin={seconds2dayhrmin}
+      handleClose={handleTaskInfoDialogClose} />
         {localShowTimeDetails && (
           <div className="card-body text-left p-0" style={{ marginLeft: '0.4rem', fontSize: '11px' }}>
             R: {seconds2dayhrmin(task.taskGivenTime)}
