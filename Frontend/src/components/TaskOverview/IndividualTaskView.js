@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import TaskInfoDialog from './TaskInfoDialog';
+import TaskInfoDialog from './TaskInfoPopup';
 import { faEye, faEyeSlash, faCopyright, faEdit, faCircleInfo, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 
@@ -20,18 +20,25 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
   const [taskInfoDialogOpen, setTaskInfoDialogOpen] = useState(false);
   const [taskDetails, setTaskDetails] = useState(null);
 
-  const handleTaskInfoDialogOpen = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:3001/api/taskInfoDialog', {
-        token,
-        taskId: task.taskId,
-      });
-      setTaskDetails(response.data);
-      setTaskInfoDialogOpen(true);
-    } catch (error) {
-      console.error('Failed to fetch task details:', error);
-    }
+  useEffect(() => {
+    const fetchTaskDetails = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post('http://localhost:3001/api/taskInfoDialog', {
+          token,
+          taskId: task.taskId,
+        });
+        setTaskDetails(response.data);
+      } catch (error) {
+        console.error('Failed to fetch task details:', error);
+      }
+    };
+
+    fetchTaskDetails();
+  }, [task.taskId]);
+
+  const handleTaskInfoDialogOpen = () => {
+    setTaskInfoDialogOpen(true);
   };
 
   const handleTaskInfoDialogClose = () => {
@@ -64,7 +71,7 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
       open={taskInfoDialogOpen} 
       project={project}
       task={task}
-      seconds2dayhrmin={seconds2dayhrmin}
+      taskDetails={taskDetails}
       handleClose={handleTaskInfoDialogClose} />
         {localShowTimeDetails && (
           <div className="card-body text-left p-0" style={{ marginLeft: '0.4rem', fontSize: '11px' }}>
