@@ -248,8 +248,8 @@ function TaskOverview() {
         />
       )}
       <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito" }}>
-        <thead className="text-white" id="theader">
-          <tr className="text-center small">
+        <thead className="text-white" id="theader" style={{ fontSize:'13px'}}>
+          <tr className="text-center small" style={{position:'sticky', top:'2.45rem', zIndex:'5'}}>
             <th style={{ width: '20rem', verticalAlign: 'revert', color: 'white' }}>Projects</th>
             <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
@@ -306,20 +306,24 @@ function TaskOverview() {
               {project.assigntaskpresent && (
                 <>
                   {expandedProjects[project.projectId] ? (
-                    project.tasks.map(task => (
-                      <IndividualTaskView
-                        key={task.taskId}
-                        project={project}
-                        task={task}
-                        toggleShowTimeComplete={toggleShowTimeComplete}
-                        seconds2dayhrmin={seconds2dayhrmin}
-                      />
-                    ))
+                    project.tasks
+                      // Filter out tasks with approved value equal to 1 if showComplete is false
+                      .filter(task => showComplete || task.taskAproved !== 1)
+                      .map(task => (
+                        <IndividualTaskView
+                          key={task.taskId}
+                          project={project}
+                          task={task}
+                          toggleShowTimeComplete={toggleShowTimeComplete}
+                          seconds2dayhrmin={seconds2dayhrmin}
+                        />
+                      ))
                   ) : (
                     <AggregateTaskView
                       project={project}
                       toggleShowTimeComplete={() => toggleShowTimeComplete(project.projectId)}
                       seconds2dayhrmin={seconds2dayhrmin}
+                      showComplete={showComplete}
                     />
                   )}
                 </>
