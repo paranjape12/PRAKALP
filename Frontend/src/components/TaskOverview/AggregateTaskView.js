@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
-const AggregateTaskView = ({ project, toggleShowTimeComplete, seconds2dayhrmin }) => {
+const AggregateTaskView = ({ project, toggleShowTimeComplete, seconds2dayhrmin, showComplete }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(() => {
     const storedValue = localStorage.getItem('showTimeDetails');
     const details = storedValue ? JSON.parse(storedValue) : {};
@@ -36,13 +36,17 @@ const AggregateTaskView = ({ project, toggleShowTimeComplete, seconds2dayhrmin }
     }
   }
 
+  // Filter tasks based on the showComplete state and approved value
+  const filteredTasks = project.tasks.filter(task => showComplete || task.taskAproved !== 1);
+  const noOfAssignedTasks = filteredTasks.length;
+
   return (
     <>
       <td style={{ width: '15rem', verticalAlign: 'unset', paddingBottom: 'auto', display: 'flex', alignItems: 'center' }} className="p-0">
         <div className="card" style={{ flex: '1', height: '100%' }}>
           <div className="card-header p-0">
             <h6 className={`m-0 text-center font-weight-bold text-white ${getTaskStatusColor(project.requiredTime, project.takenTime)}`} style={{ fontSize: '11px', paddingTop:'0.1rem' }}>
-              Total Task: {project.noofassigntasks}
+              Total Task: {noOfAssignedTasks}
               <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time" name="31">
                 <div className="taskEye" style={{ position: 'absolute', right: '1rem' }}>
                   <FontAwesomeIcon
