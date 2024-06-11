@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import '../cssfiles/HomePage.css';
+import '../css/HomePage.css';
 import deletebtn from '../assets/delete.png';
 import editbtn from '../assets/edit-text.png';
 import axios from 'axios';

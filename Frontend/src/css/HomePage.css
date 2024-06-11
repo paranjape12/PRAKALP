@@ -103,7 +103,7 @@
 
 .table-container th, td {
   border: 1px solid #dddddd;
-  text-align: left !important;
+  text-align: left;
   padding: 10px;
 }
 

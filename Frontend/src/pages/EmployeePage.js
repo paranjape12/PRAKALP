@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import '../cssfiles/EmployeePage.css';
+import '../css/EmployeePage.css';
 import editbtn from '../assets/edit-text.png';
 import deletebtn from '../assets/delete.png';
 import Navbar from '../components/Navbar/Navbar';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, Switch, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import '../App.css';
 import HomePage from '../pages/HomePage';
 import AddEmployee from '../components/Navbar/Dropdown/Manage Employee/AddEmployee';
@@ -12,35 +12,26 @@ import ProjectOverview from '../pages/ProjectOverview';
 import Profile from '../pages/Profile/Profile';
 
 function RouteManager() {
-
     const [showAddProject, setShowAddProject] = useState(false);
     const [showAddTask, setShowAddTask] = useState(false);
     const [showAssignTask, setShowAssignTask] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-
 
     return (
         <Router>
-
             <Routes>
-                <Route path="/" element={<Login />} /> 
-                <Route path="/register" element={<Register/>} />
-                <Route path="/task" element={<TaskOveriew isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
+                <Route path="/" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/profile" element={<Profile/>} />
+                <Route path="/task" element={<TaskOveriew/>} />
                 <Route path="/employee" element={<EmployeePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
-                <Route path="/project" element={<ProjectOverview/>} />
+                <Route path="/project" element={<ProjectOverview />} />
 
-                <Route path="/profile" element={<Profile isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
-                
+
                 <Route path="/homepage" element={<HomePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/edit-employee" element={<EditEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/add-employee" element={<AddEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
-                
             </Routes>
         </Router>
-
-
-
     );
 }
 
