@@ -838,6 +838,7 @@ app.post('/api/taskInfoDialog', (req, res) => {
     const userData = decryptToken(token);
     const userId = userData.id;
     const userType = userData.Type;
+    const userName = userData.Name;
 
     let query = '';
 
@@ -851,7 +852,7 @@ app.post('/api/taskInfoDialog', (req, res) => {
       if (error) {
         return res.status(500).json({ error: 'Database query failed' });
       }
-      return res.status(200).json(results);
+      return res.status(200).json({ results, userName });
     });
   } catch (err) {
     return res.status(400).json({ error: 'Invalid token' });
