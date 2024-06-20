@@ -607,6 +607,7 @@ app.post('/api/taskOverview', (req, res) => {
           const projectName = project.ProjectName;
           const projectSalesOrder = project.sales_order;
           const proj_status = project.Status;
+          const projectLastTask = project.lasttask;
 
           let selcttask;
           if (U_type !== 'Admin' && U_type !== 'Team Leader') {
@@ -628,10 +629,10 @@ app.post('/api/taskOverview', (req, res) => {
               taskId: task.taskid,
               taskName: task.TaskName,
               taskGivenTime: task.timetocomplete_emp,
-              taskActualTime: task.total_actual_time,              
-              taskDetails: task.taskDetails,              
-              taskStatus: task.Status,              
-              taskAproved: task.aproved              
+              taskActualTime: task.total_actual_time,
+              taskDetails: task.taskDetails,
+              taskStatus: task.Status,
+              taskAproved: task.aproved
             }));
 
             const timeQuery = `SELECT sum(te.timetocomplete_emp) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
@@ -651,6 +652,7 @@ app.post('/api/taskOverview', (req, res) => {
                 assigntaskpresent,
                 noofassigntasks,
                 proj_status,
+                projectLastTask,
                 requiredTime,
                 takenTime,
                 tasks
@@ -678,10 +680,10 @@ app.post('/api/updateProject', async (req, res) => {
     return res.status(400).send('Project status is missing');
   }
 
-  const status = projstatus.planning ? 1 : 
-                 projstatus.execution ? 2 : 
-                 projstatus.lastLap ? 3 : 
-                 projstatus.complete ? 4 : 0;
+  const status = projstatus.planning ? 1 :
+    projstatus.execution ? 2 :
+      projstatus.lastLap ? 3 :
+        projstatus.complete ? 4 : 0;
 
   // Check if the sales order exists in other projects
   const query = "SELECT * FROM `projects` WHERE `sales_order` = ?";
@@ -858,6 +860,98 @@ app.post('/api/taskInfoDialog', (req, res) => {
     return res.status(400).json({ error: 'Invalid token' });
   }
 });
+
+// FAMT API endpoint to save edited task details
+app.post('/api/saveEditTask', (req, res) => {
+  const {
+    projectName,
+    taskName,
+    originalTaskName,
+    lastTask,
+    taskActualTime,
+    taskDetails,
+  } = req.body;
+
+  const isLast = lastTask ? 1 : 0;
+
+  // Fetch the task ID before performing updates
+  const getTaskIdQuery = `SELECT id FROM task WHERE projectName = ? AND TaskName = ?`;
+  db.query(getTaskIdQuery, [projectName, originalTaskName], (err, results) => {
+    if (err) {
+      console.error('Error fetching task ID:', err);
+      return res.status(500).send('Error fetching task ID');
+    }
+
+    if (results.length > 0) {
+      const taskId = results[0].id;
+
+      if (isLast === 1) {
+        const isLastTaskExistQuery = `SELECT ProjectName FROM projects WHERE ProjectName = ? AND lasttask = '1'`;
+        db.query(isLastTaskExistQuery, [projectName], (err, result) => {
+          if (err) {
+            console.error('Error checking last task existence:', err);
+            return res.status(500).send('Error checking last task existence');
+          }
+
+          if (result.length > 0) {
+            console.log('Last task already exists for project:', projectName);
+            res.send('Last Task exists');
+          } else {
+            updateProjectAndTask(projectName, taskId, taskName, taskDetails, taskActualTime, res);
+          }
+        });
+      } else {
+        const updateProjectQuery = `UPDATE projects SET lasttask = '0' WHERE ProjectName = ?`;
+        db.query(updateProjectQuery, [projectName], (err) => {
+          if (err) {
+            console.error('Error updating project:', err);
+            return res.status(500).send('Error updating project');
+          }
+          updateTask(projectName, taskId, taskName, taskDetails, taskActualTime, res);
+        });
+      }
+    } else {
+      console.log('Task not found for project:', projectName, 'and original task name:', originalTaskName);
+      return res.status(404).send('Task not found');
+    }
+  });
+});
+
+const updateProjectAndTask = (projectName, taskId, taskName, taskDetails, taskActualTime, res) => {
+  const updateProjectQuery = `UPDATE projects SET lasttask = '1' WHERE ProjectName = ?`;
+  db.query(updateProjectQuery, [projectName], (err) => {
+    if (err) {
+      console.error('Error updating project:', err);
+      return res.status(500).send('Error updating project');
+    }
+
+    updateTask(projectName, taskId, taskName, taskDetails, taskActualTime, res);
+  });
+};
+
+const updateTask = (projectName, taskId, taskName, taskDetails, taskActualTime, res) => {
+  const updateTaskQuery = `UPDATE Task SET projectName = ?, TaskName = ?, taskDetails = ?, timetocomplete = ? WHERE id = ?`;
+  db.query(updateTaskQuery, [projectName, taskName, taskDetails, taskActualTime, taskId], (err) => {
+    if (err) {
+      console.error('Error updating task:', err);
+      return res.status(500).send('Error updating task');
+    }
+
+    updateTaskEmp(taskId, taskDetails, taskActualTime, res);
+  });
+};
+
+const updateTaskEmp = (taskId, taskDetails, taskActualTime, res) => {
+  const updateTaskEmpQuery = `UPDATE taskemp SET taskDetails_emp = ?, timetocomplete_emp = ? WHERE taskid = ?`;
+  db.query(updateTaskEmpQuery, [taskDetails, taskActualTime, taskId], (err) => {
+    if (err) {
+      console.error('Error updating taskemp:', err);
+      return res.status(500).send('Error updating taskemp');
+    }
+    res.send('Success');
+  });
+};
+
 
 
 // =================================  APIs by GJC for ref. START =====================================
