@@ -63,6 +63,10 @@
   background-color: antiquewhite;
   align-items: center;
 }
+.icon-circle {
+  border-radius: 50%;
+  padding: 10px;
+}
 
 .home_bg {
   border: 0px;
@@ -96,9 +100,9 @@
   display: none;
   position: absolute;
   background-color: #f9f9f9;
-  min-width: 130px;
- 
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  min-width: 180px; 
+  border-radius:2px ;
+  /* box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); */
   z-index: 200;
   margin: 0;
   padding: 0;
@@ -107,7 +111,7 @@
 
 .dropdown:hover .dropdown-content {
   display: block;
-  width: 150px;
+  /* width: 20px; */
   background-color: white;
   border-radius: 1px;
 }
@@ -123,7 +127,7 @@
   font-size: 14px;
   text-decoration: none;
   display: block;
-  width: 100%;
+  /* width: 100%; */
   cursor: pointer;
   /* transition: background-color 0.3s; */
   margin: 0;
@@ -134,7 +138,7 @@
 .dropdown-content button:hover {
   background: rgb(206, 223, 233);
   /* Darker green on hover */
-  width: 150px;
+  /* width: 150px; */
   height: 50px;
   text-align: center;
   color:#0b0c0c;
