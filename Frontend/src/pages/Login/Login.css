@@ -45,8 +45,7 @@ html {
 }
 
 .form-group input[type="text"],
-input[type="number"],
-textarea {
+input[type="number"] {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
