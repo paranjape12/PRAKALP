@@ -4,6 +4,7 @@ import TaskInfoDialog from './TaskInfoPopup';
 import { faEye, faEyeSlash, faCopyright, faPencilAlt, faCircleInfo, faTrashCan, faL } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import EditTaskPopup from './EditTaskPopup';
+import DeleteTaskPopup from './DeleteTaskPopup';
 
 function getTaskStatusColor(status, approved) {
   if (approved === 1) {
@@ -15,22 +16,13 @@ function getTaskStatusColor(status, approved) {
   }
 }
 
-const seconds2hrmin = (ss) => {
-  const m = Math.floor(ss / 60); // total minutes
-  const h = Math.floor(m / 60); // total hours
-  const minutes = m % 60; // remaining minutes
-
-  const formattedH = h < 10 ? '0' + h : h;
-  const formattedM = minutes < 10 ? '0' + minutes : minutes;
-
-  return `${formattedH} : ${formattedM}`;
-};
-
 
 const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2dayhrmin }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(false);
   const [taskInfoDialogOpen, setTaskInfoDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState({});
+  const [deleteTaskDialogOpen, setDeleteTaskDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
@@ -62,17 +54,17 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
   };
 
   const handleOpenEditTaskDialog = () => {
-  
+
     setSelectedProject({
       projectName: project.projectName,
       projectLastTask: project.projectLastTask,
       taskName: task.taskName,
-      taskActualTime: task.taskActualTime,             
-      taskDetails: task.taskDetails,  
+      taskActualTime: task.taskActualTime,
+      taskDetails: task.taskDetails,
     });
     setEditTaskDialogOpen(true);
   };
-  
+
 
   const handleCloseEditTaskDialog = () => {
     setSelectedProject(null);
@@ -84,6 +76,16 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
     setLocalShowTimeDetails(prev => !prev);
   };
 
+  const handleOpenDeleteTaskDialog = () => {
+    setTaskToDelete({ taskId: task.taskId, taskName: task.taskName });
+    setDeleteTaskDialogOpen(true);
+  };
+
+  const handleCloseDeleteTaskDialog = () => {
+    setTaskToDelete(null);
+    setDeleteTaskDialogOpen(false);
+  };
+
   return (
     <td style={{ width: '15rem', verticalAlign: 'top', height: '100%', display: 'flex', alignItems: 'center' }} className="p-0">
       <div className="card" style={{ flex: '1', height: '100%' }}>
@@ -91,11 +93,11 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
           <h6 className={`m-0 py-1 text-center font-weight-bold text-white ${getTaskStatusColor(task.taskStatus, task.taskAproved)}`} style={{ fontSize: '11px' }}>
             {task.taskName}
           </h6>
-          <FontAwesomeIcon icon={faTrashCan} style={{ float: 'right', cursor: 'pointer', color: 'red', paddingTop: '0.2rem', paddingLeft: '0.5rem', paddingRight: '0.4rem' }} />
+          <FontAwesomeIcon icon={faTrashCan} style={{ float: 'right', cursor: 'pointer', color: 'red', paddingTop: '0.2rem', paddingLeft: '0.5rem', paddingRight: '0.4rem' }} onClick={handleOpenDeleteTaskDialog} />
           <FontAwesomeIcon icon={faPencilAlt} style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={handleOpenEditTaskDialog} />
           {task.taskStatus === "1" && (<FontAwesomeIcon icon={faCopyright} color='#1cc88a' style={{ marginLeft: '0.4rem', verticalAlign: 'middle' }} />)}
           <FontAwesomeIcon icon={faCircleInfo} style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={handleTaskInfoDialogOpen} />
-          {project.projectLastTask === 1 && (<FontAwesomeIcon icon={faL} style={{ color: '#36b9cc', paddingTop: '0.2rem', paddingLeft: '0.5rem' }}/>)}
+          {project.projectLastTask === 1 && (<FontAwesomeIcon icon={faL} style={{ color: '#36b9cc', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />)}
           <FontAwesomeIcon title='Show/Hide Time' icon={localShowTimeDetails ? faEyeSlash : faEye} onClick={handleToggleShowTimeComplete}
             style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem' }}
           />
@@ -115,6 +117,14 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
             open={editTaskDialogOpen}
             handleClose={handleCloseEditTaskDialog}
             projectDetails={selectedProject}
+          />
+        )}
+
+        {deleteTaskDialogOpen && (
+          <DeleteTaskPopup
+            task={taskToDelete}
+            open={deleteTaskDialogOpen}
+            handleClose={handleCloseDeleteTaskDialog}
           />
         )}
 
