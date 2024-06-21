@@ -15,7 +15,7 @@ const showMessage = (setMessage, message) => {
   setTimeout(() => setMessage(''), 1500);
 };
 
-const DeleteProjectPopup = ({ open, handleClose, selectedProjectId }) => {
+const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName }) => {
 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -57,7 +57,8 @@ const DeleteProjectPopup = ({ open, handleClose, selectedProjectId }) => {
           Delete Project<FontAwesomeIcon onClick={handleClose} icon={faTimes} style={{ color: 'gray', marginLeft: '20rem', cursor: 'pointer' }} />
         </DialogTitle>
         <DialogContent>
-          Are you sure you want to permanently remove this project?
+          <div style={{ textAlign: 'center' }}>Are you sure you want to permanently remove the project</div>
+          <div style={{ fontWeight: '700', textAlign: 'center' }}>"{projectName}" ?</div>
           {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
           {successMessage && (
             <div className="text-center">
@@ -66,10 +67,10 @@ const DeleteProjectPopup = ({ open, handleClose, selectedProjectId }) => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button style={{ backgroundColor: 'gray', color: 'white' }} onClick={handleClose} color="primary">
+          <Button style={{ backgroundColor: 'gray', color: 'white' }} onClick={handleClose}>
             Cancel
           </Button>
-          <Button style={{ backgroundColor: '#4e73df', color: 'white' }} onClick={handleDelete} >
+          <Button style={{ backgroundColor: 'red', color: 'white' }} onClick={handleDelete} >
             Yes
           </Button>
         </DialogActions>

@@ -350,6 +350,7 @@ function TaskOverview() {
           open={deleteProjectDialogOpen}
           handleClose={handleCloseDeleteProjectDialog}
           selectedProjectId={selectedProjectId}
+          projectName={projectName}
         />
       )}
       <Footer />
