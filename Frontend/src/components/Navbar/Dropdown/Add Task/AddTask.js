@@ -199,7 +199,7 @@ const AddTaskModal = ({ open, onClose }) => {
           />}
           label="Last Task"
         />
-        <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px' }}>Time Required For Task</InputLabel>
+        <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px' }}>Required Time</InputLabel>
         <TextField
           style={{ marginRight: '1rem' }}
           margin="dense"
@@ -257,7 +257,7 @@ const AddTaskModal = ({ open, onClose }) => {
                     marginTop: '0.25rem',
                     marginBottom: '0',
                   }}>
-                  Required Time
+                  Planned Time
                 </InputLabel>
                 <div style={{ display: 'flex', marginTop: '0.25rem' }}>
                   <TextField
