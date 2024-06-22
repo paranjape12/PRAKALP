@@ -87,7 +87,7 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
   };
 
   return (
-    <td style={{ width: '15rem', verticalAlign: 'top', height: '100%', display: 'flex', alignItems: 'center' }} className="p-0">
+    <td style={{ width: '15rem', verticalAlign: 'top', height: '100%', display: 'flex', alignItems: 'center', border:'none' }} className="p-0">
       <div className="card" style={{ flex: '1', height: '100%' }}>
         <div className="card-header" style={{ height: 'auto', padding: '0.2rem' }}>
           <h6 className={`m-0 py-1 text-center font-weight-bold text-white ${getTaskStatusColor(task.taskStatus, task.taskAproved)}`} style={{ fontSize: '11px' }}>
