@@ -13,7 +13,7 @@ const theme = createTheme({
   },
 });
 
-const AddTaskModal = ({ open, onClose }) => {
+const AddTaskModal = ({ projectName, open, onClose }) => {
   const [taskName, setTaskName] = useState('');
   const [lastTask, setLastTask] = useState(false);
   const [hours, setHours] = useState(0);
@@ -22,7 +22,7 @@ const AddTaskModal = ({ open, onClose }) => {
   const [assignDate, setAssignDate] = useState(new Date().toISOString().substr(0, 10));
   const [hrAssign, setHrAssign] = useState(0);
   const [projects, setProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState('');
+  const [selectedProject, setSelectedProject] = useState(projectName|| '');
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
