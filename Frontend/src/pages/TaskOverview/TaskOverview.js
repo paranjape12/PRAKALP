@@ -4,6 +4,7 @@ import '../../pages/TaskOverview/TaskOverview.css';
 import Footer from '../../components/Footer';
 import EditProjectPopup from '../../components/TaskOverview/EditProjectPopup';
 import DeleteProjectPopup from '../../components/TaskOverview/DeleteProjectPopup';
+import AddTaskModal from '../../components/Navbar/Dropdown/Add Task/AddTask';
 import AggregateTaskView from '../../components/TaskOverview/AggregateTaskView';
 import IndividualTaskView from '../../components/TaskOverview/IndividualTaskView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -58,6 +59,7 @@ function TaskOverview() {
   });
   const [showTimeComplete, setShowTimeComplete] = useState(true);
   const [expandedProjects, setExpandedProjects] = useState({});
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [projects, setProjects] = useState([]);
@@ -137,6 +139,15 @@ function TaskOverview() {
     setStartDateIndex(previousIndex);
   };
 
+  const handleOpenAddTaskModal = (projectName) => {
+    setProjectName(projectName); 
+    setShowAddTaskModal(true); 
+  };
+  
+  const handleCloseAddTaskModal = () => {
+    setShowAddTaskModal(false); // Close AddTaskModal
+  };
+
   const fetchProjects = async () => {
     try {
       const response = await fetch('http://localhost:3001/api/taskOverview', {
@@ -146,7 +157,7 @@ function TaskOverview() {
         },
         body: JSON.stringify({
           token: localStorage.getItem('token'),
-          is_complete: showComplete ? '1' : '0'
+          is_complete: showComplete ? '1' : '0',
         })
       });
 
@@ -248,8 +259,8 @@ function TaskOverview() {
         />
       )}
       <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito" }}>
-        <thead className="text-white" id="theader" style={{ fontSize:'13px'}}>
-          <tr className="text-center small" style={{position:'sticky', top:'2.45rem', zIndex:'5'}}>
+        <thead className="text-white" id="theader" style={{ fontSize: '13px' }}>
+          <tr className="text-center small" style={{ position: 'sticky', top: '2.5rem', zIndex: '5' }}>
             <th style={{ width: '20rem', verticalAlign: 'revert', color: 'white' }}>Projects</th>
             <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
@@ -271,7 +282,7 @@ function TaskOverview() {
                 <th
                   key={index}
                   className={isSunday ? 'th1th' : `th${date.day}`}
-                  style={{ backgroundColor: isSunday ? 'red' : '', color: 'white' }}
+                  style={{ backgroundColor: isSunday ? 'red' : '', color: 'white', width:'9rem' }}
                 >
                   {currentDate.toLocaleString('default', { month: 'short', day: 'numeric' })}
                   <br />
@@ -321,6 +332,7 @@ function TaskOverview() {
                   ) : (
                     <AggregateTaskView
                       project={project}
+                      dates={dates}
                       toggleShowTimeComplete={() => toggleShowTimeComplete(project.projectId)}
                       seconds2dayhrmin={seconds2dayhrmin}
                       showComplete={showComplete}
@@ -329,14 +341,21 @@ function TaskOverview() {
                 </>
               )}
               {!project.assigntaskpresent && (
-                <td className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle' }} colSpan="9">
-                  No Task Found today
+                <td className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle',cursor: 'pointer', textDecoration: 'none' }}  onClick={() => handleOpenAddTaskModal(project.projectName)} colSpan="9">
+                  No Task Found today.
                 </td>
               )}
             </tr>
           ))}
         </tbody>
       </table>
+      {showAddTaskModal && (
+        <AddTaskModal
+          open={showAddTaskModal}
+          onClose={handleCloseAddTaskModal}
+          projectName={projectName}
+        />
+      )}
       {selectedProject && (
         <EditProjectPopup
           open={editProjectDialogOpen}
