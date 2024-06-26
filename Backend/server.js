@@ -611,7 +611,7 @@ app.post('/api/taskOverview', (req, res) => {
 
           let selcttask;
           if (U_type !== 'Admin' && U_type !== 'Team Leader') {
-            selcttask = `SELECT te.taskid, p.TaskName, te.timetocomplete_emp, SUM(te.actualtimetocomplete_emp) AS total_actual_time,p.taskDetails,p.Status, p.aproved FROM taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
+            selcttask = `SELECT te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time,p.taskDetails,p.Status, p.aproved FROM taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
           } else {
             selcttask = `SELECT * FROM Task WHERE projectName = ?`;
           }
@@ -629,13 +629,14 @@ app.post('/api/taskOverview', (req, res) => {
               taskId: task.taskid,
               taskName: task.TaskName,
               taskGivenTime: task.timetocomplete_emp,
+              taskRequiredTime: task.timetocomplete,
               taskActualTime: task.total_actual_time,
               taskDetails: task.taskDetails,
               taskStatus: task.Status,
               taskAproved: task.aproved
             }));
 
-            const timeQuery = `SELECT sum(te.timetocomplete_emp) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
+            const timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
             db.query(timeQuery, [u_id, projectName], (err, timeResults) => {
               if (err) {
                 console.error('Error executing time query:', err.stack);
@@ -991,6 +992,53 @@ app.post('/api/deleteTask', (req, res) => {
           res.send('Success');
         });
       });
+    });
+  });
+});
+
+
+// FAMT API Endpoint to handle planned and actual task times off agg view
+app.post('/api/aggViewPATimes', (req, res) => {
+  const projectName = req.body.projectName; // Project name received from frontend
+  const dates = req.body.dates; // Array of dates received from frontend
+
+  // Query to get task IDs based on project name
+  const sqlGetTaskIds = `
+    SELECT id
+    FROM Task
+    WHERE projectName = ?
+  `;
+
+  db.query(sqlGetTaskIds, projectName, (err, taskResults) => {
+    if (err) {
+      console.log('Error executing task ID query:', err);
+      res.status(500).json({ error: 'Error executing task ID query' });
+      return;
+    }
+
+    // Extract task IDs from the results
+    const taskIds = taskResults.map(result => result.id);
+
+    // Query to get SUMs from Taskemp table based on dates and task IDs
+    const sqlGetSums = `
+      SELECT SUM(timetocomplete_emp) AS planned,
+             SUM(actualtimetocomplete_emp) AS actual
+      FROM Taskemp
+      WHERE DATE(tasktimeemp) IN (?)
+        AND taskid IN (?)
+    `;
+
+    // Execute the second query with task IDs and dates
+    db.query(sqlGetSums, [dates, taskIds], (err, sumResults) => {
+      if (err) {
+        console.log('Error executing SUM query:', err);
+        res.status(500).json({ error: 'Error executing SUM query' });
+        return;
+      }
+
+      // Assuming results are returned as an array with a single object
+      const summary = sumResults[0];
+      res.json(summary); // Return the summary as JSON response
     });
   });
 });
