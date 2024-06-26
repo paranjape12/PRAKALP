@@ -205,8 +205,8 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
           margin="dense"
           id="addprojhr"
           type="number"
-          value={minutes}
-          onChange={(e) => setMinutes(e.target.value)}
+          value={hours}
+          onChange={(e) => setHours(e.target.value)}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end" style={{ outline: 'none' }}>Hr</InputAdornment>
@@ -220,8 +220,8 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
           margin="dense"
           id="addprojmin"
           type="number"
-          value={hours}
-          onChange={(e) => setHours(e.target.value)}
+          value={minutes}
+          onChange={(e) => setMinutes(e.target.value)}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end" style={{ outline: 'none', }}>Min</InputAdornment>
