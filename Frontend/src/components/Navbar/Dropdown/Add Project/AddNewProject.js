@@ -87,7 +87,7 @@ function AddNewProject({open,onClose}) {
               margin="dense"
               type="text"
               fullWidth
-              inputProps={{ style: { padding: '25px', fontFamily: 'Nunito' } }}
+              inputProps={{ style: { padding: '20px', fontFamily: 'Nunito' } }}
               value={projectSalesOrder}
               onChange={(e) => setProjectSalesOrder(e.target.value)}
             />
@@ -99,7 +99,7 @@ function AddNewProject({open,onClose}) {
               margin="dense"
               type="text"
               fullWidth
-              inputProps={{ style: { padding: '25px', fontFamily: 'Nunito' } }}
+              inputProps={{ style: { padding: '20px', fontFamily: 'Nunito' } }}
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
             />
