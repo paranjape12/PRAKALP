@@ -163,7 +163,7 @@ function CreateCopyProject({ open, onClose, onBack }) {
                 fullWidth
                 value={salesOrder}
                 onChange={(e) => setSalesOrder(e.target.value)}
-                inputProps={{ style: { padding: '0.8rem', fontFamily: 'Nunito' } }}
+                inputProps={{ style: { padding: '0.5rem', fontFamily: 'Nunito' } }}
               />
 
               <InputLabel style={{ fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px' }}>Project Name</InputLabel>
@@ -176,29 +176,39 @@ function CreateCopyProject({ open, onClose, onBack }) {
                 fullWidth
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                inputProps={{ style: { padding: '0.8rem', fontFamily: 'Nunito' } }}
+                inputProps={{ style: { padding: '0.5rem', fontFamily: 'Nunito' } }}
               />
             </div>
           </div>
           <div className='col-md-6'>
             <div className="col-12 col-md-12">
-              <FormControl style={{ marginTop: '1rem', marginRight: '3rem', marginBottom: '1rem' }}>
-                <InputLabel>Select Project</InputLabel>
-                <Select
-                  label="Select Project"
-                  id="addprojdrop"
-                  value={selectedProject}
-                  onChange={(e) => setSelectedProject(e.target.value)}
-                >
-                  {projects.map((project, index) => (
-                    <MenuItem dense key={index} value={project}>
-                      {project}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+            <FormControl style={{ marginTop: '2rem', marginRight: '3rem' }}>
+            <InputLabel style={{color:'black'}}>Select Project</InputLabel>
+            <Select
+              label="Select Project"
+              id="addprojdrop"
+              size='small'
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+              style={{ fontFamily: 'Nunito', width: '15rem' }}
+              MenuProps={{
+                PaperProps: {
+                  style: {
+                    maxHeight: 400,
+                    width: '25rem',
+                  },
+                },
+              }}
+            >
+              {projects.map((project, index) => (
+                <MenuItem key={index} value={project} dense>
+                  {project}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
               {selectedProject && (
-                <FormControl className="m-2 border border-primary rounded" style={{ maxHeight: '15rem', maxWidth: '23rem', overflow: 'auto', paddingLeft: '1rem' }}>
+                <FormControl className="m-2 border border-primary rounded" style={{ maxHeight: '12rem', maxWidth: '20rem', overflow: 'auto', paddingLeft: '1rem' }}>
                   <FormControlLabel
                     control={<Checkbox checked={allChecked} onChange={handleAllChange} />}
                     label="All"
