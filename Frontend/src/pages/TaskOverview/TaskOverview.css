@@ -1,11 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 
-
-.table th {
-  background-color: #4e73df;
+#theader th {
+  background-color: #1e7ee4;
   font-size: 13.44px;
   padding: 0;
 }
+
 
 .eye-icon {
   cursor: pointer;
