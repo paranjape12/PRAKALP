@@ -140,10 +140,10 @@ function TaskOverview() {
   };
 
   const handleOpenAddTaskModal = (projectName) => {
-    setProjectName(projectName); 
-    setShowAddTaskModal(true); 
+    setProjectName(projectName);
+    setShowAddTaskModal(true);
   };
-  
+
   const handleCloseAddTaskModal = () => {
     setShowAddTaskModal(false); // Close AddTaskModal
   };
@@ -258,13 +258,13 @@ function TaskOverview() {
           dates={dates}
         />
       )}
-      <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito" }}>
+      <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed' }}>
         <thead className="text-white" id="theader" style={{ fontSize: '13px' }}>
-          <tr className="text-center small" style={{ position: 'sticky', top: '2.5rem', zIndex: '5' }}>
+          <tr className="text-center small" style={{ position: 'sticky', top: '2.4rem', zIndex: '5' }}>
             <th style={{ width: '20rem', verticalAlign: 'revert', color: 'white' }}>Projects</th>
             <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                <span style={{ flexGrow: 1, textAlign: 'center' }}>Task Details</span>
+                <span style={{ textAlign: 'center' }}>Task Details</span>
                 <div className="taskEye" style={{ position: 'absolute', right: '1rem' }}>
                   <FontAwesomeIcon
                     icon={showComplete ? faEye : faEyeSlash}
@@ -282,7 +282,7 @@ function TaskOverview() {
                 <th
                   key={index}
                   className={isSunday ? 'th1th' : `th${date.day}`}
-                  style={{ backgroundColor: isSunday ? 'red' : '', color: 'white', width:'9rem' }}
+                  style={{ backgroundColor: isSunday ? 'red' : '', color: 'white', width: '8.7rem' }}
                 >
                   {currentDate.toLocaleString('default', { month: 'short', day: 'numeric' })}
                   <br />
@@ -300,7 +300,7 @@ function TaskOverview() {
                   <FontAwesomeIcon
                     icon={expandedProjects[project.projectId] ? faMinus : faPlus}
                     style={{ cursor: 'pointer' }}
-                    title='Expand Tasks'
+                    title='Expand/Collapse Tasks'
                     onClick={() => handleExpandTasks(project.projectId)}
                   />
                 )}
@@ -325,6 +325,7 @@ function TaskOverview() {
                           key={task.taskId}
                           project={project}
                           task={task}
+                          dates={dates}
                           toggleShowTimeComplete={toggleShowTimeComplete}
                           seconds2dayhrmin={seconds2dayhrmin}
                         />
@@ -341,7 +342,7 @@ function TaskOverview() {
                 </>
               )}
               {!project.assigntaskpresent && (
-                <td className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle',cursor: 'pointer', textDecoration: 'none' }}  onClick={() => handleOpenAddTaskModal(project.projectName)} colSpan="9">
+                <td title='Create new Task' className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'none' }} onClick={() => handleOpenAddTaskModal(project.projectName)} colSpan="9">
                   No Task Found today.
                 </td>
               )}
