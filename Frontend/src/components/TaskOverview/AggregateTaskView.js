@@ -109,8 +109,8 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
           </div>
         </div>
         <div style={{ verticalAlign: 'middle', height: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <td style={{ padding: '0.3rem 0.4rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none none none solid' }}>P</td>
-          <td style={{ padding: '0.3rem 0.35rem', fontSize: '13.44px', borderStyle: 'solid none none solid' }}>A</td>
+          <td title='Planned Tasks' style={{ padding: '0.3rem 0.4rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none solid' }}>P</td>
+          <td title='Actual Tasks' style={{ padding: '0.3rem 0.35rem', fontSize: '13.44px', borderStyle: 'solid none none solid' }}>A</td>
         </div>
       </td>
       {/* Display fetched data here */}
