@@ -162,7 +162,7 @@ const EditTaskPopup = ({ open, handleClose, projectDetails }) => {
                 <InputAdornment position="end" style={{ outline: 'none' }}>Hr</InputAdornment>
               ),
               style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
-              inputProps: { style: { padding: '1.3rem' } }
+              inputProps: { min: 0, max: 12, style: { padding: '1.3rem' } }
             }}
           />
           <TextField
