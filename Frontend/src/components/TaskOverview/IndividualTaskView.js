@@ -36,6 +36,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
   const [taskCompleteOpen, setTaskCompleteOpen] = useState(false);
   const [nickname, setNickname] = useState('');
   const [taskTimings, setTaskTimings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTaskDetails = async () => {
@@ -78,6 +79,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
         )));
         const responseData = responses.map(response => response.data);
         setTaskTimings(responseData);
+        setLoading(false);
         console.log("responseData :", responseData);
       } catch (error) {
         console.error('Failed to fetch task timings:', error);
@@ -195,21 +197,21 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
           <tbody>
             <tr>
               <td style={{ padding: '0.73rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
-              {taskTimings.map((timing, i) => (
+              {dates.map((_, i) => (
                 <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
-                  {timing.length > 0 && timing[0]?.taskid === task.taskId ? `${nickname} : ${seconds2dayhrmin(timing[0].planned)}` : ''}
+                  {loading ? '' : (taskTimings[i]?.length > 0 && taskTimings[i][0]?.taskid === task.taskId ? `${nickname} : ${seconds2dayhrmin(taskTimings[i][0].planned)}` : '')}
                 </td>
               ))}
             </tr>
             <tr>
               <td style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
-              {taskTimings.map((timing, i) => (
-                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px' }} onClick={handleOpenTaskCompleteDialog}>
-                  {timing.length > 0 && timing[0]?.taskid === task.taskId ? (
+              {dates.map((_, i) => (
+                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px', cursor:'pointer' }} onClick={handleOpenTaskCompleteDialog}>
+                  {loading ? '' : (taskTimings[i]?.length > 0 && taskTimings[i][0]?.taskid === task.taskId ? (
                     <>
-                      <span style={{ color: seconds2dayhrmin(timing[0].actual) ? '#1cc88a ' : 'inherit' }}>{nickname}</span> : {seconds2dayhrmin(timing[0].actual)}
+                      <span style={{ color: seconds2dayhrmin(taskTimings[i][0].actual) ? '#1cc88a ' : 'inherit' }}>{nickname}</span> : {seconds2dayhrmin(taskTimings[i][0].actual)}
                     </>
-                  ) : ''}
+                  ) : '')}
                 </td>
               ))}
             </tr>
