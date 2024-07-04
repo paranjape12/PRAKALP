@@ -341,20 +341,20 @@ const daysOfWeek = [
         <tbody className="projectviewtbody">
           <tr className="text-center small">
             <td rowSpan="2" className="p-0">
-                {/* <div>
+                <div>
                   <FontAwesomeIcon icon={faPlus} className="text-primary" style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem' }} />
-                  <FontAwesomeIcon icon={faCircleInfo} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />
-                  <FontAwesomeIcon icon={faPencilAlt} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />
                   <FontAwesomeIcon icon={faTrashAlt} className="text-danger" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />
+                  <FontAwesomeIcon icon={faPencilAlt} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />
+                  <FontAwesomeIcon icon={faCircleInfo} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />
                   <br />
                   <div id="selempdrop" label="Select Employee" value={selectedEmployee} onChange={(e) => setSelectedEmployee(e.target.value)}>
                     {employees.map((employee) => (
-                      <span key={employee.id} value={employee.Name}>
+                      <span key={employee.id} value={employee.Name} style={{fontSize:'14px'}}>
                         {employee.Name}
                       </span>
                     ))}
                   </div>
-                </div> */}
+                </div>
             </td>
             <td rowSpan="2" style={{ width: '12rem' }} >
               {/* <div className="card shadow">
