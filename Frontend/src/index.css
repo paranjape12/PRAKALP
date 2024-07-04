@@ -10,6 +10,6 @@ body {
   background: #fff;
 }
 
-.table-bordered td, .table-bordered th, .table-bordered tr{
+.table-bordered td, .table-bordered tr{
   border: 1px solid #000;
 }
