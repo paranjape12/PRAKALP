@@ -5,6 +5,7 @@ import { faEye, faEyeSlash, faCopyright, faPencilAlt, faCircleInfo, faTrashCan, 
 import axios from 'axios';
 import EditTaskPopup from './EditTaskPopup';
 import DeleteTaskPopup from './DeleteTaskPopup';
+import TaskCompletePopup from './TaskCompletePopup';
 import { Buffer } from 'buffer';
 import { format } from 'date-fns';
 
@@ -32,6 +33,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
   const [taskDetails, setTaskDetails] = useState(null);
+  const [taskCompleteOpen, setTaskCompleteOpen] = useState(false);
   const [nickname, setNickname] = useState('');
   const [taskTimings, setTaskTimings] = useState([]);
 
@@ -124,6 +126,15 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
     setDeleteTaskDialogOpen(false);
   };
 
+ 
+  const handleOpenTaskCompleteDialog = () => {
+    setTaskCompleteOpen(true);
+  };
+
+  const handleCloseTaskCompleteDialog = () => {
+    setTaskCompleteOpen(false);
+  };
+
   return (
     <div className="task-container" style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="p-0" style={{ width: '100%', verticalAlign: 'top', height: '100%', display: 'flex', border: 'none' }}>
@@ -164,6 +175,12 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
               handleClose={handleCloseDeleteTaskDialog}
             />
           )}
+            {taskCompleteOpen && (
+              <TaskCompletePopup
+                open={taskCompleteOpen}
+                handleClose={handleCloseTaskCompleteDialog}
+              />
+            )}
 
           {localShowTimeDetails && (
             <div className="card-body text-left" style={{ padding: '0', fontSize: '11px', height: 'auto', width: '13rem', marginLeft: '0.2rem', marginBottom: '0.2rem' }}>
@@ -187,7 +204,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
             <tr>
               <td style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
               {taskTimings.map((timing, i) => (
-                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
+                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px' }} onClick={handleOpenTaskCompleteDialog}>
                   {timing.length > 0 && timing[0]?.taskid === task.taskId ? (
                     <>
                       <span style={{ color: seconds2dayhrmin(timing[0].actual) ? '#1cc88a ' : 'inherit' }}>{nickname}</span> : {seconds2dayhrmin(timing[0].actual)}
