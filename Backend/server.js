@@ -1044,6 +1044,50 @@ app.post('/api/aggViewPATimes', (req, res) => {
 });
 
 
+// FAMT API Endpoint to handle planned and actual task times off ind view
+app.post('/api/indViewPATimes', (req, res) => {
+  const projectName = req.body.projectName; // Project name received from frontend
+  const dates = req.body.dates; // Array of dates received from frontend
+
+  // Query to get task IDs based on project name
+  const sqlGetTaskIds = `
+    SELECT id
+    FROM Task
+    WHERE projectName = ?
+  `;
+
+  db.query(sqlGetTaskIds, projectName, (err, taskResults) => {
+    if (err) {
+      console.log('Error executing task ID query:', err);
+      res.status(500).json({ error: 'Error executing task ID query' });
+      return;
+    }
+
+    // Extract task IDs from the results
+    const taskIds = taskResults.map(result => result.id);
+
+    // Query to get SUMs from Taskemp table based on dates and task IDs
+    const sqlGetSums = `
+      SELECT taskid, timetocomplete_emp AS planned,
+             actualtimetocomplete_emp AS actual
+      FROM Taskemp
+      WHERE DATE(tasktimeemp) IN (?)
+        AND taskid IN (?)
+    `;
+
+    // Execute the second query with task IDs and dates
+    db.query(sqlGetSums, [dates, taskIds], (err, sumResults) => {
+      if (err) {
+        console.log('Error executing ind query:', err);
+        res.status(500).json({ error: 'Error executing SUM query' });
+        return;
+      }
+      
+      res.json(sumResults); 
+    });
+  });
+});
+
 // =================================  APIs by GJC for ref. START =====================================
 
 // // Endpoint to fetch project lists of a particular employee
