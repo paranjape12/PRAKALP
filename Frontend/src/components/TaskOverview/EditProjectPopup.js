@@ -133,7 +133,7 @@ const EditProjectPopup = ({ open, handleClose, projectDetails, onSave }) => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Dialog open={open} onClose={handleClose} aria-labelledby="edit-project-title" maxWidth="sm" fullWidth>
+      <Dialog open={open} onClose={handleClose} aria-labelledby="edit-project-title" maxWidth="sm" fullWidth style={{bottom:"25%", margin:"0", position:"absolute" }} >
         <DialogTitle id="edit-project-title" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>
           Edit Project<hr /></DialogTitle>
         <DialogContent>
