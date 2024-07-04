@@ -77,15 +77,15 @@ const TaskCompletePopup=({ open, handleClose, handleSave }) => {
     </DialogTitle>
     <DialogContent>
       <Grid container >
-        {/* <Grid item xs={12}>
+        <Grid item xs={12}>
         <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '16px' }}>Time Taken</InputLabel>
-          <TextField
+          {/* <TextField
             hidden
             id="inputidhide"
             variant="outlined"
             InputProps={{ readOnly: true }}
-          />
-        </Grid> */}
+          /> */}
+        </Grid>
                 <Box display="flex" alignItems="center"  className="col-md-12"  >
             <input type="hidden" id="inputidhide" />
             
