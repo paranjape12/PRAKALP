@@ -5,6 +5,8 @@ import { faEye, faEyeSlash, faCopyright, faPencilAlt, faCircleInfo, faTrashCan, 
 import axios from 'axios';
 import EditTaskPopup from './EditTaskPopup';
 import DeleteTaskPopup from './DeleteTaskPopup';
+import { Buffer } from 'buffer';
+import { format } from 'date-fns';
 
 function getTaskStatusColor(status, approved) {
   if (approved === 1) {
@@ -16,7 +18,13 @@ function getTaskStatusColor(status, approved) {
   }
 }
 
-const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2dayhrmin }) => {
+function decryptToken(token) {
+  const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+  const userData = JSON.parse(decodedToken)[0];
+  return userData;
+}
+
+const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seconds2dayhrmin }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(false);
   const [taskInfoDialogOpen, setTaskInfoDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState({});
@@ -24,6 +32,8 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
   const [taskDetails, setTaskDetails] = useState(null);
+  const [nickname, setNickname] = useState('');
+  const [taskTimings, setTaskTimings] = useState([]);
 
   useEffect(() => {
     const fetchTaskDetails = async () => {
@@ -41,6 +51,39 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
 
     fetchTaskDetails();
   }, [task.taskId]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const userData = decryptToken(token);
+        setNickname(userData.Nickname);
+      } catch (error) {
+        console.error('Failed to decode token:', error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchTaskTimings = async () => {
+      try {
+        const formattedDates = dates.map(item => format(new Date(item.date), 'yyyy-MM-dd'));
+        const responses = await Promise.all(formattedDates.map(formattedDate => (
+          axios.post('http://localhost:3001/api/indViewPATimes', {
+            projectName: project.projectName,
+            dates: [formattedDate]
+          })
+        )));
+        const responseData = responses.map(response => response.data);
+        setTaskTimings(responseData);
+        console.log("responseData :", responseData);
+      } catch (error) {
+        console.error('Failed to fetch task timings:', error);
+      }
+    };
+
+    fetchTaskTimings();
+  }, [project.projectName, dates]);
 
   const handleTaskInfoDialogOpen = () => {
     setTaskInfoDialogOpen(true);
@@ -131,19 +174,26 @@ const IndividualTaskView = ({ project, task, toggleShowTimeComplete, seconds2day
           )}
         </div>
 
-
         <table style={{ marginLeft: '13.2rem' }}>
           <tbody>
             <tr>
               <td style={{ padding: '0.73rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
-              {[...Array(7)].map((_, i) => (
-                <td key={i} style={{ padding: '0.6rem 4.19rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center' }}>&nbsp;</td>
+              {taskTimings.map((timing, i) => (
+                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
+                  {timing.length > 0 && timing[0]?.taskid === task.taskId ? `${nickname} : ${seconds2dayhrmin(timing[0].planned)}` : ''}
+                </td>
               ))}
             </tr>
             <tr>
               <td style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
-              {[...Array(7)].map((_, i) => (
-                <td key={i} style={{ padding: '0.6rem 4.19rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center' }}>&nbsp;</td>
+              {taskTimings.map((timing, i) => (
+                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
+                  {timing.length > 0 && timing[0]?.taskid === task.taskId ? (
+                    <>
+                      <span style={{ color: seconds2dayhrmin(timing[0].actual) ? '#1cc88a ' : 'inherit' }}>{nickname}</span> : {seconds2dayhrmin(timing[0].actual)}
+                    </>
+                  ) : ''}
+                </td>
               ))}
             </tr>
           </tbody>
