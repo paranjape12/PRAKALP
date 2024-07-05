@@ -1083,11 +1083,112 @@ app.post('/api/indViewPATimes', (req, res) => {
         res.status(500).json({ error: 'Error executing SUM query' });
         return;
       }
-      
-      res.json(sumResults); 
+
+      res.json(sumResults);
     });
   });
 });
+
+// FAMT API Endpoint to edit complete the task popup
+app.post('/api/completeTask', (req, res) => {
+  const { id, min, hr, msg, tid, isChecked, isChecked2, isChecked3, token } = req.body;
+
+  let userData;
+  try {
+    userData = decryptToken(token);
+  } catch (err) {
+    return res.status(400).send('Invalid token');
+  }
+
+  const AssignBy = userData.id;
+
+  let checkval = '';
+  const taskcomleteat = (parseInt(hr) * 3600) + (parseInt(min) * 60);
+
+  if (isChecked) {
+    checkval = '1';
+  } else if (isChecked2) {
+    checkval = '2';
+  } else if (isChecked3) {
+    checkval = '0';
+  }
+
+  const updateTaskQuery = `UPDATE Task SET Status=?, statusby=? WHERE id=?`;
+  const updateTaskValues = [checkval, AssignBy, tid];
+
+  db.query(updateTaskQuery, updateTaskValues, (err, result) => {
+    if (err) {
+      return res.status(500).send('Error updating task');
+    }
+
+    let updateTaskEmpQuery = '';
+    if (msg === '') {
+      updateTaskEmpQuery = `UPDATE Taskemp SET actualtimetocomplete_emp=? WHERE id=?`;
+    } else {
+      updateTaskEmpQuery = `UPDATE Taskemp SET actualtimetocomplete_emp=?, tasklog=? WHERE id=?`;
+    }
+    const updateTaskEmpValues = msg === '' ? [taskcomleteat, id] : [taskcomleteat, msg, id];
+
+    db.query(updateTaskEmpQuery, updateTaskEmpValues, (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send('Error');
+      }
+      res.send('Success');
+    });
+  });
+});
+
+// FAMT API endpoint employee overview project cell individual
+app.post('/api/empOverviewPrjIndividual', (req, res) => {
+  const { employeeid } = req.body;
+  if (!employeeid) {
+    return res.status(400).send('employeeid is required');
+  }
+
+  const query1 = 'SELECT DISTINCT taskid FROM `taskemp` WHERE AssignedTo_emp = ?';
+
+  db.query(query1, [employeeid], (err, result) => {
+    if (err) return res.status(500).send(err);
+
+    const taskIds = result.map(row => row.taskid);
+
+    if (taskIds.length === 0) {
+      return res.status(404).send('No tasks found for this employee');
+    }
+
+    const placeholders = taskIds.map(() => '?').join(',');
+    const query2 = `SELECT DISTINCT projectName FROM \`task\` WHERE id IN (${placeholders})`;
+    const query3 = `SELECT * FROM \`task\` WHERE id IN (${placeholders})`;
+    const query4 = `SELECT * FROM \`task\` WHERE id IN (${placeholders}) AND aproved = '1'`;
+
+    db.query(query2, taskIds, (err, projects) => {
+      if (err) return res.status(500).send(err);
+      
+      const projectsCount= projects.length;
+
+      db.query(query3, taskIds, (err, allTasks) => {
+        if (err) return res.status(500).send(err);
+
+        const totalTasks = allTasks.length;
+
+        db.query(query4, taskIds, (err, approvedTasks) => {
+          if (err) return res.status(500).send(err);
+
+          const approvedTaskCount = approvedTasks.length;
+
+          res.json({
+            projectsCount,
+            totalTasks,
+            approvedTaskCount
+          });
+        });
+      });
+    });
+  });
+});
+
+
 
 // =================================  APIs by GJC for ref. START =====================================
 
