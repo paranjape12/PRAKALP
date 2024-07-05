@@ -18,6 +18,16 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [summaryData, setSummaryData] = useState([]); // State to store backend response
 
+  const seconds2hrmin = (ss) => {
+    const h = Math.floor(ss / 3600); // Total hours
+    const m = Math.floor((ss % 3600) / 60); // Remaining minutes
+
+    const formattedH = h < 10 ? '0' + h : h;
+    const formattedM = m < 10 ? '0' + m : m;
+
+    return `${formattedH} : ${formattedM}`;
+  };
+
   const fetchData = async () => {
     try {
       // Map dates to formatted strings using date-fns
@@ -121,12 +131,12 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
             onClick={handleOpenAddTaskDialog}
           >
             {summaryData.length > 0 && summaryData[i]?.planned !== null
-              ? seconds2dayhrmin(summaryData[i]?.planned)
+              ? seconds2hrmin(summaryData[i]?.planned)
               : ''}
           </tr>
           <tr style={{ padding: '0.17rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '1.9rem' }}>
             {summaryData.length > 0 && summaryData[i]?.actual != null
-              ? seconds2dayhrmin(summaryData[i]?.actual)
+              ? seconds2hrmin(summaryData[i]?.actual)
               : ''}
           </tr>
         </td>

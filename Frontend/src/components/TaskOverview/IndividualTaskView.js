@@ -37,6 +37,17 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
   const [nickname, setNickname] = useState('');
   const [taskTimings, setTaskTimings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [taskCompletionTime, setTaskCompletionTime] = useState(null);  // New state to hold task completion time
+
+  const seconds2hrmin = (ss) => {
+    const h = Math.floor(ss / 3600); // Total hours
+    const m = Math.floor((ss % 3600) / 60); // Remaining minutes
+
+    const formattedH = h < 10 ? '0' + h : h;
+    const formattedM = m < 10 ? '0' + m : m;
+
+    return `${formattedH} : ${formattedM}`;
+  };
 
   useEffect(() => {
     const fetchTaskDetails = async () => {
@@ -80,7 +91,6 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
         const responseData = responses.map(response => response.data);
         setTaskTimings(responseData);
         setLoading(false);
-        console.log("responseData :", responseData);
       } catch (error) {
         console.error('Failed to fetch task timings:', error);
       }
@@ -128,8 +138,8 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
     setDeleteTaskDialogOpen(false);
   };
 
- 
-  const handleOpenTaskCompleteDialog = () => {
+  const handleOpenTaskCompleteDialog = (time) => {
+    setTaskCompletionTime(time);
     setTaskCompleteOpen(true);
   };
 
@@ -180,7 +190,9 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
             {taskCompleteOpen && (
               <TaskCompletePopup
                 open={taskCompleteOpen}
+                task={task}
                 handleClose={handleCloseTaskCompleteDialog}
+                completionTime={taskCompletionTime}  // Pass the task completion time as a prop
               />
             )}
 
@@ -199,17 +211,17 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
               <td style={{ padding: '0.73rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
               {dates.map((_, i) => (
                 <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
-                  {loading ? '' : (taskTimings[i]?.length > 0 && taskTimings[i][0]?.taskid === task.taskId ? `${nickname} : ${seconds2dayhrmin(taskTimings[i][0].planned)}` : '')}
+                  {loading ? '' : (taskTimings[i]?.length > 0 && taskTimings[i][0]?.taskid === task.taskId ? `${nickname} : ${seconds2hrmin(taskTimings[i][0].planned)}` : '')}
                 </td>
               ))}
             </tr>
             <tr>
               <td style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
               {dates.map((_, i) => (
-                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px', cursor:'pointer' }} onClick={handleOpenTaskCompleteDialog}>
+                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px', cursor:'pointer' }} onClick={() => handleOpenTaskCompleteDialog(taskTimings[i]?.length > 0 && taskTimings[i][0]?.taskid === task.taskId ? taskTimings[i][0].actual : null)}>
                   {loading ? '' : (taskTimings[i]?.length > 0 && taskTimings[i][0]?.taskid === task.taskId ? (
                     <>
-                      <span style={{ color: seconds2dayhrmin(taskTimings[i][0].actual) ? '#1cc88a ' : 'inherit' }}>{nickname}</span> : {seconds2dayhrmin(taskTimings[i][0].actual)}
+                      <span style={{ color: seconds2hrmin(taskTimings[i][0].actual) ? '#1cc88a ' : 'inherit' }}>{nickname}</span> : {seconds2hrmin(taskTimings[i][0].actual)}
                     </>
                   ) : '')}
                 </td>
