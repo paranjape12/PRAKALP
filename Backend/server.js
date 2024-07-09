@@ -1164,6 +1164,7 @@ app.post('/api/empOverviewPrjIndividual', (req, res) => {
 
     db.query(query2, taskIds, (err, projects) => {
       if (err) return res.status(500).send(err);
+
       
       const projectsCount= projects.length;
 
@@ -1188,6 +1189,74 @@ app.post('/api/empOverviewPrjIndividual', (req, res) => {
   });
 });
 
+
+//FAMT Delete employee
+app.post('/api/deleteEmployee', (req, res) => {
+  const empid = req.body.empid;
+
+  // Fetch employee details
+  db.query(
+    'SELECT * FROM `employees` WHERE `id` = ?',
+    [empid],
+    (error, results) => {
+      if (error) {
+        console.error('Error fetching employee: ' + error);
+        return res.status(500).json({ message: 'Error fetching employee' });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: 'Employee not found' });
+      }
+
+      // Delete employee and associated records
+      db.beginTransaction(error => {
+        if (error) {
+          console.error('Error starting transaction: ' + error);
+          return res.status(500).json({ message: 'Error starting transaction' });
+        }
+
+        // Delete from employees table
+        db.query(
+          'DELETE FROM `employees` WHERE `id` = ?',
+          [empid],
+          error => {
+            if (error) {
+              return db.rollback(() => {
+                console.error('Error deleting employee: ' + error);
+                res.status(500).json({ message: 'Error deleting employee' });
+              });
+            }
+
+            // Optionally delete from other related tables
+            db.query(
+              'DELETE FROM `Taskemp` WHERE `employeeid` = ?',
+              [empid],
+              error => {
+                if (error) {
+                  return db.rollback(() => {
+                    console.error('Error deleting employee tasks: ' + error);
+                    res.status(500).json({ message: 'Error deleting employee tasks' });
+                  });
+                }
+
+                db.commit(error => {
+                  if (error) {
+                    return db.rollback(() => {
+                      console.error('Error committing transaction: ' + error);
+                      res.status(500).json({ message: 'Error committing transaction' });
+                    });
+                  }
+
+                  res.status(200).json({ message: 'Success' });
+                });
+              }
+            );
+          }
+        );
+      });
+    }
+  );
+});
 
 
 // =================================  APIs by GJC for ref. START =====================================
