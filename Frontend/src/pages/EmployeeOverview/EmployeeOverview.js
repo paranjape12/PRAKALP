@@ -4,14 +4,14 @@ import Footer from '../../components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import AggregateProjectCell from '../../components/EmployeeOverview/AggregateProjectCell';
 import axios from 'axios';
-import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
-import { MenuItem } from '@material-ui/core';
+import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus,faCircleInfo} from '@fortawesome/free-solid-svg-icons';
+import {  MenuItem } from '@material-ui/core';
 
 import '../../pages/TaskOverview/TaskOverview.css';
-import EditProjectPopup from '../../components/TaskOverview/EditProjectPopup';
-import DeleteProjectPopup from '../../components/TaskOverview/DeleteProjectPopup';
-import AggregateTaskView from '../../components/TaskOverview/AggregateTaskView';
-import IndividualTaskView from '../../components/TaskOverview/IndividualTaskView';
+import EditEmployee from '../../components/Navbar/Dropdown/Manage Employee/EditEmployee';
+import LogsPopup from '../../components/EmployeeOverview/LogsPopup';
+import DeleteEmployeePopup from '../../components/EmployeeOverview/DeleteEmployeePopup';
+
 function EmployeeOverview() {
 
   const getBackgroundColor = (proj_status) => {
@@ -146,15 +146,19 @@ function EmployeeOverview() {
   });
 
   const [showTimeComplete, setShowTimeComplete] = useState(true);
-  //   const [expandedProjects, setExpandedProjects] = useState({});
-  const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [projects, setProjects] = useState([]);
-  const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState(null);
-  const [projectName, setProjectName] = useState(null);
-  const [showTimeDetails, setShowTimeDetails] = useState(true);
-  const [projectTimeDetails, setProjectTimeDetails] = useState({});
+     //   const [expandedProjects, setExpandedProjects] = useState({});
+   const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
+   const [selectedProject, setSelectedProject] = useState(null);
+   const [projects, setProjects] = useState([]);
+   const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
+   const [selectedProjectId, setSelectedProjectId] = useState(null);
+   const [projectName, setProjectName] = useState(null);
+   const [showTimeDetails, setShowTimeDetails] = useState(true);
+   const [projectTimeDetails, setProjectTimeDetails] = useState({});
+   const [editEmployeeOpen, setEditEmployeeOpen] = useState(false); 
+   const [logsPopupOpen, setLogsPopupOpen] = useState(false); 
+   const [deleteEmployee, setDeleteEmployeeOpen] = useState(false);
+
 
   useEffect(() => {
     const initialProjectTimeDetails = {};
@@ -294,7 +298,31 @@ function EmployeeOverview() {
     setSelectedProjectId(null);
     setDeleteProjectDialogOpen(false);
   };
-  return (
+//hrishi
+  const handleOpenEditEmployeeDialog = () => {
+    setEditEmployeeOpen(true);
+  };
+
+  const handleCloseEditEmployeeDialog = () => {
+    setEditEmployeeOpen(false);
+  };
+
+  const handleOpenLogsDialog = () => {
+    setLogsPopupOpen(true);
+  };
+
+  const handleCloseLogsDialog = () => {
+    setLogsPopupOpen(false);
+  };
+  const handleOpenDeleteEmployeeDialog = () => {
+    setDeleteEmployeeOpen(true);
+  };
+
+  const handleCloseDeleteEmployeeDialog = () => {
+    setDeleteEmployeeOpen(false);
+  };
+
+ return (
     <>
       {dates.length > 0 && (
         <Navbar
@@ -340,23 +368,24 @@ function EmployeeOverview() {
           </tr>
         </thead>
         <tbody className="projectviewtbody">
-          {employees.map((employee) => (
+        {employees.map((employee) => (
             <tr className="text-center small">
               <td className="p-2">
                 <div>
-                  <FontAwesomeIcon icon={faPlus} className="text-primary" style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem' }} />
-                  <FontAwesomeIcon icon={faTrashAlt} className="text-danger" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />
-                  <FontAwesomeIcon icon={faPencilAlt} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />
-                  <FontAwesomeIcon icon={faCircleInfo} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />
+                  <FontAwesomeIcon icon={faPlus} className="text-primary" style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem' , paddingLeft:'0.7rem' }} />
+                  
+                  <FontAwesomeIcon icon={faTrashAlt} className="text-danger" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }} onClick={handleOpenDeleteEmployeeDialog } />
+                  <FontAwesomeIcon icon={faPencilAlt} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }} onClick={handleOpenEditEmployeeDialog}/>
+                  <FontAwesomeIcon icon={faCircleInfo} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight:'0.5rem' }} onClick={handleOpenLogsDialog}/>
                   <br />
                   <div id="selempdrop" label="Select Employee" value={selectedEmployee} onChange={(e) => setSelectedEmployee(e.target.value)}>
-
-                    <span key={employee.id} value={employee.Name} style={{ fontSize: '14px' }}>
+                    
+                  <span key={employee.id} value={employee.Name} style={{ fontSize: '14px' }}>
                       {employee.Name}
                     </span>
                   </div>
                 </div>
-              </td>
+                </td>
               <td>
               <AggregateProjectCell employee={employee}/>
               </td>
@@ -368,13 +397,24 @@ function EmployeeOverview() {
               <td>Day 5</td>
               <td>Day 6</td>
               <td>Day 7</td>
-            </tr>
-          ))}
+              </tr>
+               ))}
         </tbody>
-
-      </table>
+        </table>
+        {editEmployeeOpen && (
+            <EditEmployee
+              openEditDialog={editEmployeeOpen}
+              handleClose={handleCloseEditEmployeeDialog}
+            />
+          )}
+          {logsPopupOpen && (
+            <LogsPopup
+              open={logsPopupOpen}
+              handleClose={handleCloseLogsDialog}
+            />
+          )}
       <Footer />
-    </>
+      </>
   )
 }
 
