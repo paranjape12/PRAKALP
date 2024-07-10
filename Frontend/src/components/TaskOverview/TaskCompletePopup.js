@@ -92,7 +92,7 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime }) => {
       try {
         const response = await axios.post('http://localhost:3001/api/completeTask', taskCompleteData);
         if (response.data === 'Success') {
-          setSuccessMessage('Yay timimg changed!;')
+          setSuccessMessage('Task timimg changed successfully.')
           setTimeout(handleClose, 2500);
         } else {
           setErrorMessage('Error saving task data');
