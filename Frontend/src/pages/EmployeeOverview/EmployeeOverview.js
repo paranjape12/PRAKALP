@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import AggregateProjectCell from '../../components/EmployeeOverview/AggregateProjectCell';
+import AggregateTableCellsView from '../../components/EmployeeOverview/AggregateTableCellsView';
 import axios from 'axios';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus,faCircleInfo} from '@fortawesome/free-solid-svg-icons';
 import {  MenuItem } from '@material-ui/core';
 
 import '../../pages/TaskOverview/TaskOverview.css';
+import { MenuItem } from '@material-ui/core';
 import EditEmployee from '../../components/Navbar/Dropdown/Manage Employee/EditEmployee';
 import LogsPopup from '../../components/EmployeeOverview/LogsPopup';
 import DeleteEmployeePopup from '../../components/EmployeeOverview/DeleteEmployeePopup';
@@ -111,7 +112,7 @@ function EmployeeOverview() {
     setShowComplete((prevShowComplete) => {
       const newValue = !prevShowComplete;
       // Store new value in localStorage
-      localStorage.setItem('showCompletedTasks', JSON.stringify(newValue));
+      localStorage.setItem('showEmpCompletedTasks', JSON.stringify(newValue));
       return newValue;
     });
   };
@@ -137,12 +138,9 @@ function EmployeeOverview() {
       });
   }, []);
 
-  //table body project
   const [showComplete, setShowComplete] = useState(() => {
-    // Get initial state from localStorage or set default value to true
-    const storedValue = localStorage.getItem('showComplete');
-    return storedValue ? JSON.parse(storedValue) : true;
-
+    const storedValue = localStorage.getItem('showEmpCompletedTasks');
+    return JSON.parse(storedValue);
   });
 
   const [showTimeComplete, setShowTimeComplete] = useState(true);
@@ -370,7 +368,7 @@ function EmployeeOverview() {
         <tbody className="projectviewtbody">
         {employees.map((employee) => (
             <tr className="text-center small">
-              <td className="p-2">
+              <td className="p-1">
                 <div>
                   <FontAwesomeIcon icon={faPlus} className="text-primary" style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem' , paddingLeft:'0.7rem' }} />
                   
@@ -385,20 +383,10 @@ function EmployeeOverview() {
                     </span>
                   </div>
                 </div>
-                </td>
-              <td>
-              <AggregateProjectCell employee={employee}/>
               </td>
-              <td>Task dtls</td>
-              <td>Day 1</td>
-              <td>Day 2</td>
-              <td>Day 3</td>
-              <td>Day 4</td>
-              <td>Day 5</td>
-              <td>Day 6</td>
-              <td>Day 7</td>
-              </tr>
-               ))}
+              <AggregateTableCellsView employee={employee} isComplete={showComplete} dates={dates} />
+            </tr>
+          ))}
         </tbody>
         </table>
         {editEmployeeOpen && (
