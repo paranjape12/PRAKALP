@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import TaskInfoDialog from './TaskInfoPopup';
-import { faEye, faEyeSlash, faCopyright, faPencilAlt, faCircleInfo, faTrashCan, faL } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faCopyright, faPencilAlt, faCircleInfo, faTrashAlt, faL } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import EditTaskPopup from './EditTaskPopup';
 import DeleteTaskPopup from './DeleteTaskPopup';
@@ -152,14 +152,14 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
       <div className="p-0" style={{ width: '100%', verticalAlign: 'top', height: '100%', display: 'flex', border: 'none' }}>
         <div className="card" style={{ flex: '1', height: '2rem', display: 'flex', flexDirection: 'column', width: '11rem', marginLeft: '0' }}>
           <div style={{ height: '5rem', width: '13.2rem', border: 'none' }}>
-            <h6 className={`m-0 py-1 text-center font-weight-bold text-white ${getTaskStatusColor(task.taskStatus, task.taskAproved)}`} style={{ marginTop: '0.5rem', fontSize: '11px' }}>
+            <h6 className={`m-0 py-1 text-center font-weight-bold text-white ${getTaskStatusColor(task.taskStatus, task.taskApproved)}`} style={{ marginTop: '0.5rem', fontSize: '11px' }}>
               {task.taskName}
             </h6>
-            <FontAwesomeIcon icon={faTrashCan} style={{ float: 'right', cursor: 'pointer', color: 'red', paddingTop: '0.2rem', paddingLeft: '0.5rem', paddingRight: '0.4rem' }} onClick={handleOpenDeleteTaskDialog} />
-            <FontAwesomeIcon icon={faPencilAlt} style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={handleOpenEditTaskDialog} />
-            {task.taskStatus === "1" && (<FontAwesomeIcon icon={faCopyright} color='#1cc88a' style={{ marginLeft: '0.4rem', verticalAlign: 'middle' }} />)}
-            <FontAwesomeIcon icon={faCircleInfo} style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={handleTaskInfoDialogOpen} />
-            {project.projectLastTask === 1 && (<FontAwesomeIcon icon={faL} style={{ color: '#36b9cc', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />)}
+            <FontAwesomeIcon icon={faTrashAlt} title='Delete Task' style={{ float: 'right', cursor: 'pointer', color: 'red', paddingTop: '0.2rem', paddingLeft: '0.5rem', paddingRight: '0.4rem' }} onClick={handleOpenDeleteTaskDialog} />
+            <FontAwesomeIcon icon={faPencilAlt} title='Edit Task' style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={handleOpenEditTaskDialog} />
+            {task.taskStatus === "1" && (<FontAwesomeIcon icon={faCopyright} color='#1cc88a' title='Marked as Complete' style={{ marginLeft: '0.4rem', verticalAlign: 'middle' }} />)}
+            <FontAwesomeIcon icon={faCircleInfo} title='Task Info' style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={handleTaskInfoDialogOpen} />
+            {project.projectLastTask === 1 && (<FontAwesomeIcon icon={faL} title='Last Task' style={{ color: '#36b9cc', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />)}
             <FontAwesomeIcon title='Show/Hide Time' icon={localShowTimeDetails ? faEyeSlash : faEye} onClick={handleToggleShowTimeComplete} style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem' }} />
           </div>
 
@@ -187,14 +187,15 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
               handleClose={handleCloseDeleteTaskDialog}
             />
           )}
-            {taskCompleteOpen && (
-              <TaskCompletePopup
-                open={taskCompleteOpen}
-                task={task}
-                handleClose={handleCloseTaskCompleteDialog}
-                completionTime={taskCompletionTime}  // Pass the task completion time as a prop
-              />
-            )}
+
+          {taskCompleteOpen && (
+            <TaskCompletePopup
+              open={taskCompleteOpen}
+              task={task}
+              handleClose={handleCloseTaskCompleteDialog}
+              completionTime={taskCompletionTime}  // Pass the task completion time as a prop
+            />
+          )}
 
           {localShowTimeDetails && (
             <div className="card-body text-left" style={{ padding: '0', fontSize: '11px', height: 'auto', width: '13rem', marginLeft: '0.2rem', marginBottom: '0.2rem' }}>
@@ -208,22 +209,30 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
         <table style={{ marginLeft: '13.2rem' }}>
           <tbody>
             <tr>
-              <td style={{ padding: '0.73rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
-              {dates.map((_, i) => (
+              <td title='Planned Timings' style={{ padding: '0.73rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
+              {dates.map((date, i) => (
                 <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
-                  {loading ? '' : (taskTimings[i]?.length > 0 && taskTimings[i][0]?.taskid === task.taskId ? `${nickname} : ${seconds2hrmin(taskTimings[i][0].planned)}` : '')}
+                  {loading ? '' : (
+                    taskTimings[i]?.map(timing => (
+                      timing.taskid === task.taskId ? `${nickname} : ${seconds2hrmin(timing.planned)}` : ''
+                    ))
+                  )}
                 </td>
               ))}
             </tr>
             <tr>
-              <td style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
-              {dates.map((_, i) => (
-                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px', cursor:'pointer' }} onClick={() => handleOpenTaskCompleteDialog(taskTimings[i]?.length > 0 && taskTimings[i][0]?.taskid === task.taskId ? taskTimings[i][0].actual : null)}>
-                  {loading ? '' : (taskTimings[i]?.length > 0 && taskTimings[i][0]?.taskid === task.taskId ? (
-                    <>
-                      <span style={{ color: seconds2hrmin(taskTimings[i][0].actual) ? '#1cc88a ' : 'inherit' }}>{nickname}</span> : {seconds2hrmin(taskTimings[i][0].actual)}
-                    </>
-                  ) : '')}
+              <td title='Actual Timings' style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
+              {dates.map((date, i) => (
+                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
+                  {loading ? '' : (
+                    taskTimings[i]?.map(timing => (
+                      timing.taskid === task.taskId ? (
+                        <>
+                          <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual)} style={{ color: seconds2hrmin(timing.actual) ? '#1cc88a' : 'inherit', cursor: 'pointer' }}>{nickname} </span> : {seconds2hrmin(timing.actual)}
+                        </>
+                      ) : ''
+                    ))
+                  )}
                 </td>
               ))}
             </tr>
