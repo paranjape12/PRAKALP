@@ -10,6 +10,7 @@ import IndividualTaskView from '../../components/TaskOverview/IndividualTaskView
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
+import CircularProgressWithLabel from '../../components/TaskOverview/CircularProgressWithLabel';
 
 const today = new Date();
 
@@ -68,6 +69,30 @@ function TaskOverview() {
   const [projectName, setProjectName] = useState(null);
   const [showTimeDetails, setShowTimeDetails] = useState(true);
   const [projectTimeDetails, setProjectTimeDetails] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    
+    fetchProjects();
+    
+    const timer = setInterval(() => {
+      setProgress((prevProgress) => {
+        const nextProgress = prevProgress + 10;
+        return nextProgress > 100 ? 100 : nextProgress;
+      });
+    }, 600);
+
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      clearInterval(timer);
+    }, 7000);
+
+    return () => {
+      clearInterval(timer); // Clean up the timer when component unmounts or when changing state
+      clearTimeout(timeout); // Clean up the timeout to prevent memory leaks
+    };
+  }, []);
 
   const toggleShowComplete = (e) => {
     e.stopPropagation();
@@ -245,135 +270,141 @@ function TaskOverview() {
   const handleCloseDeleteProjectDialog = () => {
     setSelectedProjectId(null);
     setDeleteProjectDialogOpen(false);
-  };
+  };  
 
 
   return (
     <div>
-      {dates.length > 0 && (
-        <Navbar
-          onTodayClick={handleTodayClick}
-          onPreviousDayClick={handlePreviousDayClick}
-          onNextDayClick={handleNextDayClick}
-          dates={dates}
-        />
-      )}
-      <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed' }}>
-        <thead className="text-white" id="theader" style={{ fontSize: '13px' }}>
-          <tr className="text-center small" style={{ position: 'sticky', top: '2.4rem', zIndex: '5' }}>
-            <th style={{ width: '20rem', verticalAlign: 'revert', color: 'white' }}>Projects</th>
-            <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                <span style={{ textAlign: 'center' }}>Task Details</span>
-                <div className="taskEye" style={{ position: 'absolute', right: '1rem' }}>
-                  <FontAwesomeIcon
-                    icon={showComplete ? faEye : faEyeSlash}
-                    className="eyeicon"
-                    style={{ cursor: 'pointer', color: 'white' }}
-                    onClick={toggleShowComplete}
-                  />
-                </div>
-              </div>
-            </th>
-            {dates.map((date, index) => {
-              const currentDate = new Date(date.date);
-              const isSunday = currentDate.getDay() === 0;
-              return (
-                <th
-                  key={index}
-                  className={isSunday ? 'th1th' : `th${date.day}`}
-                  style={{ backgroundColor: isSunday ? 'red' : '', color: 'white', width: '8.7rem' }}
-                >
-                  {currentDate.toLocaleString('default', { month: 'short', day: 'numeric' })}
-                  <br />
-                  [ {currentDate.toLocaleString('default', { weekday: 'short' })} ]
+      {loading ? (
+        <CircularProgressWithLabel value={progress}/>
+      ) : (
+        <>
+          {dates.length > 0 && (
+            <Navbar
+              onTodayClick={handleTodayClick}
+              onPreviousDayClick={handlePreviousDayClick}
+              onNextDayClick={handleNextDayClick}
+              dates={dates}
+            />
+          )}
+          <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed' }}>
+            <thead className="text-white" id="theader" style={{ fontSize: '13px' }}>
+              <tr className="text-center small" style={{ position: 'sticky', top: '2.4rem', zIndex: '5' }}>
+                <th style={{ width: '20rem', verticalAlign: 'revert', color: 'white' }}>Projects</th>
+                <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                    <span style={{ textAlign: 'center' }}>Task Details</span>
+                    <div className="taskEye" title='Show/Hide Approved Task(s)' style={{ position: 'absolute', right: '1rem' }}>
+                      <FontAwesomeIcon
+                        icon={showComplete ? faEye : faEyeSlash}
+                        className="eyeicon"
+                        style={{ cursor: 'pointer', color: 'white' }}
+                        onClick={toggleShowComplete}
+                      />
+                    </div>
+                  </div>
                 </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody id="projectviewtbody">
-          {projects.map((project, index) => (
-            <tr key={index}>
-              <td className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', padding: '0 0 0 0.5rem', fontSize: '13.44px' }}>
-                {project.assigntaskpresent && (
-                  <FontAwesomeIcon
-                    icon={expandedProjects[project.projectId] ? faMinus : faPlus}
-                    style={{ cursor: 'pointer' }}
-                    title='Expand/Collapse Tasks'
-                    onClick={() => handleExpandTasks(project.projectId)}
-                  />
-                )}
-                [{project.projectSalesOrder}]
-                <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
-                  <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
-                </a>
-                <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.projectId} name={project.projectName} value={project.proj_status} onClick={() => handleOpenEditProjectDialog(project)}>
-                  <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
-                </a>
-                <br />
-                {project.projectName}
-              </td>
-              {project.assigntaskpresent && (
-                <>
-                  {expandedProjects[project.projectId] ? (
-                    project.tasks
-                      // Filter out tasks with approved value equal to 1 if showComplete is false
-                      .filter(task => showComplete || task.taskAproved !== 1)
-                      .map(task => (
-                        <IndividualTaskView
-                          key={task.taskId}
+                {dates.map((date, index) => {
+                  const currentDate = new Date(date.date);
+                  const isSunday = currentDate.getDay() === 0;
+                  return (
+                    <th
+                      key={index}
+                      className={isSunday ? 'th1th' : `th${date.day}`}
+                      style={{ backgroundColor: isSunday ? 'red' : '', color: 'white', width: '8.7rem' }}
+                    >
+                      {currentDate.toLocaleString('default', { month: 'short', day: 'numeric' })}
+                      <br />
+                      [ {currentDate.toLocaleString('default', { weekday: 'short' })} ]
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody id="projectviewtbody">
+              {projects.map((project, index) => (
+                <tr key={index}>
+                  <td className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', padding: '0 0 0 0.5rem', fontSize: '13.44px' }}>
+                    {project.assigntaskpresent && (
+                      <FontAwesomeIcon
+                        icon={expandedProjects[project.projectId] ? faMinus : faPlus}
+                        style={{ cursor: 'pointer' }}
+                        title='Expand/Collapse Tasks'
+                        onClick={() => handleExpandTasks(project.projectId)}
+                      />
+                    )}
+                    [{project.projectSalesOrder}]
+                    <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
+                      <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
+                    </a>
+                    <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.projectId} name={project.projectName} value={project.proj_status} onClick={() => handleOpenEditProjectDialog(project)}>
+                      <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
+                    </a>
+                    <br />
+                    {project.projectName}
+                  </td>
+                  {project.assigntaskpresent && (
+                    <>
+                      {expandedProjects[project.projectId] ? (
+                        project.tasks
+                          // Filter out tasks with approved value equal to 1 if showComplete is false
+                          .filter(task => showComplete || task.taskAproved !== 1)
+                          .map(task => (
+                            <IndividualTaskView
+                              key={task.taskId}
+                              project={project}
+                              task={task}
+                              dates={dates}
+                              toggleShowTimeComplete={toggleShowTimeComplete}
+                              seconds2dayhrmin={seconds2dayhrmin}
+                            />
+                          ))
+                      ) : (
+                        <AggregateTaskView
                           project={project}
-                          task={task}
                           dates={dates}
-                          toggleShowTimeComplete={toggleShowTimeComplete}
+                          toggleShowTimeComplete={() => toggleShowTimeComplete(project.projectId)}
                           seconds2dayhrmin={seconds2dayhrmin}
+                          showComplete={showComplete}
                         />
-                      ))
-                  ) : (
-                    <AggregateTaskView
-                      project={project}
-                      dates={dates}
-                      toggleShowTimeComplete={() => toggleShowTimeComplete(project.projectId)}
-                      seconds2dayhrmin={seconds2dayhrmin}
-                      showComplete={showComplete}
-                    />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-              {!project.assigntaskpresent && (
-                <td title='Create new Task' className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'none' }} onClick={() => handleOpenAddTaskModal(project.projectName)} colSpan="9">
-                  No Task Found today.
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {showAddTaskModal && (
-        <AddTaskModal
-          open={showAddTaskModal}
-          onClose={handleCloseAddTaskModal}
-          projectName={projectName}
-        />
+                  {!project.assigntaskpresent && (
+                    <td title='Create new Task' className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'none' }} onClick={() => handleOpenAddTaskModal(project.projectName)} colSpan="9">
+                      No Task Found today.
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {showAddTaskModal && (
+            <AddTaskModal
+              open={showAddTaskModal}
+              onClose={handleCloseAddTaskModal}
+              projectName={projectName}
+            />
+          )}
+          {selectedProject && (
+            <EditProjectPopup
+              open={editProjectDialogOpen}
+              handleClose={handleCloseEditProjectDialog}
+              projectDetails={selectedProject}
+              onSave={handleSaveEditProject}
+            />
+          )}
+          {selectedProjectId && (
+            <DeleteProjectPopup
+              open={deleteProjectDialogOpen}
+              handleClose={handleCloseDeleteProjectDialog}
+              selectedProjectId={selectedProjectId}
+              projectName={projectName}
+            />
+          )}
+          <Footer />
+        </>
       )}
-      {selectedProject && (
-        <EditProjectPopup
-          open={editProjectDialogOpen}
-          handleClose={handleCloseEditProjectDialog}
-          projectDetails={selectedProject}
-          onSave={handleSaveEditProject}
-        />
-      )}
-      {selectedProjectId && (
-        <DeleteProjectPopup
-          open={deleteProjectDialogOpen}
-          handleClose={handleCloseDeleteProjectDialog}
-          selectedProjectId={selectedProjectId}
-          projectName={projectName}
-        />
-      )}
-      <Footer />
     </div>
   );
 }
