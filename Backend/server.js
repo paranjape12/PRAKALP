@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 
 
@@ -1139,7 +1139,7 @@ app.post('/api/completeTask', (req, res) => {
   });
 });
 
-// FAMT API endpoint employee overview project cell individual
+// FAMT API endpoint employee overview project cell aggregate View
 app.post('/api/empOverviewPrjIndividual', (req, res) => {
   const { employeeid } = req.body;
   if (!employeeid) {
@@ -1164,8 +1164,7 @@ app.post('/api/empOverviewPrjIndividual', (req, res) => {
 
     db.query(query2, taskIds, (err, projects) => {
       if (err) return res.status(500).send(err);
-
-      
+            
       const projectsCount= projects.length;
 
       db.query(query3, taskIds, (err, allTasks) => {
@@ -1186,6 +1185,175 @@ app.post('/api/empOverviewPrjIndividual', (req, res) => {
         });
       });
     });
+  });
+});
+
+// FAMT API for emp overview task dtls aggregate view
+app.post('/api/EmpOverviewtaskDtlsAggView', async (req, res) => {
+  const { empid, iscomplete } = req.body;
+
+  try {
+    // Get the distinct task IDs
+    const taskIdsResult = await query(`SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`, [empid]);
+
+    if (!Array.isArray(taskIdsResult) || taskIdsResult.length === 0) {
+      return res.status(200).send([]);
+    }
+
+    const taskIds = taskIdsResult.map(row => row.taskid);
+
+    // Get the distinct project names
+    const projectNamesResult = await query(`SELECT DISTINCT projectName FROM task WHERE id IN (?)`, [taskIds]);
+
+    if (!Array.isArray(projectNamesResult) || projectNamesResult.length === 0) {
+      return res.status(200).send([]);
+    }
+
+    const projectNames = projectNamesResult.map(row => row.projectName);
+
+    // Create the base query
+    let sql = `SELECT * FROM Task WHERE projectName IN (?) AND id IN (?)`;
+    const params = [projectNames, taskIds];
+
+    if (!iscomplete) {
+      sql += ` AND aproved = '0'`;
+    }
+
+    // Execute the final query
+    const tasksResult = await query(sql, params);
+
+    res.status(200).send(tasksResult);
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    res.status(500).send('Internal server error');
+  }
+});
+
+function query(sql, params) {
+  return new Promise((resolve, reject) => {
+    db.query(sql, params, (error, results) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(results);
+    });
+  });
+}
+
+
+// FAMT API to fetch emp overview task dtls aggregate view timimngs
+app.post('/api/emptaskDtlsAggTimes', async (req, res) => {
+  const { empid, iscomplete } = req.body;
+
+  try {
+    // Step 1: Get assigned task IDs
+    const [taskRows] = await db.promise().query(
+      'SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?',
+      [empid]
+    );
+
+    if (!Array.isArray(taskRows)) {
+      throw new TypeError('Expected taskRows to be an array');
+    }
+
+    const assignedTaskIds = taskRows.map(row => row.taskid);
+
+    if (assignedTaskIds.length === 0) {
+      return res.status(404).send('No tasks found for the given employee');
+    }
+
+    // Step 2: Get filtered task IDs based on completion status
+    let filteredTaskQuery = 'SELECT id FROM task WHERE id IN (?)';
+    if (!iscomplete) {
+      filteredTaskQuery += ' AND aproved = 0';
+    }
+    const [filteredTaskRows] = await db.promise().query(filteredTaskQuery, [assignedTaskIds]);
+
+    if (!Array.isArray(filteredTaskRows)) {
+      throw new TypeError('Expected filteredTaskRows to be an array');
+    }
+
+    const filteredTaskIds = filteredTaskRows.map(row => row.id);
+
+    if (filteredTaskIds.length === 0) {
+      return res.status(404).send('No matching tasks found');
+    }
+
+    // Step 3: Get the required time to complete
+    const [requiredTimeRows] = await db.promise().query(
+      'SELECT SUM(timetocomplete) AS required FROM task WHERE id IN (?)',
+      [filteredTaskIds]
+    );
+
+    if (!Array.isArray(requiredTimeRows)) {
+      throw new TypeError('Expected requiredTimeRows to be an array');
+    }
+
+    const requiredTime = requiredTimeRows[0]?.required || 0;
+
+    // Step 4: Get the actual time taken to complete
+    const [actualTimeRows] = await db.promise().query(
+      'SELECT SUM(actualtimetocomplete_emp) AS taken FROM taskemp WHERE id IN (?)',
+      [filteredTaskIds]
+    );
+
+    if (!Array.isArray(actualTimeRows)) {
+      throw new TypeError('Expected actualTimeRows to be an array');
+    }
+
+    const actualTime = actualTimeRows[0]?.taken || 0;
+
+    res.json({ required: requiredTime, taken: actualTime });
+  } catch (error) {
+    console.error('Database query error:', error);
+    res.status(500).send('Internal server error');
+  }
+});
+
+
+// FAMT API endpoint for retrieving emp overview agg view planned and actual times
+app.get('/api/empAggtasktimes', (req, res) => {
+  let { taskDate, assignedTo } = req.query;
+
+  // Convert taskDate to an array if it's not already
+  if (!Array.isArray(taskDate)) {
+    taskDate = [taskDate]; // Convert to array with a single element
+  }
+
+  console.log('Processed taskDate:', taskDate);
+
+  // Generate placeholders for the array of dates
+  const datePlaceholders = taskDate.map(date => `'${date}'`).join(',');
+  console.log('Date placeholders:', datePlaceholders);
+
+  // SQL query to retrieve planned and actual times for each date in the array
+  const sqlQuery = `
+    SELECT 
+      DATE(tasktimeemp) AS taskDate,
+      SUM(timetocomplete_emp) AS planned, 
+      SUM(actualtimetocomplete_emp) AS actual 
+    FROM taskemp 
+    WHERE DATE(tasktimeemp) IN (${datePlaceholders}) AND AssignedTo_emp=?
+    GROUP BY DATE(tasktimeemp)`;
+
+  // Combine taskDate array and assignedTo into parameters for db.query
+  const queryParams = [...taskDate, assignedTo];
+
+  db.query(sqlQuery, queryParams, (error, results) => {
+    if (error) {
+      console.error('Database query error:', error);
+      return res.status(500).json({ error: 'Database query error.' });
+    }
+
+    // If no results found
+    if (results.length === 0) {
+      console.log('No data found for the given parameters.');
+      return res.status(404).json({ error: 'No data found for the given parameters.' });
+    }
+
+    // Respond with the results
+    console.log('Query results:', results);
+    res.json(results); // Array of results for each date
   });
 });
 
