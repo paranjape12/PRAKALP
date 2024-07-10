@@ -113,20 +113,21 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
             {localShowTimeDetails && (
               <>
                 <h6 title="Required" className="text-left m-0 Required" style={{ fontSize: '11px' }}>R : {seconds2dayhrmin(project.requiredTime)}</h6>
-                <h6 title="Taken" className="text-left m-0 Taken" style={{ fontSize: '11px' }}>T : TBD</h6>
+                <h6 title="Taken" className="text-left m-0 Taken" style={{ fontSize: '11px' }}>T : {seconds2dayhrmin(project.takenTime)}</h6>
               </>
             )}
           </div>
         </div>
         <div style={{ verticalAlign: 'middle', height: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <td title='Planned Tasks' style={{ padding: '0.3rem 0.4rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none solid' }}>P</td>
-          <td title='Actual Tasks' style={{ padding: '0.3rem 0.35rem', fontSize: '13.44px', borderStyle: 'solid none none solid' }}>A</td>
+          <td title='Planned Timings' style={{ padding: '0.3rem 0.4rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none solid' }}>P</td>
+          <td title='Actual Timings' style={{ padding: '0.3rem 0.35rem', fontSize: '13.44px', borderStyle: 'solid none none solid' }}>A</td>
         </div>
       </td>
       {/* Display fetched data here */}
       {[...Array(7)].map((_, i) => (
         <td key={i} style={{ padding: '0' }}>
           <tr
+            title='Create new Task'
             style={{ padding: '0.2rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', cursor: 'pointer', textAlign: 'center', height: '1.9rem' }}
             onClick={handleOpenAddTaskDialog}
           >
