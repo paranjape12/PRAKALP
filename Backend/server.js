@@ -971,7 +971,8 @@ app.post('/api/deleteTask', (req, res) => {
     }
 
     db.query(deleteTaskQuery, [taskId], (err, result) => {
-      if (err) {
+      if (
+        err) {
         return db.rollback(() => {
           res.status(500).send('Error deleting from Task table.');
         });
@@ -1362,11 +1363,20 @@ app.get('/api/empAggtasktimes', (req, res) => {
 app.post('/api/deleteEmployee', (req, res) => {
   const empid = req.body.empid;
 
-  // Fetch employee details
-  db.query(
-    'SELECT * FROM `employees` WHERE `id` = ?',
-    [empid],
-    (error, results) => {
+  const query1 = 'SELECT DISTINCT taskid FROM `taskemp` WHERE AssignedTo_emp = ?';
+
+  db.query(query1, [empid], (err, result) => {
+    if (err) return res.status(500).send(err);
+
+    const taskIds = result.map(row => row.taskid);
+
+    if (taskIds.length === 0) {
+      return res.status(404).send('No tasks found for this employee');
+    }
+
+    const placeholders = taskIds.map(() => '?').join(',');
+
+    db.query('SELECT * FROM `logincrd` WHERE `id` = ?', [empid], (error, results) => {
       if (error) {
         console.error('Error fetching employee: ' + error);
         return res.status(500).json({ message: 'Error fetching employee' });
@@ -1376,54 +1386,151 @@ app.post('/api/deleteEmployee', (req, res) => {
         return res.status(404).json({ message: 'Employee not found' });
       }
 
-      // Delete employee and associated records
       db.beginTransaction(error => {
         if (error) {
           console.error('Error starting transaction: ' + error);
           return res.status(500).json({ message: 'Error starting transaction' });
         }
 
-        // Delete from employees table
-        db.query(
-          'DELETE FROM `employees` WHERE `id` = ?',
-          [empid],
-          error => {
+        db.query('DELETE FROM `logincrd` WHERE `id` = ?', [empid], error => {
+          if (error) {
+            return db.rollback(() => {
+              console.error('Error deleting employee: ' + error);
+              res.status(500).json({ message: 'Error deleting employee' });
+            });
+          }
+
+          db.query(`DELETE FROM taskemp WHERE taskid IN (${placeholders})`, taskIds, error => {
             if (error) {
               return db.rollback(() => {
-                console.error('Error deleting employee: ' + error);
-                res.status(500).json({ message: 'Error deleting employee' });
+                console.error('Error deleting employee tasks: ' + error);
+                res.status(500).json({ message: 'Error deleting employee tasks' });
               });
             }
 
-            // Optionally delete from other related tables
-            db.query(
-              'DELETE FROM `Taskemp` WHERE `employeeid` = ?',
-              [empid],
-              error => {
+            db.query(`DELETE FROM task WHERE id IN (${placeholders})`, taskIds, error => {
+              if (error) {
+                return db.rollback(() => {
+                  console.error('Error deleting employee tasks: ' + error);
+                  res.status(500).json({ message: 'Error deleting employee tasks' });
+                });
+              }
+
+              db.commit(error => {
                 if (error) {
                   return db.rollback(() => {
-                    console.error('Error deleting employee tasks: ' + error);
-                    res.status(500).json({ message: 'Error deleting employee tasks' });
+                    console.error('Error committing transaction: ' + error);
+                    res.status(500).json({ message: 'Error committing transaction' });
                   });
                 }
 
-                db.commit(error => {
-                  if (error) {
-                    return db.rollback(() => {
-                      console.error('Error committing transaction: ' + error);
-                      res.status(500).json({ message: 'Error committing transaction' });
-                    });
-                  }
+                res.status(200).json({ message: 'Success' });
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+});
 
-                  res.status(200).json({ message: 'Success' });
+
+
+
+//Famt employees logs api
+
+
+app.use(bodyParser.json());
+app.use(cors());
+
+// Convert seconds to human-readable format
+function seconds2human(ss) {
+  const hours = Math.floor(ss / 3600);
+  const minutes = Math.floor((ss % 3600) / 60);
+  return `${hours}h ${minutes}m`;
+}
+
+// API endpoint to get employee logs
+app.post('/api/employeeLogs', (req, res) => {
+  const { employeeId, fromDate, toDate, emp_taskALL = [], emp_projALL = [] } = req.body;
+
+  let taskcondition = '';
+  let projectcondition = '';
+
+  if (emp_taskALL.length > 0 && emp_taskALL !== 'All') {
+    const emp_taskALL_str = emp_taskALL.join(',');
+    taskcondition = `AND taskid IN (${emp_taskALL_str})`;
+  }
+
+  if (emp_projALL.length > 0 && emp_projALL !== 'All') {
+    const emp_projALL_str = emp_projALL.map(p => `'${p}'`).join(',');
+    projectcondition = `AND projectName IN (${emp_projALL_str})`;
+  }
+
+  const selctempassign = `
+    SELECT * FROM Taskemp 
+    WHERE AssignedTo_emp='${employeeId}' 
+      AND DATE(tasktimeemp)>='${fromDate}' 
+      AND DATE(tasktimeemp)<='${toDate}' 
+      ${taskcondition} 
+    ORDER BY tasktimeemp DESC
+  `;
+
+  conn1.query(selctempassign, (err, result_selctempassign) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      res.status(500).json({ error: 'Failed to fetch employee logs' });
+      return;
+    }
+
+    const finalResults = [];
+
+    if (result_selctempassign.length > 0) {
+      const promises = result_selctempassign.map(row_selctempassign => {
+        return new Promise((resolve, reject) => {
+          const timerek = row_selctempassign.actualtimetocomplete_emp
+            ? seconds2human(row_selctempassign.actualtimetocomplete_emp)
+            : '-';
+
+          const taskid = row_selctempassign.taskid;
+          const selecttaskdetails = `
+            SELECT projectName, TaskName 
+            FROM Task 
+            WHERE id='${taskid}' ${projectcondition}
+          `;
+
+          conn1.query(selecttaskdetails, (err, result_selecttaskdetails) => {
+            if (err) {
+              reject(err);
+            } else {
+              if (result_selecttaskdetails.length > 0) {
+                const row_selecttaskdetails = result_selecttaskdetails[0];
+                finalResults.push({
+                  date: row_selctempassign.tasktimeemp,
+                  projectName: row_selecttaskdetails.projectName,
+                  taskName: row_selecttaskdetails.TaskName,
+                  timeRequired: row_selctempassign.timetocomplete_emp,
+                  timeTaken: row_selctempassign.actualtimetocomplete_emp,
+                  activity: row_selctempassign.Activity,
+                  logs: row_selctempassign.tasklog
                 });
               }
-            );
-          }
-        );
+              resolve();
+            }
+          });
+        });
       });
+
+      Promise.all(promises).then(() => {
+        res.json(finalResults);
+      }).catch(err => {
+        console.error('Error fetching task details:', err);
+        res.status(500).json({ error: 'Failed to fetch task details' });
+      });
+    } else {
+      res.json(finalResults);
     }
-  );
+  });
 });
 
 
