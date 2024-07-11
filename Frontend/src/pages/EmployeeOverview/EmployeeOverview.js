@@ -4,8 +4,7 @@ import Footer from '../../components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import AggregateTableCellsView from '../../components/EmployeeOverview/AggregateTableCellsView';
 import axios from 'axios';
-import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus,faCircleInfo} from '@fortawesome/free-solid-svg-icons';
-import {  MenuItem } from '@material-ui/core';
+import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 
 import '../../pages/TaskOverview/TaskOverview.css';
 import { MenuItem } from '@material-ui/core';
@@ -14,7 +13,6 @@ import LogsPopup from '../../components/EmployeeOverview/LogsPopup';
 import DeleteEmployeePopup from '../../components/EmployeeOverview/DeleteEmployeePopup';
 
 function EmployeeOverview() {
-
   const getBackgroundColor = (proj_status) => {
     switch (proj_status) {
       case 1:
@@ -30,7 +28,6 @@ function EmployeeOverview() {
     }
   };
 
-
   const seconds2dayhrmin = (ss) => {
     const s = ss % 60;
     const h = Math.floor((ss % 28800) / 3600); // 8 hours = 28,800 seconds
@@ -44,8 +41,7 @@ function EmployeeOverview() {
     return ` ${formattedD} : ${formattedH} : ${formattedM} `;
   };
 
-
-  //Navbar
+  // Navbar
 
   const today = new Date();
 
@@ -103,9 +99,7 @@ function EmployeeOverview() {
     setStartDateIndex(previousIndex);
   };
 
-
-  //Table
-
+  // Table
 
   const toggleShowComplete = (e) => {
     e.stopPropagation();
@@ -117,7 +111,7 @@ function EmployeeOverview() {
     });
   };
 
-  //tbody
+  // tbody
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [employees, setEmployees] = useState([]);
 
@@ -144,19 +138,18 @@ function EmployeeOverview() {
   });
 
   const [showTimeComplete, setShowTimeComplete] = useState(true);
-     //   const [expandedProjects, setExpandedProjects] = useState({});
-   const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
-   const [selectedProject, setSelectedProject] = useState(null);
-   const [projects, setProjects] = useState([]);
-   const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
-   const [selectedProjectId, setSelectedProjectId] = useState(null);
-   const [projectName, setProjectName] = useState(null);
-   const [showTimeDetails, setShowTimeDetails] = useState(true);
-   const [projectTimeDetails, setProjectTimeDetails] = useState({});
-   const [editEmployeeOpen, setEditEmployeeOpen] = useState(false); 
-   const [logsPopupOpen, setLogsPopupOpen] = useState(false); 
-   const [deleteEmployee, setDeleteEmployeeOpen] = useState(false);
-
+  const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [projects, setProjects] = useState([]);
+  const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [projectName, setProjectName] = useState(null);
+  const [showTimeDetails, setShowTimeDetails] = useState(true);
+  const [projectTimeDetails, setProjectTimeDetails] = useState({});
+  const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
+  const [logsPopupOpen, setLogsPopupOpen] = useState(false);
+  const [deleteEmployeeOpen, setDeleteEmployeeOpen] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null); // Add state to track the selected employee ID for deletion
 
   useEffect(() => {
     const initialProjectTimeDetails = {};
@@ -165,8 +158,6 @@ function EmployeeOverview() {
     });
     setProjectTimeDetails(initialProjectTimeDetails);
   }, [projects, showTimeDetails]);
-
-
 
   useEffect(() => {
     const newDates = [];
@@ -187,8 +178,6 @@ function EmployeeOverview() {
     setDates(newDates);
   }, [startDateIndex]);
 
-
-
   // Modify the toggleShowTimeComplete function to toggle time details for a specific project
   const toggleShowTimeComplete = (projectId) => {
     setProjectTimeDetails((prevState) => ({
@@ -196,7 +185,6 @@ function EmployeeOverview() {
       [projectId]: !prevState[projectId] || false,
     }));
   };
-
 
   const fetchProjects = async () => {
     try {
@@ -226,7 +214,7 @@ function EmployeeOverview() {
     fetchProjects();
   }, [showComplete]);
 
-  // Fetch projects every 4 second to update colors
+  // Fetch projects every 4 seconds to update colors
   useEffect(() => {
     const intervalId = setInterval(() => {
       fetchProjects();
@@ -296,7 +284,8 @@ function EmployeeOverview() {
     setSelectedProjectId(null);
     setDeleteProjectDialogOpen(false);
   };
-//hrishi
+
+  // hrishi
   const handleOpenEditEmployeeDialog = () => {
     setEditEmployeeOpen(true);
   };
@@ -305,22 +294,46 @@ function EmployeeOverview() {
     setEditEmployeeOpen(false);
   };
 
-  const handleOpenLogsDialog = () => {
+  const handleOpenLogsDialog = (employee) => {
+    setSelectedEmployee(employee);
     setLogsPopupOpen(true);
   };
 
   const handleCloseLogsDialog = () => {
     setLogsPopupOpen(false);
+    setSelectedEmployee(null);
   };
-  const handleOpenDeleteEmployeeDialog = () => {
+
+  const handleOpenDeleteEmployeeDialog = (employeeId) => {
+    setSelectedEmployeeId(employeeId);
     setDeleteEmployeeOpen(true);
   };
 
   const handleCloseDeleteEmployeeDialog = () => {
+    setSelectedEmployeeId(null);
     setDeleteEmployeeOpen(false);
   };
 
- return (
+  const handleDeleteEmployee = async () => {
+    try {
+      const response = await axios.post('http://localhost:3001/api/deleteEmployee', {
+        employeeId: selectedEmployeeId,
+      });
+
+      if (response.data === 'Success') {
+        setEmployees((prevEmployees) =>
+          prevEmployees.filter((employee) => employee.id !== selectedEmployeeId)
+        );
+        handleCloseDeleteEmployeeDialog();
+      } else {
+        console.error('Failed to delete employee:', response.data);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  return (
     <>
       {dates.length > 0 && (
         <Navbar
@@ -370,15 +383,14 @@ function EmployeeOverview() {
             <tr className="text-center small">
               <td className="p-1">
                 <div>
-                  <FontAwesomeIcon icon={faPlus} className="text-primary" style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem' , paddingLeft:'0.7rem' }} />
-                  
-                  <FontAwesomeIcon icon={faTrashAlt} className="text-danger" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }} onClick={handleOpenDeleteEmployeeDialog } />
-                  <FontAwesomeIcon icon={faPencilAlt} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }} onClick={handleOpenEditEmployeeDialog}/>
-                  <FontAwesomeIcon icon={faCircleInfo} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight:'0.5rem' }} onClick={handleOpenLogsDialog}/>
+                  <FontAwesomeIcon icon={faPlus} className="text-primary" style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.7rem' }} />
+
+                  <FontAwesomeIcon icon={faTrashAlt} className="text-danger" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }} onClick={() => handleOpenDeleteEmployeeDialog(employee.id)} />
+                  <FontAwesomeIcon icon={faPencilAlt} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }} onClick={handleOpenEditEmployeeDialog} />
+                  <FontAwesomeIcon icon={faCircleInfo} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }} onClick={() => handleOpenLogsDialog(employee)} />
                   <br />
                   <div id="selempdrop" label="Select Employee" value={selectedEmployee} onChange={(e) => setSelectedEmployee(e.target.value)}>
-                    
-                  <span key={employee.id} value={employee.Name} style={{ fontSize: '14px' }}>
+                    <span key={employee.id} value={employee.Name} style={{ fontSize: '14px' }}>
                       {employee.Name}
                     </span>
                   </div>
@@ -388,22 +400,30 @@ function EmployeeOverview() {
             </tr>
           ))}
         </tbody>
-        </table>
-        {editEmployeeOpen && (
-            <EditEmployee
-              openEditDialog={editEmployeeOpen}
-              handleClose={handleCloseEditEmployeeDialog}
-            />
-          )}
-          {logsPopupOpen && (
-            <LogsPopup
-              open={logsPopupOpen}
-              handleClose={handleCloseLogsDialog}
-            />
-          )}
+      </table>
+      {editEmployeeOpen && (
+        <EditEmployee
+          openEditDialog={editEmployeeOpen}
+          handleClose={handleCloseEditEmployeeDialog}
+        />
+      )}
+      {logsPopupOpen && (
+        <LogsPopup
+          open={logsPopupOpen}
+          handleClose={handleCloseLogsDialog}
+        />
+      )}
+      {deleteEmployeeOpen && (
+        <DeleteEmployeePopup
+          open={deleteEmployeeOpen}
+          handleClose={handleCloseDeleteEmployeeDialog}
+          handleDelete={handleDeleteEmployee} // Pass handleDeleteEmployee as a prop
+          
+        />
+      )}
       <Footer />
-      </>
-  )
+    </>
+  );
 }
 
-export default EmployeeOverview
+export default EmployeeOverview;
