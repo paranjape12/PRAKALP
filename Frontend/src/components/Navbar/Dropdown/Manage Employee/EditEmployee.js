@@ -3,13 +3,22 @@ import axios from 'axios';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, FormControl, InputLabel, Select, MenuItem, Checkbox, FormControlLabel } from '@material-ui/core';
 import AddEmployee from './AddEmployee';
 
-const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails }) => {
+const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, handleClose }) => {
 
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [employees, setEmployees] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [showPasswordFields, setShowPasswordFields] = useState(true);
+  const [successMessage, setSuccessMessage] = useState('');
 
+
+  const showMessage = (setMessage, message) => {
+    setMessage(message);
+    setTimeout(() => {
+      setMessage('');
+      if (setMessage === setSuccessMessage) handleClose();
+    }, 1500);
+  };
   const [formData, setFormData] = useState({
     id: '',
     Name: '',
@@ -166,7 +175,7 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails }) =>
   };
 
   return (
-    <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth='md'>
+    <Dialog open={openEditDialog} onClick={handleClose} maxWidth='md'>
       <DialogTitle>Edit Employee
         <Button className='addEmp-btn' style={{ marginLeft: '35rem' }} onClick={() => setOpenDialog(true)} color='primary' variant='contained'>Add Employee</Button>
         <AddEmployee openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} />
@@ -363,7 +372,7 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails }) =>
         </form>
       </DialogContent>
       <DialogActions>
-        <Button className='close-btn' onClick={() => setOpenEditDialog(false)} color="danger" variant='contained'>
+        <Button className='close-btn'onClick={handleClose} color="danger" variant='contained'>
           Close
         </Button>
         <Button className='btn-remove' onClick={handleDelete} variant='contained'>
