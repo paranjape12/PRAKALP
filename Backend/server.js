@@ -1370,10 +1370,6 @@ app.post('/api/deleteEmployee', (req, res) => {
 
     const taskIds = result.map(row => row.taskid);
 
-    if (taskIds.length === 0) {
-      return res.status(404).send('No tasks found for this employee');
-    }
-
     const placeholders = taskIds.map(() => '?').join(',');
 
     db.query('SELECT * FROM `logincrd` WHERE `id` = ?', [empid], (error, results) => {
@@ -1400,39 +1396,49 @@ app.post('/api/deleteEmployee', (req, res) => {
             });
           }
 
-          db.query(`DELETE FROM taskemp WHERE taskid IN (${placeholders})`, taskIds, error => {
-            if (error) {
-              return db.rollback(() => {
+          // Only attempt to delete related tasks if there are task IDs
+          if (taskIds.length > 0) {
+            db.query(`DELETE FROM taskemp WHERE taskid IN (${placeholders})`, taskIds, error => {
+              if (error) {
                 console.error('Error deleting employee tasks: ' + error);
-                res.status(500).json({ message: 'Error deleting employee tasks' });
-              });
-            }
+              }
 
-            db.query(`DELETE FROM task WHERE id IN (${placeholders})`, taskIds, error => {
+              db.query(`DELETE FROM task WHERE id IN (${placeholders})`, taskIds, error => {
+                if (error) {
+                  console.error('Error deleting tasks: ' + error);
+                }
+
+                db.commit(error => {
+                  if (error) {
+                    return db.rollback(() => {
+                      console.error('Error committing transaction: ' + error);
+                      res.status(500).json({ message: 'Error committing transaction' });
+                    });
+                  }
+
+                  res.status(200).json({ message: 'Success' });
+                });
+              });
+            });
+          } else {
+            // Commit the transaction if there are no tasks to delete
+            db.commit(error => {
               if (error) {
                 return db.rollback(() => {
-                  console.error('Error deleting employee tasks: ' + error);
-                  res.status(500).json({ message: 'Error deleting employee tasks' });
+                  console.error('Error committing transaction: ' + error);
+                  res.status(500).json({ message: 'Error committing transaction' });
                 });
               }
 
-              db.commit(error => {
-                if (error) {
-                  return db.rollback(() => {
-                    console.error('Error committing transaction: ' + error);
-                    res.status(500).json({ message: 'Error committing transaction' });
-                  });
-                }
-
-                res.status(200).json({ message: 'Success' });
-              });
+              res.status(200).json({ message: 'Success' });
             });
-          });
+          }
         });
       });
     });
   });
 });
+
 
 
 
@@ -1452,86 +1458,204 @@ function seconds2human(ss) {
 
 // API endpoint to get employee logs
 app.post('/api/employeeLogs', (req, res) => {
-  const { employeeId, fromDate, toDate, emp_taskALL = [], emp_projALL = [] } = req.body;
+  const { id, fromdate, todate, projALL } = req.body;
 
-  let taskcondition = '';
-  let projectcondition = '';
+  let finalStr = '';
+  let projectNameArray = [];
+  let taskNameArray = [];
+  let task = [];
+  let addquery = '';
 
-  if (emp_taskALL.length > 0 && emp_taskALL !== 'All') {
-    const emp_taskALL_str = emp_taskALL.join(',');
-    taskcondition = `AND taskid IN (${emp_taskALL_str})`;
+  if (projALL !== 'All') {
+    const projALL_implode = projALL.map(project => `'${project}'`).join(', ');
+    addquery = `projectName IN (${projALL_implode}) AND `;
   }
 
-  if (emp_projALL.length > 0 && emp_projALL !== 'All') {
-    const emp_projALL_str = emp_projALL.map(p => `'${p}'`).join(',');
-    projectcondition = `AND projectName IN (${emp_projALL_str})`;
-  }
-
-  const selctempassign = `
-    SELECT * FROM Taskemp 
-    WHERE AssignedTo_emp='${employeeId}' 
-      AND DATE(tasktimeemp)>='${fromDate}' 
-      AND DATE(tasktimeemp)<='${toDate}' 
-      ${taskcondition} 
-    ORDER BY tasktimeemp DESC
-  `;
-
-  conn1.query(selctempassign, (err, result_selctempassign) => {
+  const selectTaskIdFromAssignTask = `
+    SELECT DISTINCT taskid 
+    FROM Taskemp 
+    WHERE AssignedTo_emp = ? AND DATE(tasktimeemp) >= ? AND DATE(tasktimeemp) <= ?`;
+  
+  db.query(selectTaskIdFromAssignTask, [id, fromdate, todate], (err, taskResults) => {
     if (err) {
-      console.error('Error executing query:', err);
-      res.status(500).json({ error: 'Failed to fetch employee logs' });
-      return;
+      return res.status(500).json({ error: err.message });
     }
+    if (taskResults.length > 0) {
+      task = taskResults.map(row => row.taskid);
+      const idString = task.join(',');
 
-    const finalResults = [];
+      const selectTaskAndProj = `
+        SELECT id, TaskName, projectName 
+        FROM Task 
+        WHERE ${addquery} id IN (${idString})`;
 
-    if (result_selctempassign.length > 0) {
-      const promises = result_selctempassign.map(row_selctempassign => {
-        return new Promise((resolve, reject) => {
-          const timerek = row_selctempassign.actualtimetocomplete_emp
-            ? seconds2human(row_selctempassign.actualtimetocomplete_emp)
-            : '-';
+      db.query(selectTaskAndProj, (err, taskAndProjResults) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
 
-          const taskid = row_selctempassign.taskid;
-          const selecttaskdetails = `
-            SELECT projectName, TaskName 
-            FROM Task 
-            WHERE id='${taskid}' ${projectcondition}
-          `;
+        taskAndProjResults.forEach(row => {
+          taskNameArray[row.id] = row.TaskName;
 
-          conn1.query(selecttaskdetails, (err, result_selecttaskdetails) => {
-            if (err) {
-              reject(err);
-            } else {
-              if (result_selecttaskdetails.length > 0) {
-                const row_selecttaskdetails = result_selecttaskdetails[0];
-                finalResults.push({
-                  date: row_selctempassign.tasktimeemp,
-                  projectName: row_selecttaskdetails.projectName,
-                  taskName: row_selecttaskdetails.TaskName,
-                  timeRequired: row_selctempassign.timetocomplete_emp,
-                  timeTaken: row_selctempassign.actualtimetocomplete_emp,
-                  activity: row_selctempassign.Activity,
-                  logs: row_selctempassign.tasklog
-                });
+          if (projALL === 'All') {
+            const projectName = row.projectName;
+            const selectProject = `SELECT id FROM projects WHERE ProjectName = ?`;
+            
+            db.query(selectProject, [projectName], (err, projectResults) => {
+              if (err) {
+                return res.status(500).json({ error: err.message });
               }
-              resolve();
-            }
-          });
+              const projectRow = projectResults[0];
+              if (projectRow && !projectNameArray[projectRow.id]) {
+                projectNameArray[projectRow.id] = projectName;
+              }
+            });
+          }
         });
-      });
 
-      Promise.all(promises).then(() => {
-        res.json(finalResults);
-      }).catch(err => {
-        console.error('Error fetching task details:', err);
-        res.status(500).json({ error: 'Failed to fetch task details' });
+        if (projALL !== 'All') {
+          const selectTaskAndProjNotAll = `
+            SELECT projectName 
+            FROM Task 
+            WHERE id IN (${idString})`;
+          
+          db.query(selectTaskAndProjNotAll, (err, projNotAllResults) => {
+            if (err) {
+              return res.status(500).json({ error: err.message });
+            }
+            projNotAllResults.forEach(row => {
+              const projectName = row.projectName;
+              const selectProject = `SELECT id FROM projects WHERE ProjectName = ?`;
+              
+              db.query(selectProject, [projectName], (err, projectResults) => {
+                if (err) {
+                  return res.status(500).json({ error: err.message });
+                }
+                const projectRow = projectResults[0];
+                if (projectRow && !projectNameArray[projectRow.id]) {
+                  projectNameArray[projectRow.id] = projectName;
+                }
+              });
+            });
+          });
+        }
+
+        res.json({ projectNameArray, taskNameArray });
       });
     } else {
-      res.json(finalResults);
+      res.json({ message: 'No tasks found' });
     }
   });
 });
+
+
+
+app.post('/api/ProjectOverView', async (req, res) => {
+  const { iscomplete } = req.body;
+
+  try {
+    const queryAsync = (sql, params) => {
+      return new Promise((resolve, reject) => {
+        db.query(sql, params, (error, results) => {
+          if (error) {
+            return reject(error);
+          }
+          resolve(results);
+        });
+      });
+    };
+
+    // Get all distinct project names
+    const projectNamesResult = await queryAsync(`SELECT DISTINCT ProjectName FROM projects`);
+    
+    if (!Array.isArray(projectNamesResult) || projectNamesResult.length === 0) {
+      return res.status(200).send({
+        totalProjects: 0,
+        completedProjects: 0,
+        projects: []
+      });
+    }
+
+    const projectNames = projectNamesResult.map(row => row.ProjectName);
+
+    // Count total projects
+    const totalProjects = projectNames.length;
+
+    // Count completed projects
+    let completedProjects = 0;
+    if (iscomplete) {
+      const completedProjectsResult = await queryAsync(`SELECT COUNT(*) AS count FROM projects WHERE complete_status = '1'`);
+      completedProjects = completedProjectsResult[0].count;
+    }
+
+    // Fetch all projects or filtered by completion status
+    let sql = `SELECT * FROM projects WHERE ProjectName IN (?)`;
+    const params = [projectNames];
+
+    if (iscomplete) {
+      sql += ` AND complete_status = '1'`;
+    }
+
+    const projectsResult = await queryAsync(sql, params);
+
+    res.status(200).send({
+      totalProjects,
+      completedProjects,
+      projects: projectsResult
+    });
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    res.status(500).send('Internal server error');
+  }
+});
+
+// app.post('/api/ProjectOverView', async (req, res) => {
+//   const { iscomplete } = req.body;
+
+//   try {
+//     // Get all distinct project names
+//     const projectNamesResult = await query(`SELECT DISTINCT projectName FROM Task`);
+
+//     if (!Array.isArray(projectNamesResult) || projectNamesResult.length === 0) {
+//       return res.status(200).send({
+//         totalProjects: 0,
+//         completedProjects: 0,
+//         projects: []
+//       });
+//     }
+
+//     const projectNames = projectNamesResult.map(row => row.projectName);
+
+//     // Count total projects
+//     const totalProjects = projectNames.length;
+
+//     // Count completed projects
+//     let completedProjects = 0;
+//     if (iscomplete) {
+//       const completedProjectsResult = await query(`SELECT COUNT(*) AS count FROM Task WHERE aproved = '1' AND projectName IN (?)`, [projectNames]);
+//       completedProjects = completedProjectsResult[0].count;
+//     }
+
+//     // Fetch all projects or filtered by completion status
+//     let sql = `SELECT * FROM Task WHERE projectName IN (?)`;
+//     const params = [projectNames];
+
+//     if (iscomplete) {
+//       sql += ` AND aproved = '1'`;
+//     }
+
+//     const projectsResult = await query(sql, params);
+
+//     res.status(200).send({
+//       totalProjects,
+//       completedProjects,
+//       projects: projectsResult
+//     });
+//   } catch (error) {
+//     console.error('Error fetching projects:', error);
+//     res.status(500).send('Internal server error');
+//   }
+// });
 
 
 // =================================  APIs by GJC for ref. START =====================================
