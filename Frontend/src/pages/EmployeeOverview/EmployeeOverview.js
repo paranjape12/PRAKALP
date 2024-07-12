@@ -314,24 +314,6 @@ function EmployeeOverview() {
     setDeleteEmployeeOpen(false);
   };
 
-  const handleDeleteEmployee = async () => {
-    try {
-      const response = await axios.post('http://localhost:3001/api/deleteEmployee', {
-        employeeId: selectedEmployeeId,
-      });
-
-      if (response.data === 'Success') {
-        setEmployees((prevEmployees) =>
-          prevEmployees.filter((employee) => employee.id !== selectedEmployeeId)
-        );
-        handleCloseDeleteEmployeeDialog();
-      } else {
-        console.error('Failed to delete employee:', response.data);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
 
   return (
     <>
@@ -417,7 +399,7 @@ function EmployeeOverview() {
         <DeleteEmployeePopup
           open={deleteEmployeeOpen}
           handleClose={handleCloseDeleteEmployeeDialog}
-          handleDelete={handleDeleteEmployee} // Pass handleDeleteEmployee as a prop
+          selectedEmployeeId ={selectedEmployeeId}
           
         />
       )}
