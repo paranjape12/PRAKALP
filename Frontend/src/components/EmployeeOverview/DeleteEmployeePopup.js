@@ -15,33 +15,32 @@ function DeleteEmployeePopup({ open, handleClose, selectedEmployeeId }) {
 
   const handleDeleteEmployee = async () => {
     try {
-      const response = await axios.post('http://localhost:3001/api/deleteEmployee', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ empid: selectedEmployeeId }),
-      });
-  
-      if (response.ok) {
-        const data = await response.json();
-        if (data.message === 'Success') {
-          console.log("Employee deleted successfully!");
-          setTimeout(handleClose, 2000);
+        const response = await axios.post('http://localhost:3001/api/deleteEmployee', {
+            empid: selectedEmployeeId
+        });
+
+        if (response.status === 200) {
+            const data = response.data;
+            if (data.message === 'Success') {
+                console.log("Employee deleted successfully!");
+                localStorage.clear();
+                setTimeout(() => {
+                    window.location = '/';
+                }, 2000);
+            } else {
+                console.log("Could not delete the employee!");
+                setTimeout(handleClose, 1500);
+            }
         } else {
-          console.log("Could not delete the employee!");
-          setTimeout(handleClose, 1500);
+            console.log("Could not delete the employee!");
+            setTimeout(handleClose, 1500);
         }
-      } else {
-        console.log("Could not delete the employee!");
-        setTimeout(handleClose, 1500);
-      }
     } catch (error) {
-      console.error('Error:', error);
-      console.log("Could not delete the employee!");
-      setTimeout(handleClose, 1500);
+        console.error('Error:', error);
+        setTimeout(handleClose, 1500);
     }
-  };
+};
+
 
   return (
     <Dialog open={open} onClose={handleClose} aria-labelledby="delete-employee-title">
