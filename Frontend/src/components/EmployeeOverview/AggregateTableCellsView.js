@@ -12,8 +12,8 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
     const [projectTimeDetails, setProjectTimeDetails] = useState({
         required: 0,
         taken: 0,
-        planned: 0,
-        actual: 0 
+        planned: {},
+        actual: {}
     });
     const empId = employee.id;
 
@@ -23,6 +23,10 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
     };
 
     const seconds2dayhrmin = (ss) => {
+        if (ss === 0) {
+            return '';
+        }
+
         const h = Math.floor((ss % 28800) / 3600); // 8 hours = 28,800 seconds
         const d = Math.floor((ss % 230400) / 28800); // 8 hours * 30 days = 230,400 seconds
         const m = Math.floor((ss % 3600) / 60);
@@ -31,7 +35,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
         const formattedM = m < 10 ? '0' + m : m;
         const formattedD = d < 10 ? '0' + d : d;
 
-        return ` ${formattedD} : ${formattedH} : ${formattedM} `;
+        return `${formattedD} : ${formattedH} : ${formattedM}`;
     };
 
     useEffect(() => {
@@ -64,7 +68,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
         axios.post('http://localhost:3001/api/emptaskDtlsAggTimes', { empid: empId, iscomplete: isComplete })
             .then(response => {
                 const { required, taken } = response.data;
-                setProjectTimeDetails({ ...projectTimeDetails, required, taken });
+                setProjectTimeDetails(prevDetails => ({ ...prevDetails, required, taken }));
             })
             .catch(error => {
                 console.error('There was an error fetching the time details!', error);
@@ -72,28 +76,35 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
     }, [empId, isComplete]);
 
     useEffect(() => {
-        // Format dates as an array of strings (YYYY-MM-DD)
-        const formattedDates = dates.map(date => new Date(date.date).toISOString().slice(0, 10));
+        // Extract the first and last dates from the dates array
+        const startDate = new Date(dates[0].date).toISOString().slice(0, 10);
+        const endDate = new Date(dates[dates.length - 1].date).toISOString().slice(0, 10);
 
-        // Fetch data for all dates at once
         axios.get('http://localhost:3001/api/empAggtasktimes', {
             params: {
-                taskDate: formattedDates,
-                assignedTo: empId
+                startDate: startDate,
+                endDate: endDate,
+                assignedToEmp: empId
             }
         })
-        .then(response => {
-            const data = response.data.reduce((acc, { taskDate, planned, actual }) => {
-                acc[taskDate] = { planned, actual };
-                return acc;
-            }, {});
-            setProjectTimeDetails(prevDetails => ({ ...prevDetails, ...data }));
-        })
-        .catch(error => {
-            console.error('Error fetching data for dates:', error);
-        });
-    }, [empId, dates]);
+            .then(response => {
 
+                const data = response.data.reduce((acc, { taskDate, planned, actual }) => {
+                    const formattedDate = new Date(taskDate.slice(0, 10)); // Convert "YYYY-MM-DD" to a Date object
+                    formattedDate.setDate(formattedDate.getDate() + 1); // Add +1 day
+
+                    const formattedDateStr = formattedDate.toISOString().slice(0, 10); // Convert back to "YYYY-MM-DD" string
+                    acc.planned[formattedDateStr] = planned;
+                    acc.actual[formattedDateStr] = actual;
+                    return acc;
+                }, { planned: {}, actual: {} });
+
+                setProjectTimeDetails(prevDetails => ({ ...prevDetails, ...data }));
+            })
+            .catch(error => {
+                console.error('Error fetching data for dates:', error);
+            });
+    }, [empId, dates]);
 
     return (
         <>
@@ -104,7 +115,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
             </td>
             <td style={{ display: 'flex', padding: '0', borderStyle: 'none' }}>
                 <div className="card">
-                    <div className="card-header text-light" style={{ paddingRight: '3.7rem', paddingLeft: '0.3rem' }}>
+                    <div className="card-header text-light" style={{ paddingRight: '4rem', paddingLeft: '0.3rem' }}>
                         <div style={{ fontSize: '14px' }} className="m-0 font-weight-bold text-left text-dark">
                             Total Task Assign: {totalTasks}
                             <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time">
@@ -133,18 +144,17 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
                     <td title='Actual Timings' style={{ padding: '0.8rem 0.5rem', fontSize: '13.44px', borderStyle: 'solid none none solid' }}>A</td>
                 </div>
             </td>
-            {dates.map((_, i) => (
-                <td key={i} style={{ padding: '0', fontSize: '14px' }}>
-                    <tr
-                        style={{ padding: '1.4rem 0.2rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '1.9rem' }}
-                    >
-                        {seconds2dayhrmin(projectTimeDetails.planned)}
+            {dates.map((date, i) => (
+                <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem' }}>
+                    <tr style={{ paddingTop:'0.7rem',display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2.8rem', verticalAlign: 'middle' }}>
+                        {seconds2dayhrmin(projectTimeDetails.planned[date.ymdDate] || 0)}
                     </tr>
-                    <tr style={{ padding: '1.4rem 0.17rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '1.9rem' }}>
-                        {seconds2dayhrmin(projectTimeDetails.actual)}
+                    <tr style={{ paddingTop:'0.7rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2.8rem', verticalAlign: 'middle' }}>
+                        {seconds2dayhrmin(projectTimeDetails.actual[date.ymdDate] || 0)}
                     </tr>
                 </td>
             ))}
+
         </>
     );
 }
