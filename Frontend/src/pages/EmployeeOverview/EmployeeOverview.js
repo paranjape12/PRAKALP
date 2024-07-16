@@ -64,8 +64,10 @@ function EmployeeOverview() {
     let currentDate = new Date(today);
     for (let i = 0; i < 7; i++) {
       const newDate = new Date(currentDate.setDate(currentDate.getDate() + startDateIndex + i));
+      const formattedDate = newDate.toISOString().slice(0, 10); // Format as "YYYY-MM-DD"
       newDates.push({
         date: newDate,
+        ymdDate: formattedDate,
         dateString: newDate.toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
@@ -159,24 +161,6 @@ function EmployeeOverview() {
     setProjectTimeDetails(initialProjectTimeDetails);
   }, [projects, showTimeDetails]);
 
-  useEffect(() => {
-    const newDates = [];
-    let currentDate = new Date(today);
-    for (let i = 0; i < 7; i++) {
-      const newDate = new Date(currentDate.setDate(currentDate.getDate() + startDateIndex + i));
-      newDates.push({
-        date: newDate,
-        dateString: newDate.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        }),
-        day: daysOfWeek[newDate.getDay()],
-        isSunday: newDate.getDay() === 0,
-      });
-      currentDate = new Date(today);
-    }
-    setDates(newDates);
-  }, [startDateIndex]);
 
   // Modify the toggleShowTimeComplete function to toggle time details for a specific project
   const toggleShowTimeComplete = (projectId) => {
