@@ -1314,47 +1314,32 @@ app.post('/api/emptaskDtlsAggTimes', async (req, res) => {
 
 // FAMT API endpoint for retrieving emp overview agg view planned and actual times
 app.get('/api/empAggtasktimes', (req, res) => {
-  let { taskDate, assignedTo } = req.query;
+  const { startDate, endDate, assignedToEmp } = req.query;
 
-  // Convert taskDate to an array if it's not already
-  if (!Array.isArray(taskDate)) {
-    taskDate = [taskDate]; // Convert to array with a single element
-  }
+  const query = `
+    WITH RECURSIVE date_range AS (
+      SELECT DATE(?) AS taskDate
+      UNION ALL
+      SELECT taskDate + INTERVAL 1 DAY
+      FROM date_range
+      WHERE taskDate + INTERVAL 1 DAY <= DATE(?)
+    )
+    SELECT
+      dr.taskDate,
+      COALESCE(SUM(te.timetocomplete_emp), 0) AS planned,
+      COALESCE(SUM(te.actualtimetocomplete_emp), 0) AS actual
+    FROM date_range dr
+    LEFT JOIN taskemp te ON dr.taskDate = DATE(te.tasktimeemp) AND te.AssignedTo_emp = ?
+    GROUP BY dr.taskDate;
+  `;
 
-  console.log('Processed taskDate:', taskDate);
-
-  // Generate placeholders for the array of dates
-  const datePlaceholders = taskDate.map(date => `'${date}'`).join(',');
-  console.log('Date placeholders:', datePlaceholders);
-
-  // SQL query to retrieve planned and actual times for each date in the array
-  const sqlQuery = `
-    SELECT 
-      DATE(tasktimeemp) AS taskDate,
-      SUM(timetocomplete_emp) AS planned, 
-      SUM(actualtimetocomplete_emp) AS actual 
-    FROM taskemp 
-    WHERE DATE(tasktimeemp) IN (${datePlaceholders}) AND AssignedTo_emp=?
-    GROUP BY DATE(tasktimeemp)`;
-
-  // Combine taskDate array and assignedTo into parameters for db.query
-  const queryParams = [...taskDate, assignedTo];
-
-  db.query(sqlQuery, queryParams, (error, results) => {
-    if (error) {
-      console.error('Database query error:', error);
-      return res.status(500).json({ error: 'Database query error.' });
+  db.query(query, [startDate, endDate, assignedToEmp], (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      res.json(results);
     }
-
-    // If no results found
-    if (results.length === 0) {
-      console.log('No data found for the given parameters.');
-      return res.status(404).json({ error: 'No data found for the given parameters.' });
-    }
-
-    // Respond with the results
-    console.log('Query results:', results);
-    res.json(results); // Array of results for each date
   });
 });
 
