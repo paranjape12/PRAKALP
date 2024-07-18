@@ -115,7 +115,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
             </td>
             <td style={{ display: 'flex', padding: '0', borderStyle: 'none' }}>
                 <div className="card">
-                    <div className="card-header text-light" style={{ paddingRight: '4rem', paddingLeft: '0.3rem' }}>
+                    <div className="card-header text-light" style={{ paddingRight: '4.7rem', paddingLeft: '0.3rem' }}>
                         <div style={{ fontSize: '14px' }} className="m-0 font-weight-bold text-left text-dark">
                             Total Task Assign: {totalTasks}
                             <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time">
