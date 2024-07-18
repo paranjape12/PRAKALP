@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Modal, Box, Typography, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, styled } from '@mui/material';
+import { Modal, Box, Typography, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, styled, DialogActions } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { format, subDays } from 'date-fns';
 
-const LogsPopup = ({ open, handleClose, selectedEmployee , itemsPerPage, totalItems}) => {
+const LogsPopup = ({ open, handleClose, employee , itemsPerPage, totalItems}) => {
   const [fromDate, setFromDate] = useState(format(subDays(new Date(), 1), 'yyyy-MM-dd'));
   const [toDate, setToDate] = useState(format(subDays(new Date(), 1), 'yyyy-MM-dd'));
   const [employees, setEmployees] = useState([]);
@@ -12,7 +12,7 @@ const LogsPopup = ({ open, handleClose, selectedEmployee , itemsPerPage, totalIt
   const data = [ /* Your data here */ ];
   const ITEMS_PER_PAGE = 10;
   const [currentPage, setCurrentPage] = useState(1);
-
+  const [selectedEmployee, setSelectedEmployee] = useState('');
   const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:nth-of-type(odd)': {
       backgroundColor: theme.palette.action.hover,
@@ -30,45 +30,40 @@ const LogsPopup = ({ open, handleClose, selectedEmployee , itemsPerPage, totalIt
   };
 
 
-
-
-//   useEffect(() => {
-//     const fetchEmployees = async () => {
-//       try {
-//         const response = await axios.post('http://localhost:3001/api/empDropdown', {
-//           token: localStorage.getItem('token'),
-//         });
-//         if (Array.isArray(response.data)) {
-//           setEmployees(response.data);
-//         } else {
-//           console.error('Error: Expected an array but got', response.data);
-//         }
-//       } catch (error) {
-//         console.error('Error fetching employees:', error);
-//       }
-//     };
-
-//     fetchEmployees();
-//   }, []);
-
   useEffect(() => {
-    if (selectedEmployee) {
-      const fetchEmployeeLogs = async () => {
-        try {
-          const response = await axios.post('http://localhost:3001/api/employeeLogs', {
-            employeeId: selectedEmployee.id,
-            fromDate,
-            toDate,
-          });
-          // Handle response data here
-        } catch (error) {
-          console.error('Error fetching employee logs:', error);
+    // Fetch employees
+    axios.post('http://localhost:3001/api/empDropdown', {
+      token: localStorage.getItem('token'),
+    })
+      .then(response => {
+        if (Array.isArray(response.data)) {
+          setEmployees(response.data);
+        } else {
+          console.error('Error: Expected an array but got', response.data);
         }
-      };
+      })
+      .catch(error => {
+        console.error('Error fetching employees:', error);
+      });
+  }, []);
+  // useEffect(() => {
+  //   if (employee) {
+  //     const fetchEmployeeLogs = async () => {
+  //       try {
+  //         const response = await axios.post('http://localhost:3001/api/employeeLogs', {
+  //           employeeId: employee.id,
+  //           fromDate,
+  //           toDate,
+  //         });
+  //         // Handle response data here
+  //       } catch (error) {
+  //         console.error('Error fetching employee logs:', error);
+  //       }
+  //     };
 
-      fetchEmployeeLogs();
-    }
-  }, [selectedEmployee, fromDate, toDate]);
+  //     fetchEmployeeLogs();
+  //   }
+  // }, [selectedEmployee, fromDate, toDate]);
 
 
   const handlePrevious = () => {
@@ -89,12 +84,14 @@ const LogsPopup = ({ open, handleClose, selectedEmployee , itemsPerPage, totalIt
     const lastItem = Math.min(currentPage * itemsPerPage, totalItems);
   
 
+
+    
   return (
     <Modal open={open} onClose={handleClose} aria-labelledby="modal-title" aria-describedby="modal-description">
       <Box
         sx={{
           position: 'absolute',
-          top: '14%',
+          top: '25%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           width: '100%',
@@ -106,11 +103,7 @@ const LogsPopup = ({ open, handleClose, selectedEmployee , itemsPerPage, totalIt
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" sx={{ borderBottom: 0.1, bgcolor: 'background.paper', width: '100%' }}>
           <Box>
             <Typography id="modal-title" variant="h6" component="h1" className="text-primary font-weight-bold">
-              
-              <div id="selempdrop" label="Select Employee" value={selectedEmployee} >
-                {selectedEmployee && selectedEmployee.Name}
-              </div>
-
+            {employee && employee.Name}
             </Typography>
             <Typography id="empprojectnamelog" variant="subtitle2" className="text-myback font-weight-bold text-sm m-2" sx={{ fontSize: '13px' }}>
             </Typography>
@@ -141,6 +134,7 @@ const LogsPopup = ({ open, handleClose, selectedEmployee , itemsPerPage, totalIt
             size="small"
             sx={{ mr: 2, mb: 2 }}
           />
+          
         </Box>
         <Box mt={2}>
               <div className="show-entries">
@@ -194,23 +188,30 @@ const LogsPopup = ({ open, handleClose, selectedEmployee , itemsPerPage, totalIt
             </Table>
           </TableContainer>
         </Box>
-              <span>
-            Showing {firstItem} to {lastItem} of {totalItems} entries
-          </span>
+           <Box>   
         <div>
+          
       {/* Your search bar component here */}
       <ul>
         {currentData.map((item) => (
           <li key={item.id}>{item.name}</li>
         ))}
       </ul>
-      <button onClick={handlePrevious} disabled={currentPage === 1}>
+
+     
+          <DialogActions>
+          <span>
+            Showing {firstItem} to {lastItem} of {totalItems} entries
+          </span>
+       <button onClick={handlePrevious} disabled={currentPage === 1}>
         Previous
       </button>
       <button onClick={handleNext} disabled={currentPage === Math.ceil(data.length / ITEMS_PER_PAGE)}>
         Next
       </button>
+      </DialogActions>
     </div>
+    </Box>
       </Box>
     </Modal>
   );
