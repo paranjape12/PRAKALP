@@ -3,6 +3,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import AggregateTableCellsView from '../../components/EmployeeOverview/AggregateTableCellsView';
+import IndividualTableCellsView from '../../components/EmployeeOverview/IndividualTableCellsView';
 import axios from 'axios';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 
@@ -80,10 +81,10 @@ function EmployeeOverview() {
     setDates(newDates);
   }, [startDateIndex]);
 
-  const handleExpandTasks = (projectId) => {
-    setExpandedProjects((prevState) => ({
+  const handleExpandTasks = (id) => {
+    setShowExpand((prevState) => ({
       ...prevState,
-      [projectId]: !prevState[projectId],
+      [id]: !prevState[id],
     }));
   };
 
@@ -140,6 +141,7 @@ function EmployeeOverview() {
   });
 
   const [showTimeComplete, setShowTimeComplete] = useState(true);
+  const [showExpand, setShowExpand] = useState({});
   const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [projects, setProjects] = useState([]);
@@ -309,12 +311,12 @@ function EmployeeOverview() {
           dates={dates}
         />
       )}
-      <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito" }}>
+      <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed'  }}>
         <thead className="text-white" id="theader" style={{ fontSize: '13px' }}>
           <tr className="text-center small" style={{ position: 'sticky', top: '2.45rem', zIndex: '5' }}>
-            <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white' }}>Employee Name</th>
+            <th style={{ width: '10rem', verticalAlign: 'revert', color: 'white' }}>Employee Name</th>
             <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white' }}>Projects</th>
-            <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
+            <th style={{ width: '16rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 <span style={{ flexGrow: 1, textAlign: 'center' }}>Task Details</span>
                 <div className="taskEye" style={{ position: 'absolute', right: '1rem' }}>
@@ -345,15 +347,34 @@ function EmployeeOverview() {
           </tr>
         </thead>
         <tbody className="projectviewtbody">
-        {employees.map((employee) => (
-            <tr className="text-center small">
+          {employees.map((employee) => (
+            <tr className="text-center small" key={employee.id}>
               <td className="p-1">
                 <div>
-                  <FontAwesomeIcon icon={faPlus} className="text-primary" style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.7rem' }} />
-
-                  <FontAwesomeIcon icon={faTrashAlt} className="text-danger" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }} onClick={() => handleOpenDeleteEmployeeDialog(employee.id)} />
-                  <FontAwesomeIcon icon={faPencilAlt} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }} onClick={handleOpenEditEmployeeDialog} />
-                  <FontAwesomeIcon icon={faCircleInfo} className="text-primary" style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }} onClick={() => handleOpenLogsDialog(employee)} />
+                  <FontAwesomeIcon
+                    className="text-primary"
+                    icon={showExpand[employee.id] ? faMinus : faPlus}
+                    style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.3rem' }}
+                    onClick={() => handleExpandTasks(employee.id)}
+                  />
+                  <FontAwesomeIcon
+                    icon={faTrashAlt}
+                    className="text-danger"
+                    style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }}
+                    onClick={() => handleOpenDeleteEmployeeDialog(employee.id)}
+                  />
+                  <FontAwesomeIcon
+                    icon={faPencilAlt}
+                    className="text-primary"
+                    style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }}
+                    onClick={handleOpenEditEmployeeDialog}
+                  />
+                  <FontAwesomeIcon
+                    icon={faCircleInfo}
+                    className="text-primary"
+                    style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }}
+                    onClick={() => handleOpenLogsDialog(employee)}
+                  />
                   <br />
                   <div id="selempdrop" label="Select Employee" value={selectedEmployee} onChange={(e) => setSelectedEmployee(e.target.value)}>
                     <span key={employee.id} value={employee.Name} style={{ fontSize: '14px' }}>
@@ -362,17 +383,17 @@ function EmployeeOverview() {
                   </div>
                 </div>
               </td>
-              <AggregateTableCellsView employee={employee} isComplete={showComplete} dates={dates} />
+              {showExpand[employee.id] ? (
+                <IndividualTableCellsView employee={employee} isComplete={showComplete} dates={dates} />
+              ) : (
+                <AggregateTableCellsView employee={employee} isComplete={showComplete} dates={dates} />
+              )}
             </tr>
           ))}
         </tbody>
+
       </table>
-      {editEmployeeOpen && (
-        <EditEmployee
-          openEditDialog={editEmployeeOpen}
-          handleClose={handleCloseEditEmployeeDialog}
-        />
-      )}
+
       {logsPopupOpen && (
         <LogsPopup
           open={logsPopupOpen}
@@ -383,8 +404,8 @@ function EmployeeOverview() {
         <DeleteEmployeePopup
           open={deleteEmployeeOpen}
           handleClose={handleCloseDeleteEmployeeDialog}
-          selectedEmployeeId ={selectedEmployeeId}
-          
+          selectedEmployeeId={selectedEmployeeId}
+
         />
       )}
       <Footer />
