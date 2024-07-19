@@ -17,15 +17,15 @@ function EmployeeOverview() {
   const getBackgroundColor = (proj_status) => {
     switch (proj_status) {
       case 1:
-        return '#ADD8E6';
+        return "#ADD8E6";
       case 2:
-        return '#ffff00ad';
+        return "#ffff00ad";
       case 3:
-        return '#ff8d00b8';
+        return "#ff8d00b8";
       case 4:
-        return '#04ff00b8';
+        return "#04ff00b8";
       default:
-        return '#FFFFFF';
+        return "#FFFFFF";
     }
   };
 
@@ -35,9 +35,9 @@ function EmployeeOverview() {
     const d = Math.floor((ss % 230400) / 28800); // 8 hours * 30 days = 230,400 seconds
     const m = Math.floor((ss % 3600) / 60);
 
-    const formattedH = h < 10 ? '0' + h : h;
-    const formattedM = m < 10 ? '0' + m : m;
-    const formattedD = d < 10 ? '0' + d : d;
+    const formattedH = h < 10 ? "0" + h : h;
+    const formattedM = m < 10 ? "0" + m : m;
+    const formattedD = d < 10 ? "0" + d : d;
 
     return ` ${formattedD} : ${formattedH} : ${formattedM} `;
   };
@@ -46,15 +46,7 @@ function EmployeeOverview() {
 
   const today = new Date();
 
-  const daysOfWeek = [
-    'Sun',
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-  ];
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const [expandedProjects, setExpandedProjects] = useState({});
   const [dates, setDates] = useState([]);
@@ -64,14 +56,16 @@ function EmployeeOverview() {
     const newDates = [];
     let currentDate = new Date(today);
     for (let i = 0; i < 7; i++) {
-      const newDate = new Date(currentDate.setDate(currentDate.getDate() + startDateIndex + i));
+      const newDate = new Date(
+        currentDate.setDate(currentDate.getDate() + startDateIndex + i)
+      );
       const formattedDate = newDate.toISOString().slice(0, 10); // Format as "YYYY-MM-DD"
       newDates.push({
         date: newDate,
         ymdDate: formattedDate,
-        dateString: newDate.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
+        dateString: newDate.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
         }),
         day: daysOfWeek[newDate.getDay()],
         isSunday: newDate.getDay() === 0,
@@ -109,34 +103,35 @@ function EmployeeOverview() {
     setShowComplete((prevShowComplete) => {
       const newValue = !prevShowComplete;
       // Store new value in localStorage
-      localStorage.setItem('showEmpCompletedTasks', JSON.stringify(newValue));
+      localStorage.setItem("showEmpCompletedTasks", JSON.stringify(newValue));
       return newValue;
     });
   };
 
   // tbody
-  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [selectedEmployee, setSelectedEmployee] = useState("");
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
     // Fetch employees
-    axios.post('http://localhost:3001/api/empDropdown', {
-      token: localStorage.getItem('token'),
-    })
-      .then(response => {
+    axios
+      .post("http://localhost:3001/api/empDropdown", {
+        token: localStorage.getItem("token"),
+      })
+      .then((response) => {
         if (Array.isArray(response.data)) {
           setEmployees(response.data);
         } else {
-          console.error('Error: Expected an array but got', response.data);
+          console.error("Error: Expected an array but got", response.data);
         }
       })
-      .catch(error => {
-        console.error('Error fetching employees:', error);
+      .catch((error) => {
+        console.error("Error fetching employees:", error);
       });
   }, []);
 
   const [showComplete, setShowComplete] = useState(() => {
-    const storedValue = localStorage.getItem('showEmpCompletedTasks');
+    const storedValue = localStorage.getItem("showEmpCompletedTasks");
     return JSON.parse(storedValue);
   });
 
@@ -163,7 +158,6 @@ function EmployeeOverview() {
     setProjectTimeDetails(initialProjectTimeDetails);
   }, [projects, showTimeDetails]);
 
-
   // Modify the toggleShowTimeComplete function to toggle time details for a specific project
   const toggleShowTimeComplete = (projectId) => {
     setProjectTimeDetails((prevState) => ({
@@ -174,25 +168,25 @@ function EmployeeOverview() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/taskOverview', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3001/api/taskOverview", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          token: localStorage.getItem('token'),
-          is_complete: showComplete ? '1' : '0'
-        })
+          token: localStorage.getItem("token"),
+          is_complete: showComplete ? "1" : "0",
+        }),
       });
 
       if (response.ok) {
         const data = await response.json();
         setProjects(data);
       } else {
-        console.error('Failed to fetch projects');
+        console.error("Failed to fetch projects");
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     }
   };
 
@@ -211,11 +205,11 @@ function EmployeeOverview() {
 
   function getTaskStatusColor(requiredTime, takenTime) {
     if (requiredTime < takenTime) {
-      return 'bg-danger border border-danger';
+      return "bg-danger border border-danger";
     } else if (takenTime === 0) {
-      return 'bg-warning border border-warning';
+      return "bg-warning border border-warning";
     } else {
-      return 'bg-success border border-success';
+      return "bg-success border border-success";
     }
   }
 
@@ -236,27 +230,34 @@ function EmployeeOverview() {
 
   const handleSaveEditProject = async (updatedProject) => {
     try {
-      const response = await axios.post('http://localhost:3001/api/updateProject', {
-        ProjectName: updatedProject.projectName,
-        Projectid: updatedProject.projectId,
-        projstatus: updatedProject.projectStatus,
-        editprojmodalisalesval: updatedProject.salesOrder
-      });
+      const response = await axios.post(
+        "http://localhost:3001/api/updateProject",
+        {
+          ProjectName: updatedProject.projectName,
+          Projectid: updatedProject.projectId,
+          projstatus: updatedProject.projectStatus,
+          editprojmodalisalesval: updatedProject.salesOrder,
+        }
+      );
 
-      if (response.data === 'Success') {
+      if (response.data === "Success") {
         // Update the projects state after saving
         setProjects((prevProjects) =>
           prevProjects.map((proj) =>
             proj.projectSalesOrder === updatedProject.salesOrder
-              ? { ...proj, projectName: updatedProject.projectName, proj_status: updatedProject.projectStatus }
+              ? {
+                  ...proj,
+                  projectName: updatedProject.projectName,
+                  proj_status: updatedProject.projectStatus,
+                }
               : proj
           )
         );
       } else {
-        console.error('Failed to update project:', response.data);
+        console.error("Failed to update project:", response.data);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     }
   };
 
@@ -300,7 +301,6 @@ function EmployeeOverview() {
     setDeleteEmployeeOpen(false);
   };
 
-
   return (
     <>
       {dates.length > 0 && (
@@ -323,7 +323,7 @@ function EmployeeOverview() {
                   <FontAwesomeIcon
                     icon={showComplete ? faEye : faEyeSlash}
                     className="eyeicon"
-                    style={{ cursor: 'pointer', color: 'white' }}
+                    style={{ cursor: "pointer", color: "white" }}
                     onClick={toggleShowComplete}
                   />
                 </div>
@@ -335,12 +335,19 @@ function EmployeeOverview() {
               return (
                 <th
                   key={index}
-                  className={isSunday ? 'th1th' : `th${date.day}`}
-                  style={{ backgroundColor: isSunday ? 'red' : '', color: 'white' }}
+                  className={isSunday ? "th1th" : `th${date.day}`}
+                  style={{
+                    backgroundColor: isSunday ? "red" : "",
+                    color: "white",
+                  }}
                 >
-                  {currentDate.toLocaleString('default', { month: 'short', day: 'numeric' })}
-                  <br />
-                  [ {currentDate.toLocaleString('default', { weekday: 'short' })} ]
+                  {currentDate.toLocaleString("default", {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                  <br />[{" "}
+                  {currentDate.toLocaleString("default", { weekday: "short" })}{" "}
+                  ]
                 </th>
               );
             })}
@@ -348,6 +355,7 @@ function EmployeeOverview() {
         </thead>
         <tbody className="projectviewtbody">
           {employees.map((employee) => (
+            <>
             <tr className="text-center small" key={employee.id}>
               <td className="p-1">
                 <div>
@@ -389,17 +397,27 @@ function EmployeeOverview() {
                 <AggregateTableCellsView employee={employee} isComplete={showComplete} dates={dates} />
               )}
             </tr>
-          ))}
-        </tbody>
-
-      </table>
-
-      {logsPopupOpen && (
+            {logsPopupOpen && (
         <LogsPopup
           open={logsPopupOpen}
           handleClose={handleCloseLogsDialog}
+          employee={employee}
         />
       )}
+            </>
+
+          ))}
+          
+        </tbody>
+
+      </table>
+      {editEmployeeOpen && (
+        <EditEmployee
+          openEditDialog={editEmployeeOpen}
+          handleClose={handleCloseEditEmployeeDialog}
+        />
+      )}
+
       {deleteEmployeeOpen && (
         <DeleteEmployeePopup
           open={deleteEmployeeOpen}
@@ -408,6 +426,7 @@ function EmployeeOverview() {
 
         />
       )}
+
       <Footer />
     </>
   );
