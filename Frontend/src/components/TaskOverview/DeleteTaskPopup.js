@@ -51,7 +51,7 @@ const DeleteTaskPopup = ({ open, handleClose, task }) => {
         </DialogTitle>
         <DialogContent>
         <div style={{ textAlign: 'center' }}>Are you sure you want to permanently remove the task</div>
-        <div style={{ fontWeight: '700', textAlign: 'center' }}>"{task.taskName}" ?</div>
+        <div style={{ fontWeight: '700', textAlign: 'center' }}>"{task.taskName || task.TaskName}" ?</div>
           {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
           {successMessage && (
             <div className="text-center">

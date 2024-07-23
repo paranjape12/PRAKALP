@@ -104,7 +104,7 @@ const TaskInfoDialog = ({ open, project, task, taskDetails, handleClose }) => {
               {project.projectName} &gt;
             </Typography>
             <Typography component="span" color="#b35513" variant="h6" fontSize="15px" fontWeight="700" textAlign="left">
-              &nbsp; {task.taskName}
+              &nbsp; {task.taskName || task.TaskName}
             </Typography>
             <IconButton
               aria-label="close"
