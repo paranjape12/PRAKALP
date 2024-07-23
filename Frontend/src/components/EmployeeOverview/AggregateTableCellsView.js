@@ -108,53 +108,62 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
 
     return (
         <>
-            <td style={{ fontSize: '13.5px' }}>
-                <div>Total Projects Assigned: {projectsCount}</div>
-                <div>Completed Tasks: {completedTasks}</div>
-                <div>Average Completed Tasks: {averageCompletedTasks.toFixed(2)} %</div>
-            </td>
-            <td style={{ display: 'flex', padding: '0', borderStyle: 'none' }}>
-                <div className="card">
-                    <div className="card-header text-light" style={{ paddingRight: '4.7rem', paddingLeft: '0.3rem' }}>
-                        <div style={{ fontSize: '14px' }} className="m-0 font-weight-bold text-left text-dark">
-                            Total Task Assign: {totalTasks}
-                            <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time">
-                                <div className="taskEye" style={{ position: 'absolute', right: '0.5rem' }}>
-                                    <FontAwesomeIcon
-                                        icon={localShowTimeDetails ? faEye : faEyeSlash}
-                                        className="eyeicon"
-                                        style={{ cursor: 'pointer', color: '#1e7ee4' }}
-                                        onClick={handleToggleShowTimeComplete}
-                                    />
+            {projectsCount > 0 && (
+                <>
+                    <td style={{ fontSize: '13.5px' }}>
+                        <div>Total Projects Assigned: {projectsCount}</div>
+                        <div>Completed Tasks: {completedTasks}</div>
+                        <div>Average Completed Tasks: {averageCompletedTasks.toFixed(2)} %</div>
+                    </td>
+                    <td style={{ display: 'flex', padding: '0', borderStyle: 'none' }}>
+                        <div className="card">
+                            <div className="card-header text-light" style={{ paddingRight: '4.7rem', paddingLeft: '0.3rem' }}>
+                                <div style={{ fontSize: '14px' }} className="m-0 font-weight-bold text-left text-dark">
+                                    Total Task Assign: {totalTasks}
+                                    <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time">
+                                        <div className="taskEye" style={{ position: 'absolute', right: '0.5rem' }}>
+                                            <FontAwesomeIcon
+                                                icon={localShowTimeDetails ? faEye : faEyeSlash}
+                                                className="eyeicon"
+                                                style={{ cursor: 'pointer', color: '#1e7ee4' }}
+                                                onClick={handleToggleShowTimeComplete}
+                                            />
+                                        </div>
+                                    </a>
                                 </div>
-                            </a>
+                            </div>
+                            <div className="card-body text-left p-1">
+                                {localShowTimeDetails && (
+                                    <>
+                                        <div title="Required">R: {seconds2dayhrmin(projectTimeDetails.required) || '00:00:00'}</div>
+                                        <div title="Taken">T: {seconds2dayhrmin(projectTimeDetails.taken) || '00:00:00'}</div>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                    <div className="card-body text-left p-1">
-                        {localShowTimeDetails && (
-                            <>
-                                <div title="Required">R: {seconds2dayhrmin(projectTimeDetails.required) || '00:00:00'}</div>
-                                <div title="Taken">T: {seconds2dayhrmin(projectTimeDetails.taken) || '00:00:00'}</div>
-                            </>
-                        )}
-                    </div>
-                </div>
-                <div style={{ verticalAlign: 'middle', height: 'auto', display: 'flex', flexDirection: 'column' }}>
-                    <td title='Planned Timings' style={{ padding: '0.8rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none none none solid' }}>P</td>
-                    <td title='Actual Timings' style={{ padding: '0.8rem 0.5rem', fontSize: '13.44px', borderStyle: 'solid none none solid' }}>A</td>
-                </div>
-            </td>
-            {dates.map((date, i) => (
-                <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem' }}>
-                    <tr style={{ paddingTop:'0.7rem',display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2.8rem', verticalAlign: 'middle' }}>
-                        {seconds2dayhrmin(projectTimeDetails.planned[date.ymdDate] || 0)}
-                    </tr>
-                    <tr style={{ paddingTop:'0.7rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2.8rem', verticalAlign: 'middle' }}>
-                        {seconds2dayhrmin(projectTimeDetails.actual[date.ymdDate] || 0)}
-                    </tr>
-                </td>
-            ))}
+                        <div style={{ verticalAlign: 'middle', height: 'auto', display: 'flex', flexDirection: 'column' }}>
+                            <td title='Planned Timings' style={{ padding: '0.8rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none none none solid' }}>P</td>
+                            <td title='Actual Timings' style={{ padding: '0.8rem 0.5rem', fontSize: '13.44px', borderStyle: 'solid none none solid' }}>A</td>
+                        </div>
+                    </td>
+                    {
+                        dates.map((date, i) => (
+                            <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem' }}>
+                                <tr style={{ paddingTop: '0.7rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2.8rem', verticalAlign: 'middle' }}>
+                                    {seconds2dayhrmin(projectTimeDetails.planned[date.ymdDate] || 0)}
+                                </tr>
+                                <tr style={{ paddingTop: '0.7rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2.8rem', verticalAlign: 'middle' }}>
+                                    {seconds2dayhrmin(projectTimeDetails.actual[date.ymdDate] || 0)}
+                                </tr>
+                            </td>
+                        ))
+                    }
+                </>
+            )}
 
+            {!projectsCount && (
+                <td style={{ textAlign: 'center' }} colSpan={9}>No Projects Assigned.</td>
+            )}
         </>
     );
 }
