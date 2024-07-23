@@ -203,74 +203,7 @@ function EmployeeOverview() {
     return () => clearInterval(intervalId);
   }, []);
 
-  function getTaskStatusColor(requiredTime, takenTime) {
-    if (requiredTime < takenTime) {
-      return "bg-danger border border-danger";
-    } else if (takenTime === 0) {
-      return "bg-warning border border-warning";
-    } else {
-      return "bg-success border border-success";
-    }
-  }
-
-  const handleOpenEditProjectDialog = (project) => {
-    setSelectedProject({
-      salesOrder: project.projectSalesOrder,
-      projectName: project.projectName,
-      projectStatus: project.proj_status,
-      projectId: project.projectId,
-    });
-    setEditProjectDialogOpen(true);
-  };
-
-  const handleCloseEditProjectDialog = () => {
-    setEditProjectDialogOpen(false);
-    setSelectedProject(null);
-  };
-
-  const handleSaveEditProject = async (updatedProject) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:3001/api/updateProject",
-        {
-          ProjectName: updatedProject.projectName,
-          Projectid: updatedProject.projectId,
-          projstatus: updatedProject.projectStatus,
-          editprojmodalisalesval: updatedProject.salesOrder,
-        }
-      );
-
-      if (response.data === "Success") {
-        // Update the projects state after saving
-        setProjects((prevProjects) =>
-          prevProjects.map((proj) =>
-            proj.projectSalesOrder === updatedProject.salesOrder
-              ? {
-                  ...proj,
-                  projectName: updatedProject.projectName,
-                  proj_status: updatedProject.projectStatus,
-                }
-              : proj
-          )
-        );
-      } else {
-        console.error("Failed to update project:", response.data);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
-  const handleOpenDeleteProjectDialog = (projectId, projectName) => {
-    setSelectedProjectId(projectId);
-    setDeleteProjectDialogOpen(true);
-    setProjectName(projectName);
-  };
-
-  const handleCloseDeleteProjectDialog = () => {
-    setSelectedProjectId(null);
-    setDeleteProjectDialogOpen(false);
-  };
+  
 
   // hrishi
   const handleOpenEditEmployeeDialog = () => {
