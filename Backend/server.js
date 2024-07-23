@@ -878,6 +878,7 @@ app.post('/api/saveEditTask', (req, res) => {
     lastTask,
     taskActualTime,
     taskDetails,
+    approvalStatus = 0 // Set default value for approvalStatus
   } = req.body;
 
   const isLast = lastTask ? 1 : 0;
@@ -905,7 +906,7 @@ app.post('/api/saveEditTask', (req, res) => {
             console.log('Last task already exists for project:', projectName);
             res.send('Last Task exists');
           } else {
-            updateProjectAndTask(projectName, taskId, taskName, taskDetails, taskActualTime, res);
+            updateProjectAndTask(projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res);
           }
         });
       } else {
@@ -915,7 +916,7 @@ app.post('/api/saveEditTask', (req, res) => {
             console.error('Error updating project:', err);
             return res.status(500).send('Error updating project');
           }
-          updateTask(projectName, taskId, taskName, taskDetails, taskActualTime, res);
+          updateTask(projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res);
         });
       }
     } else {
@@ -925,7 +926,8 @@ app.post('/api/saveEditTask', (req, res) => {
   });
 });
 
-const updateProjectAndTask = (projectName, taskId, taskName, taskDetails, taskActualTime, res) => {
+const updateProjectAndTask = (projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res) => {
+  // Update the project to set the last task flag
   const updateProjectQuery = `UPDATE projects SET lasttask = '1' WHERE ProjectName = ?`;
   db.query(updateProjectQuery, [projectName], (err) => {
     if (err) {
@@ -933,21 +935,29 @@ const updateProjectAndTask = (projectName, taskId, taskName, taskDetails, taskAc
       return res.status(500).send('Error updating project');
     }
 
-    updateTask(projectName, taskId, taskName, taskDetails, taskActualTime, res);
+    // Proceed to update the task
+    updateTask(projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res);
   });
 };
 
-const updateTask = (projectName, taskId, taskName, taskDetails, taskActualTime, res) => {
-  const updateTaskQuery = `UPDATE Task SET projectName = ?, TaskName = ?, taskDetails = ?, timetocomplete = ? WHERE id = ?`;
-  db.query(updateTaskQuery, [projectName, taskName, taskDetails, taskActualTime, taskId], (err) => {
+const updateTask = (projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res) => {
+  // Update the task with the new details
+  const updateTaskQuery = `
+    UPDATE Task
+    SET projectName = ?, TaskName = ?, taskDetails = ?, timetocomplete = ?, aproved = ?
+    WHERE id = ?`;
+
+  db.query(updateTaskQuery, [projectName, taskName, taskDetails, taskActualTime, approvalStatus, taskId], (err) => {
     if (err) {
       console.error('Error updating task:', err);
       return res.status(500).send('Error updating task');
     }
 
+    // Proceed to update related task employees (assuming this function exists)
     updateTaskEmp(taskId, taskDetails, taskActualTime, res);
   });
 };
+
 
 const updateTaskEmp = (taskId, taskDetails, taskActualTime, res) => {
   const updateTaskEmpQuery = `UPDATE Taskemp SET taskDetails_emp = ?, timetocomplete_emp = ? WHERE taskid = ?`;
@@ -1755,6 +1765,87 @@ app.get('/api/EmpOverviewPlusMinus', async (req, res) => {
   }
 });
 
+
+app.get('/api/empOverviewTaskDtlsIndIndView', async (req, res) => {
+  const { assignBy, projectName } = req.query;
+
+  // Check if the required parameters are provided
+  if (!assignBy || !projectName) {
+    return res.status(400).json({ error: 'Missing required query parameters: assignBy or projectName' });
+  }
+
+  try {
+    // 1. Get task IDs based on the criteria
+    const tasksQuery = `
+      SELECT * FROM task WHERE (AssignBy = ? OR statusby = ?) AND projectName = ?`;
+    const tasks = await new Promise((resolve, reject) => {
+      db.query(tasksQuery, [assignBy, assignBy, projectName], (error, results) => {
+        if (error) return reject(error);
+        resolve(results);
+      });
+    });
+
+    // Extract the IDs into a constant
+    const taskIds = tasks.map(task => task.id).join(',');
+
+    // 2. Use the IDs to query taskemp
+    const taskempQuery = `
+      SELECT t.*, total.actual FROM taskemp t JOIN ( SELECT taskid, SUM(actualtimetocomplete_emp) AS actual FROM taskemp WHERE taskid IN (${taskIds}) GROUP BY taskid ) total ON t.taskid = total.taskid WHERE t.taskid IN (${taskIds});
+    `;
+    const taskemps = await new Promise((resolve, reject) => {
+      db.query(taskempQuery, (error, results) => {
+        if (error) return reject(error);
+        resolve(results);
+      });
+    });
+
+    // 3. Send the combined result
+    res.json({
+      tasks,
+      taskemps
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/empOverviewTaskDtlsIndAggView', (req, res) => {
+  const assignBy = req.query.assignBy;
+  const projectName = req.query.projectName;
+
+  const query1 = `
+    SELECT COUNT(id) as tasks 
+    FROM task 
+    WHERE (AssignBy = ? OR statusby = ?) 
+      AND projectName = ?;
+  `;
+  
+  const query2 = `
+    SELECT SUM(p.timetocomplete) as Required, SUM(te.actualtimetocomplete_emp) as Taken 
+    FROM Taskemp te 
+    JOIN Task p ON te.taskid = p.id 
+    WHERE te.AssignedTo_emp = ? 
+      AND p.ProjectName = ?;
+  `;
+
+  db.query(query1, [assignBy, assignBy, projectName], (error1, results1) => {
+    if (error1) {
+      return res.status(500).json({ error: error1.message });
+    }
+
+    db.query(query2, [assignBy, projectName], (error2, results2) => {
+      if (error2) {
+        return res.status(500).json({ error: error2.message });
+      }
+
+      res.json({
+        tasks: results1[0].tasks,
+        required: results2[0].Required,
+        taken: results2[0].Taken
+      });
+    });
+  });
+});
 
 
 // =================================  APIs by GJC for ref. START =====================================
