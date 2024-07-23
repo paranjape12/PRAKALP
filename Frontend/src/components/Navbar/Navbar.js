@@ -86,8 +86,9 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
 
   const handleLogout = () => {
     navigate('/');
-    localStorage.removeItem('token');
-  };
+    const keysToRemove = ['token', 'showTimeDetails', 'showEmpCompletedTasks'];
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+};
 
 
   const background = isPopupVisible ? 'blurred-background' : '';
