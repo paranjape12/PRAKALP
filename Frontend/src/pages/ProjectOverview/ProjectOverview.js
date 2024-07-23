@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import './ProjectOverview.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -23,6 +24,14 @@ function ProjectOverview() {
 
     const [dates, setDates] = useState([]);
     const [startDateIndex, setStartDateIndex] = useState(0);
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!localStorage.getItem('token')) {
+            navigate('/'); 
+        }
+    }, [navigate]);
 
     useEffect(() => {
         const newDates = [];
