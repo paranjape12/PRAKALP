@@ -2,14 +2,17 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask';
 
-function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetails, handleToggleShowTimeComplete, seconds2dayhrmin, projectTimeDetails }) {
+function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetails, handleToggleShowTimeComplete, seconds2dayhrmin }) {
     const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
     const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
+    const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
     const [selectedProjectId, setSelectedProjectId] = useState(null);
     const [selectedProject, setSelectedProject] = useState(null);
     const [projectName, setProjectName] = useState(null);
     const [projects, setProjects] = useState(null);
+    const [projectTimeDetails, setProjectTimeDetails] = useState({ planned: {}, actual: {} });
     const [taskDetails, setTaskDetails] = useState({ tasks: 0, required: 0, taken: 0 });
 
     const fetchTaskDetails = async (assignBy, projectName) => {
@@ -23,11 +26,45 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
         }
     };
 
+    const fetchProjectTimeDetails = async (projectName, userId, startDate) => {
+        try {
+            const response = await axios.get('http://localhost:3001/api/empOverviewIndAggPATimes', {
+                params: { projectName, userId, startDate }
+            });
+
+            const updatedProjectTimeDetails = { planned: {}, actual: {} };
+            response.data.data.forEach(row => {
+                updatedProjectTimeDetails.planned[row.taskDate] = row.planned || 0;
+                updatedProjectTimeDetails.actual[row.taskDate] = row.actual || 0;
+            });
+
+            setProjectTimeDetails(updatedProjectTimeDetails);
+        } catch (error) {
+            console.error('Error fetching project time details:', error);
+        }
+    };
+
+    const seconds2hrmin = (ss) => {
+        if(ss==0){
+            return ` `;
+        }
+        const h = Math.floor(ss / 3600); // Total hours
+        const m = Math.floor((ss % 3600) / 60); // Remaining minutes
+
+        const formattedH = h < 10 ? '0' + h : h;
+        const formattedM = m < 10 ? '0' + m : m;
+
+        return `${formattedH} : ${formattedM}`;
+    };
+
     useEffect(() => {
         const assignBy = employee.id;
         const projectName = project.projectName;
+        const startDate = dates[0]?.ymdDate;
         fetchTaskDetails(assignBy, projectName);
-    }, []);
+        fetchProjectTimeDetails(projectName, assignBy, startDate);
+    }, [employee.id, project.projectName, dates]);
+
 
     function getTaskStatusColor(requiredTime, takenTime) {
         if (requiredTime < takenTime) {
@@ -67,7 +104,6 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
             );
 
             if (response.data === "Success") {
-                // Update the projects state after saving
                 setProjects((prevProjects) =>
                     prevProjects.map((proj) =>
                         proj.projectSalesOrder === updatedProject.salesOrder
@@ -98,6 +134,14 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
         setDeleteProjectDialogOpen(false);
     };
 
+    const handleOpenAddTaskDialog = () => {
+        setAddTaskDialogOpen(true);
+      };
+    
+      const handleCloseAddTaskDialog = () => {
+        setAddTaskDialogOpen(false);
+      };
+
     return (
         <div style={{ width: '14rem' }}>
             <td style={{ minWidth: '14rem', padding: '0' }}>
@@ -120,7 +164,7 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
                     <div className="card-body text-left p-1">
                         {localShowTimeDetails && (
                             <>
-                                <div title="Required">R: {seconds2dayhrmin(taskDetails.required)  || '00 : 00 : 00'}</div>
+                                <div title="Required">R: {seconds2dayhrmin(taskDetails.required) || '00 : 00 : 00'}</div>
                                 <div title="Taken">T: {seconds2dayhrmin(taskDetails.taken) || '00 : 00 : 00'}</div>
                             </>
                         )}
@@ -135,14 +179,16 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
             </td>
             {dates.map((date, i) => (
                 <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden' }}>
-                    <div style={{ paddingTop: '0.2rem', paddingRight: '7.68rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}>
-                        {seconds2dayhrmin(projectTimeDetails.planned[date.ymdDate] || 0)}
+                    <div title='Create New Task' style={{ cursor:'pointer',paddingTop: '0.2rem', width: '7.68rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
+                    onClick={handleOpenAddTaskDialog}>
+                        {seconds2hrmin(projectTimeDetails.planned[date.ymdDate] || 0)}
                     </div>
-                    <div style={{ paddingTop: '0.2rem', paddingRight: '7.68rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}>
-                        {seconds2dayhrmin(projectTimeDetails.actual[date.ymdDate] || 0)}
+                    <div style={{ paddingTop: '0.2rem', width: '7.68rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}>
+                        {seconds2hrmin(projectTimeDetails.actual[date.ymdDate] || 0)}
                     </div>
                 </td>
             ))}
+      {<AddTaskModal projectName={project.projectName} open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />}
         </div>
     );
 }

@@ -5,6 +5,8 @@ import EditTaskTeamLeadVersion from './EditTaskTeamLeadVersion';
 import DeleteTaskPopup from '../TaskOverview/DeleteTaskPopup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faCopyright, faPencilAlt, faCircleInfo, faTrashAlt, faL } from '@fortawesome/free-solid-svg-icons';
+import AssignTaskDialog from '../Navbar/Dropdown/Assign Task/AssignTask';
+import TaskCompletePopup from '../TaskOverview/TaskCompletePopup';
 
 function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDetails, handleToggleShowTimeComplete, seconds2dayhrmin }) {
     const [deleteTaskDialogOpen, setDeleteTaskDialogOpen] = useState(false);
@@ -15,6 +17,7 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
     const [taskInfoDialogOpen, setTaskInfoDialogOpen] = useState(false);
     const [taskToDelete, setTaskToDelete] = useState(null);
     const [taskTimings, setTaskTimings] = useState([]);
+    const [assignTaskOpen, setAssignTaskOpen] = useState(false);
     const [taskCompleteOpen, setTaskCompleteOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [taskCompletionTime, setTaskCompletionTime] = useState(null);
@@ -61,16 +64,27 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
         }
 
         try {
-            console.log('Fetching task details for', assignBy, projectName);
+            console.log('Fetching task individual details for', assignBy, projectName);
             const response = await axios.get('http://localhost:3001/api/empOverviewTaskDtlsIndIndView', {
                 params: { assignBy, projectName }
             });
             cache.taskDetails = response.data;
             setTaskDetails(response.data);
-            console.log("response: ", response);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching task details:', error);
+        }
+    };
+
+    const fetchTaskTimings = async (assignBy, projectName, taskDate) => {
+        try {
+            const response = await axios.get('http://localhost:3001/api/empOverviewIndIndPATimes', {
+                params: { assignBy, projectName, taskDate }
+            });
+            setTaskTimings(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching task timings:', error);
         }
     };
 
@@ -78,7 +92,8 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
         const assignBy = employee.id;
         const projectName = project.projectName;
         fetchTaskDetails(assignBy, projectName);
-    }, [employee.id, project.projectName]);
+        dates.forEach(date => fetchTaskTimings(assignBy, projectName, date.ymdDate));
+    }, [employee.id, project.projectName, dates]);
 
     const fetchTaskInfoDetails = async (taskId) => {
         if (cache.taskInfoDetails[taskId]) {
@@ -120,6 +135,17 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
         setTaskInfoDetails({});
     };
 
+    useEffect(() => {
+    }, [taskTimings, dates]);
+
+    const handleOpenAssignTaskDialog = () => {
+        setAssignTaskOpen(true);
+    };
+
+    const handleCloseAssignTaskDialog = () => {
+        setAssignTaskOpen(false);
+    };
+
     function getTaskStatusColor(requiredTime, takenTime) {
         if (requiredTime < takenTime) {
             return 'bg-danger border border-danger';
@@ -156,6 +182,15 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                             handleClose={handleTaskInfoDialogClose}
                         />
 
+                        {taskCompleteOpen && (
+                            <TaskCompletePopup
+                                open={taskCompleteOpen}
+                                task={task}
+                                handleClose={handleCloseTaskCompleteDialog}
+                                completionTime={taskCompletionTime}  // Pass the task completion time as a prop
+                            />
+                        )}
+
                         {selectedTask && selectedTask.id === task.id && (
                             <EditTaskTeamLeadVersion
                                 open={editTaskDialogOpen}
@@ -181,37 +216,44 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                         )}
 
                     </div>
-
                     <table>
                         <tbody>
                             <tr>
-                                <td title='Planned Timings' style={{ padding: '0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
+                                <td title='Planned Timings' style={{ padding: '0.8rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
                                 {dates.map((date, i) => (
-                                    <td key={i} style={{ minWidth: '7.7rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
+                                    <td onClick={handleOpenAssignTaskDialog} title='Assign New Task' key={i} style={{ cursor: 'pointer', minWidth: '7.7rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}
+                                    >
                                         {loading ? '' : (
-                                            taskTimings[i]?.map(timing => (
-                                                timing.taskid === task.id ? `${seconds2hrmin(timing.planned)}  || 00 : 00 : 00` : '00 : 00 : 00'
+                                            taskTimings.filter(timing => timing.taskDate === date.ymdDate && timing.taskid === task.id).map(timing => (
+                                                <span key={timing.taskid} style={{ fontWeight:'700'}}>
+                                                    {employee.Nickname} : {seconds2hrmin(timing.planned || 0)}
+                                                </span>
                                             ))
                                         )}
                                     </td>
                                 ))}
                             </tr>
                             <tr>
-                                <td title='Actual Timings' style={{ padding: '0.5rem', fontSize: '13.44px' }}>A</td>
+                                <td title='Actual Timings' style={{ padding: '0.8rem 0.5rem', fontSize: '13.44px' }}>A</td>
                                 {dates.map((date, i) => (
-                                    <td key={i} style={{ minWidth: '7.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
+                                    <td key={i} style={{ minWidth: '7.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
                                         {loading ? '' : (
-                                            taskTimings[i]?.map(timing => (
-                                                timing.taskid === task.id ? (
-                                                    <>
-                                                        <span key={timing.id} style={{ color: timing.actual ? '#1cc88a' : 'inherit', cursor: 'pointer' }}> {seconds2hrmin(timing.actual) || `00 : 00 : 00`}</span>
-                                                    </>
-                                                ) : ''
+                                            taskTimings.filter(timing => timing.taskDate === date.ymdDate && timing.taskid === task.id).map(timing => (
+                                                <><span key={timing.id} style={{ fontWeight:'700',color:'#1cc88a',cursor: 'pointer' }} onClick={() => handleOpenTaskCompleteDialog(timing.actual)} >
+                                                    {employee.Nickname} :</span> {seconds2hrmin(timing.actual || 0)}
+                                                </>
+
                                             ))
                                         )}
                                     </td>
                                 ))}
                             </tr>
+                            {assignTaskOpen && (
+                                <AssignTaskDialog
+                                    open={assignTaskOpen}
+                                    onClose={handleCloseAssignTaskDialog}
+                                />
+                            )}
                         </tbody>
                     </table>
                 </div>

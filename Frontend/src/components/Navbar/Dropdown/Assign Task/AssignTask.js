@@ -126,144 +126,161 @@ const AssignTaskDialog = ({ open, onClose }) => {
 
   return (
     <ThemeProvider theme={theme}>
-    <Dialog open={open} onClose={onClose} maxWidth="lg">
-      <DialogTitle id="assigntask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>
-        Assign Task
-      </DialogTitle>
-      <DialogContent>
-        <div>
-          <FormControl style={{ marginTop: '1rem', marginRight: '3rem' }}>
-            <InputLabel >Select Project</InputLabel>
-            <Select
-              label="Select Project"
-              id="addprojdrop"
-              size='small'
-              value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
-              style={{ fontFamily: 'Nunito', width: '15rem' }}
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 400,
-                    width: '25rem',
+      <Dialog open={open} onClose={onClose} maxWidth="lg">
+        <DialogTitle id="assigntask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>
+          Assign Task
+        </DialogTitle>
+        <DialogContent>
+          <div>
+            <FormControl style={{ marginTop: '1rem', marginRight: '3rem' }}>
+              <InputLabel >Select Project</InputLabel>
+              <Select
+                label="Select Project"
+                id="addprojdrop"
+                size='small'
+                value={selectedProject}
+                onChange={(e) => setSelectedProject(e.target.value)}
+                style={{ fontFamily: 'Nunito', width: '15rem' }}
+                MenuProps={{
+                  PaperProps: {
+                    style: {
+                      maxHeight: 400,
+                      width: '25rem',
+                    },
                   },
-                },
-              }}
-            >
-              {projects.map((project, index) => (
-                <MenuItem key={index} value={project} dense>
-                  {project}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl style={{ marginTop: '1rem' }}>
-            <InputLabel >Select Employee</InputLabel>
-            <Select
-              id="selempdrop"
-              label="Select Employee"
-              size='small'
-              value={selectedEmployeeId}
-              onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              style={{ fontFamily: 'Nunito', width: '15rem' }}
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 400,
-                    width: '10rem',
+                }}
+              >
+                {projects.map((project, index) => (
+                  <MenuItem key={index} value={project} dense>
+                    {project}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {selectedProject && (
+              <FormControl style={{ marginTop: '1rem', marginRight: '3rem', marginBottom: '1rem' }}>
+                <InputLabel>Select Task</InputLabel>
+                <Select
+                  label="Select Task"
+                  id="taskdrop"
+                  value={selectedTask}
+                  onChange={(e) => setSelectedTask(e.target.value)}
+                >
+                  {tasks.map((task, index) => (
+                    <MenuItem key={index} value={task.id}>
+                      {task.TaskName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+            <FormControl style={{ marginTop: '1rem' }}>
+              <InputLabel >Select Employee</InputLabel>
+              <Select
+                id="selempdrop"
+                label="Select Employee"
+                size='small'
+                value={selectedEmployeeName}
+                onChange={(e) => setSelectedEmployeeName(e.target.value)}
+                style={{ fontFamily: 'Nunito', width: '15rem' }}
+                MenuProps={{
+                  PaperProps: {
+                    style: {
+                      maxHeight: 400,
+                      width: '10rem',
+                    },
                   },
-                },
-              }}
-            >
-              {employees.map((employee) => (
-                <MenuItem key={employee.id} value={employee.Name} dense>
-                  {employee.Name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
+                }}
+              >
+                {employees.map((employee) => (
+                  <MenuItem key={employee.id} value={employee.Name} dense>
+                    {employee.Name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
 
-        <InputLabel style={{ fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '18px', marginBottom: '1rem',marginTop: '1rem' }}>Task Details</InputLabel>
-        <div style={{ display: 'flex' }}>
-          <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginRight: '2.5rem' }}>Date</InputLabel>
-          <TextField
-            type="date"
-            value={date}
-            size='small'
-            onChange={(e) => setDate(e.target.value)}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            style={{ marginBottom: '0.5rem' }}
-          />
-        </div>
-        <div style={{ display: 'flex' }}>
-          <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginRight: '1rem' }}>Activity</InputLabel>
-          <TextField
-            id="activitytxtfield"
-            value={activity}
-            onChange={(e) => setActivity(e.target.value)}
-            placeholder='Enter Activity Name'
-            multiline
-            rows={2}
-            style={{ width: '75%', marginBottom: '0.5rem' }}
-          />
-        </div>
-        {selectedEmployeeName && (
+          <InputLabel style={{ fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '18px', marginBottom: '1rem', marginTop: '1rem' }}>Task Details</InputLabel>
           <div style={{ display: 'flex' }}>
-            <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginRight: '1rem' }}>{selectedEmployeeName}</InputLabel>
+            <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginRight: '2.5rem' }}>Date</InputLabel>
             <TextField
-              style={{ marginRight: '1rem' }}
-              margin="dense"
-              id="addprojhr"
-              type="number"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end" style={{ outline: 'none' }}>Hr</InputAdornment>
-                ),
-                style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
-                inputProps: { min: 0, max: 12, style: { padding: '25px' } }
+              type="date"
+              value={date}
+              size='small'
+              onChange={(e) => setDate(e.target.value)}
+              InputLabelProps={{
+                shrink: true,
               }}
-            />
-            <TextField
-              margin="dense"
-              id="addprojmin"
-              type="number"
-              value={minutes}
-              onChange={(e) => setMinutes(e.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end" style={{ outline: 'none', }}>Min</InputAdornment>
-                ),
-                style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
-                inputProps: { min: 0, max: 59, style: { padding: '25px' } }
-              }}
+              style={{ marginBottom: '0.5rem' }}
             />
           </div>
-        )}
-
-        {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
-        {successMessage && (
-          <div className="text-center">
-            <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
+          <div style={{ display: 'flex' }}>
+            <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginRight: '1rem' }}>Activity</InputLabel>
+            <TextField
+              id="activitytxtfield"
+              value={activity}
+              onChange={(e) => setActivity(e.target.value)}
+              placeholder='Enter Activity Name'
+              multiline
+              rows={2}
+              style={{ width: '75%', marginBottom: '0.5rem' }}
+            />
           </div>
-        )}
+          {selectedEmployeeName && (
+            <div style={{ display: 'flex' }}>
+              <InputLabel style={{ fontFamily: 'Nunito', color: 'Black', fontWeight: '700', fontSize: '18px', marginRight: '1rem' }}>{selectedEmployeeName}</InputLabel>
+              <TextField
+                style={{ marginRight: '1rem' }}
+                margin="dense"
+                id="addprojhr"
+                type="number"
+                value={hours}
+                onChange={(e) => setHours(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end" style={{ outline: 'none' }}>Hr</InputAdornment>
+                  ),
+                  style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
+                  inputProps: { min: 0, max: 12, style: { padding: '25px' } }
+                }}
+              />
+              <TextField
+                margin="dense"
+                id="addprojmin"
+                type="number"
+                value={minutes}
+                onChange={(e) => setMinutes(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end" style={{ outline: 'none', }}>Min</InputAdornment>
+                  ),
+                  style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
+                  inputProps: { min: 0, max: 59, style: { padding: '25px' } }
+                }}
+              />
+            </div>
+          )}
 
-      </DialogContent>
-      <DialogActions>
-        <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={handleClose} color="primary">
-          Close
-        </Button>
-        {selectedTask && (
-          <Button style={{ fontFamily: 'Nunito', backgroundColor: '#1cc88a', color: 'white' }} onClick={handleSave} color="primary">
-            Save
+          {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
+          {successMessage && (
+            <div className="text-center">
+              <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
+            </div>
+          )}
+
+        </DialogContent>
+        <DialogActions>
+          <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={handleClose} color="primary">
+            Close
           </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+          {selectedTask && (
+            <Button style={{ fontFamily: 'Nunito', backgroundColor: '#1cc88a', color: 'white' }} onClick={handleSave} color="primary">
+              Save
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </ThemeProvider>
   );
 };

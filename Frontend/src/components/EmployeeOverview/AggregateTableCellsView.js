@@ -90,9 +90,8 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
             .then(response => {
 
                 const data = response.data.reduce((acc, { taskDate, planned, actual }) => {
-                    const formattedDate = new Date(taskDate.slice(0, 10)); // Convert "YYYY-MM-DD" to a Date object
-                    formattedDate.setDate(formattedDate.getDate() + 1); // Add +1 day
-
+                    const formattedDate = new Date(taskDate.slice(0, 10)); 
+                    formattedDate.setDate(formattedDate.getDate() + 1);
                     const formattedDateStr = formattedDate.toISOString().slice(0, 10); // Convert back to "YYYY-MM-DD" string
                     acc.planned[formattedDateStr] = planned;
                     acc.actual[formattedDateStr] = actual;

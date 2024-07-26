@@ -33,12 +33,6 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
     const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
     const [projectName, setProjectName] = useState(null);
     const [expandedProjects, setExpandedProjects] = useState({});
-    const [projectTimeDetails, setProjectTimeDetails] = useState({
-        required: 0,
-        taken: 0,
-        planned: {},
-        actual: {}
-    });
     const empId = employee.id;
     const empType = employee.Type;
 
@@ -178,10 +172,10 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
                             </td>
                             {expandedProjects[project.projectId] === 'individual' ? (
                                 <IndividualTaskDetailsView dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
-                                    seconds2dayhrmin={seconds2dayhrmin} projectTimeDetails={projectTimeDetails} project={project} employee={employee} />
+                                    seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} />
                             ) : (
                                 <AggregateTaskDetailsView dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
-                                    seconds2dayhrmin={seconds2dayhrmin} projectTimeDetails={projectTimeDetails} project={project} employee={employee} />
+                                    seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} />
                             )}
                         </tr>
                     </React.Fragment>
