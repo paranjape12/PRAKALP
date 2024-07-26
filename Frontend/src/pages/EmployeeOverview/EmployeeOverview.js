@@ -359,10 +359,10 @@ function EmployeeOverview() {
       </table>
       {editEmployeeOpen && (
         <EditEmployee
-          openEditDialog={editEmployeeOpen}
+          open={editEmployeeOpen}
           handleClose={handleCloseEditEmployeeDialog}
-        />
-      )}
+        />
+      )}
 
       {deleteEmployeeOpen && (
         <DeleteEmployeePopup
