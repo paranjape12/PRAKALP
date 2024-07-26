@@ -82,6 +82,19 @@ function EmployeeOverview() {
     }));
   };
 
+  const seconds2hrmin = (ss) => {
+    if(ss==0){
+        return ` `;
+    }
+    const h = Math.floor(ss / 3600); // Total hours
+    const m = Math.floor((ss % 3600) / 60); // Remaining minutes
+
+    const formattedH = h < 10 ? '0' + h : h;
+    const formattedM = m < 10 ? '0' + m : m;
+
+    return `${formattedH} : ${formattedM}`;
+};
+
   const handleTodayClick = () => {
     setStartDateIndex(0);
   };
@@ -325,9 +338,9 @@ function EmployeeOverview() {
                 </div>
               </td>
               {showExpand[employee.id] ? (
-                <IndividualTableCellsView employee={employee} isComplete={showComplete} dates={dates} />
+                <IndividualTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} />
               ) : (
-                <AggregateTableCellsView employee={employee} isComplete={showComplete} dates={dates} />
+                <AggregateTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} />
               )}
             </tr>
             {logsPopupOpen && (
