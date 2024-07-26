@@ -10,12 +10,19 @@ const port = 3001;
 app.use(cors());
 
 
-// Create a MySQL db
+//Create a MySQL db
+// const db = mysql.createConnection({
+//   host: '103.195.185.168',
+//   user: 'indiscpx_TASKDB_2',
+//   password: 'Protovec123',
+//   database: 'indiscpx_TASKDB_2',
+// });
+
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: '',
-  database: 'indiscpx_taskDB',
+  database: 'indiscpx_taskdb_2',
 });
 
 /* remote DB dtls
@@ -1458,96 +1465,96 @@ function seconds2human(ss) {
 }
 
 // API endpoint to get employee logs
-app.post('/api/employeeLogs', (req, res) => {
-  const { id, fromdate, todate, projALL } = req.body;
+// app.post('/api/employeeLogs', (req, res) => {
+//   const { id, fromdate, todate, projALL } = req.body;
 
-  let finalStr = '';
-  let projectNameArray = [];
-  let taskNameArray = [];
-  let task = [];
-  let addquery = '';
+//   let finalStr = '';
+//   let projectNameArray = [];
+//   let taskNameArray = [];
+//   let task = [];
+//   let addquery = '';
 
-  if (projALL !== 'All') {
-    const projALL_implode = projALL.map(project => `'${project}'`).join(', ');
-    addquery = `projectName IN (${projALL_implode}) AND `;
-  }
+//   if (projALL !== 'All') {
+//     const projALL_implode = projALL.map(project => `'${project}'`).join(', ');
+//     addquery = `projectName IN (${projALL_implode}) AND `;
+//   }
 
-  const selectTaskIdFromAssignTask = `
-    SELECT DISTINCT taskid 
-    FROM Taskemp 
-    WHERE AssignedTo_emp = ? AND DATE(tasktimeemp) >= ? AND DATE(tasktimeemp) <= ?`;
+//   const selectTaskIdFromAssignTask = `
+//     SELECT DISTINCT taskid 
+//     FROM Taskemp 
+//     WHERE AssignedTo_emp = ? AND DATE(tasktimeemp) >= ? AND DATE(tasktimeemp) <= ?`;
   
-  db.query(selectTaskIdFromAssignTask, [id, fromdate, todate], (err, taskResults) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (taskResults.length > 0) {
-      task = taskResults.map(row => row.taskid);
-      const idString = task.join(',');
+//   db.query(selectTaskIdFromAssignTask, [id, fromdate, todate], (err, taskResults) => {
+//     if (err) {
+//       return res.status(500).json({ error: err.message });
+//     }
+//     if (taskResults.length > 0) {
+//       task = taskResults.map(row => row.taskid);
+//       const idString = task.join(',');
 
-      const selectTaskAndProj = `
-        SELECT id, TaskName, projectName 
-        FROM Task 
-        WHERE ${addquery} id IN (${idString})`;
+//       const selectTaskAndProj = `
+//         SELECT id, TaskName, projectName 
+//         FROM Task 
+//         WHERE ${addquery} id IN (${idString})`;
 
-      db.query(selectTaskAndProj, (err, taskAndProjResults) => {
-        if (err) {
-          return res.status(500).json({ error: err.message });
-        }
+//       db.query(selectTaskAndProj, (err, taskAndProjResults) => {
+//         if (err) {
+//           return res.status(500).json({ error: err.message });
+//         }
 
-        taskAndProjResults.forEach(row => {
-          taskNameArray[row.id] = row.TaskName;
+//         taskAndProjResults.forEach(row => {
+//           taskNameArray[row.id] = row.TaskName;
 
-          if (projALL === 'All') {
-            const projectName = row.projectName;
-            const selectProject = `SELECT id FROM projects WHERE ProjectName = ?`;
+//           if (projALL === 'All') {
+//             const projectName = row.projectName;
+//             const selectProject = `SELECT id FROM projects WHERE ProjectName = ?`;
             
-            db.query(selectProject, [projectName], (err, projectResults) => {
-              if (err) {
-                return res.status(500).json({ error: err.message });
-              }
-              const projectRow = projectResults[0];
-              if (projectRow && !projectNameArray[projectRow.id]) {
-                projectNameArray[projectRow.id] = projectName;
-              }
-            });
-          }
-        });
+//             db.query(selectProject, [projectName], (err, projectResults) => {
+//               if (err) {
+//                 return res.status(500).json({ error: err.message });
+//               }
+//               const projectRow = projectResults[0];
+//               if (projectRow && !projectNameArray[projectRow.id]) {
+//                 projectNameArray[projectRow.id] = projectName;
+//               }
+//             });
+//           }
+//         });
 
-        if (projALL !== 'All') {
-          const selectTaskAndProjNotAll = `
-            SELECT projectName 
-            FROM Task 
-            WHERE id IN (${idString})`;
+//         if (projALL !== 'All') {
+//           const selectTaskAndProjNotAll = `
+//             SELECT projectName 
+//             FROM Task 
+//             WHERE id IN (${idString})`;
           
-          db.query(selectTaskAndProjNotAll, (err, projNotAllResults) => {
-            if (err) {
-              return res.status(500).json({ error: err.message });
-            }
-            projNotAllResults.forEach(row => {
-              const projectName = row.projectName;
-              const selectProject = `SELECT id FROM projects WHERE ProjectName = ?`;
+//           db.query(selectTaskAndProjNotAll, (err, projNotAllResults) => {
+//             if (err) {
+//               return res.status(500).json({ error: err.message });
+//             }
+//             projNotAllResults.forEach(row => {
+//               const projectName = row.projectName;
+//               const selectProject = `SELECT id FROM projects WHERE ProjectName = ?`;
               
-              db.query(selectProject, [projectName], (err, projectResults) => {
-                if (err) {
-                  return res.status(500).json({ error: err.message });
-                }
-                const projectRow = projectResults[0];
-                if (projectRow && !projectNameArray[projectRow.id]) {
-                  projectNameArray[projectRow.id] = projectName;
-                }
-              });
-            });
-          });
-        }
+//               db.query(selectProject, [projectName], (err, projectResults) => {
+//                 if (err) {
+//                   return res.status(500).json({ error: err.message });
+//                 }
+//                 const projectRow = projectResults[0];
+//                 if (projectRow && !projectNameArray[projectRow.id]) {
+//                   projectNameArray[projectRow.id] = projectName;
+//                 }
+//               });
+//             });
+//           });
+//         }
 
-        res.json({ projectNameArray, taskNameArray });
-      });
-    } else {
-      res.json({ message: 'No tasks found' });
-    }
-  });
-});
+//         res.json({ projectNameArray, taskNameArray });
+//       });
+//     } else {
+//       res.json({ message: 'No tasks found' });
+//     }
+//   });
+// });
 
 
 
@@ -1744,7 +1751,7 @@ app.get('/api/EmpOverviewPlusMinus', async (req, res) => {
               projectName,
               projectSalesOrder,
               assigntaskpresent,
-              noofassigntasks,
+              noofassigntasks,         
               proj_status,
               projectLastTask,
               requiredTime,
@@ -1764,6 +1771,76 @@ app.get('/api/EmpOverviewPlusMinus', async (req, res) => {
     res.status(500).send('Internal server error');
   }
 });
+
+
+
+//FAMT Employee Logs popups for Employee Overview page
+app.post('/api/employeeLogs', async (req, res) => {
+  const { employeeId, fromDate, toDate } = req.body;
+
+  // Validate input
+  if (!employeeId || !fromDate || !toDate) {
+    return res.status(400).json({ error: 'Missing required parameters' });
+  }
+
+  // Log input values
+  // console.log('Employee ID:', employeeId);
+  // console.log('From Date:', fromDate);
+  // console.log('To Date:', toDate);
+
+  const query = `
+    SELECT te.*, t.projectName, t.TaskName
+    FROM Taskemp te
+    JOIN task t ON te.taskid = t.id
+    WHERE te.AssignedTo_emp = ?
+      AND DATE(te.tasktimeemp) BETWEEN ? AND ?
+    ORDER BY te.tasktimeemp DESC
+  `;
+
+  try {
+    // Execute the combined query
+    const [results] = await db.promise().query(query, [employeeId, fromDate, toDate]);
+    
+    // Log raw results
+    // console.log('Raw results length:', results.length);
+    // console.log('Raw results:', results);
+
+    // Map results to the final structure
+    const finalResults = results.map(row => ({
+      results : results.length,
+      date: row.tasktimeemp,
+      projectName: row.projectName || 'Unknown',
+      taskName: row.TaskName || 'Unknown',
+      timeRequired: row.timetocomplete_emp,
+      timeTaken: row.actualtimetocomplete_emp,
+      activity: row.Activity,
+      logs: row.tasklog
+    }));
+
+    // Log final mapped results
+    // console.log('Final results length:', finalResults.length);
+    // console.log('Final results:', finalResults);
+
+    res.json(finalResults);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+function seconds2human(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${hours}h ${minutes}m ${secs}s`;
+}
+function seconds2human(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${hours}h ${minutes}m ${secs}s`;
+}
+
 
 
 app.get('/api/empOverviewTaskDtlsIndIndView', async (req, res) => {
