@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, FormControl, InputLabel, Select, MenuItem, Checkbox, FormControlLabel } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, FormControl, InputLabel, Select, MenuItem, Checkbox, FormControlLabel, InputAdornment, IconButton, } from '@material-ui/core';
 import AddEmployee from './AddEmployee';
-
-const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, handleClose }) => {
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+const EditEmployee = ({ open, employeeDetails, handleClose }) => {
 
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [employees, setEmployees] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [showPasswordFields, setShowPasswordFields] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
-
 
   const showMessage = (setMessage, message) => {
     setMessage(message);
@@ -19,6 +19,7 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
       if (setMessage === setSuccessMessage) handleClose();
     }, 1500);
   };
+
   const [formData, setFormData] = useState({
     id: '',
     Name: '',
@@ -34,9 +35,8 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
 
   const pages = [
     { PageName: 'Project' },
-    { PageName: 'Epmloyee' },
+    { PageName: 'Employee' },
     { PageName: 'Task' },
-    // Add more pages as needed
   ];
 
   useEffect(() => {
@@ -59,17 +59,13 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    // If the checkbox "Use Email For Login" is changed
     if (name === 'loginusinggmail') {
-      // If checked, set loginusinggmail to 1, otherwise set it to 0
       setFormData({
         ...formData,
         [name]: checked ? 1 : 0
       });
-      // Show/hide password fields based on the checkbox state
       setShowPasswordFields(!checked);
     } else {
-      // For other fields, update the form data as usual
       setFormData({
         ...formData,
         [name]: type === 'checkbox' ? checked : value
@@ -77,42 +73,63 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
     }
   };
 
-
   useEffect(() => {
-    // Fetch pages
     axios.get('http://localhost:3001/api/pages')
-  .then(response => {
-    console.log('Pages fetched successfully:', response.data);
-  })
-  .catch(error => {
-    console.error('There was an error fetching the pages!', error);
-  });
-
+      .then(response => { })
+      .catch(error => { console.error('There was an error fetching the pages!', error); });
   }, []);
 
   const handleAccessChange = (pageName, accessType) => {
-    setFormData(prevState => ({
-      ...prevState,
-      access: {
-        ...prevState.access,
-        [pageName]: {
-          ...prevState.access[pageName],
-          [accessType]: !prevState.access[pageName]?.[accessType]
+    setFormData(prevState => {
+      const newAccess = { ...prevState.access };
+
+      if (!newAccess[pageName]) {
+        newAccess[pageName] = {};
+      }
+
+      const currentStatus = newAccess[pageName][accessType];
+
+      if (accessType === 'add') {
+        if (currentStatus) {
+          newAccess[pageName].add = false;
+        } else {
+          newAccess[pageName].add = true;
+          newAccess[pageName].edit = true;
+          newAccess[pageName].view = true;
+        }
+      } else if (accessType === 'edit') {
+        if (currentStatus) {
+          newAccess[pageName].edit = false;
+          newAccess[pageName].add = false;
+        } else {
+          newAccess[pageName].edit = true;
+          newAccess[pageName].view = true;
+        }
+      } else if (accessType === 'view') {
+        if (currentStatus) {
+          newAccess[pageName].view = false;
+          newAccess[pageName].edit = false;
+          newAccess[pageName].add = false;
+        } else {
+          newAccess[pageName].view = true;
         }
       }
-    }));
+
+      return {
+        ...prevState,
+        access: newAccess
+      };
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validate password and confirmPassword
     if (formData.Password !== formData.confirmPassword) {
       alert("Passwords do not match");
       return;
     }
 
-    // Transform access object into pagename and pagevalue arrays
     const pagename = Object.keys(formData.access);
     const pagevalue = pagename.map(page => formData.access[page]);
 
@@ -125,7 +142,6 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
     axios.put('http://localhost:3001/api/update-employee', requestData)
       .then(response => {
         console.log(response.data);
-        setOpenEditDialog(false);
       })
       .catch(error => {
         console.error('There was an error updating the employee!', error);
@@ -133,7 +149,6 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
   };
 
   useEffect(() => {
-    // Fetch employees
     axios.post('http://localhost:3001/api/empDropdown', {
       token: localStorage.getItem('token'),
     })
@@ -153,8 +168,6 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
     axios.delete(`http://localhost:3001/api/delete-employee/${employeeDetails.id}`)
       .then(response => {
         console.log(response.data);
-        setOpenEditDialog(false);
-        // Fetch the updated list of employees after deletion
         axios.post('http://localhost:3001/api/empDropdown', {
           token: localStorage.getItem('token'),
         })
@@ -174,16 +187,23 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
       });
   };
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
-    <Dialog open={openEditDialog} onClick={handleClose} maxWidth='md'>
+    <Dialog open={open} maxWidth='md'>
       <DialogTitle>Edit Employee
         <Button className='addEmp-btn' style={{ marginLeft: '35rem' }} onClick={() => setOpenDialog(true)} color='primary' variant='contained'>Add Employee</Button>
         <AddEmployee openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} />
+        <hr style={{ marginTop: "0.3rem", marginBottom: "0" }} />
       </DialogTitle>
       <DialogContent>
         <form onSubmit={handleSubmit} className='row'>
           <div className='col-md-6'>
-            <FormControl fullWidth required variant="outlined" margin="normal">
+            <FormControl fullWidth required variant="outlined">
               <InputLabel>Select Employee</InputLabel>
               <Select
                 id="selempdrop"
@@ -199,79 +219,97 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
               </Select>
             </FormControl>
             {/* Name Field */}
-            <label htmlFor="Empnm" className="form-control-label text-dark font-weight-bold">
-              Name
-            </label>
-            <TextField
-              label="Name"
-              variant="outlined"
-              name="Name"
-              value={formData.Name}
-              onChange={handleChange}
-              fullWidth
-              required
-              margin="normal"
-            />
-            {/* Email Field */}
-            <label htmlFor="EmpnameEmail" className="form-control-label text-dark font-weight-bold">
-              Email
-            </label>
-            <TextField
-              label="Email"
-              variant="outlined"
-              name="Email"
-              value={formData.Email}
-              onChange={handleChange}
-              fullWidth
-              required
-              margin="normal"
-              type="email"
-            />
+            <InputLabel
+                htmlFor="Empnm"
+                className="form-control-label text-dark font-weight-bold"
+                style={{ color: "black" }}
+              >
+                Name
+              </InputLabel>
+              <TextField
+                label="Name"
+                placeholder="Enter Name"
+                variant="outlined"
+                name="Name"
+                value={formData.Name}
+                onChange={handleChange}
+                fullWidth
+                required
+                style={{ marginBottom: "1rem" }}
+              />
+          {/* Email Field */}
+          <InputLabel
+                htmlFor="EmpnameEmail"
+                className="form-control-label text-dark font-weight-bold"
+              >
+                Email
+              </InputLabel>
+              <TextField
+                label="Email"
+                placeholder="Enter Name eg.abc@protoevc.com"
+                variant="outlined"
+                name="Email"
+                value={formData.Email}
+                onChange={handleChange}
+                fullWidth
+                required
+                type="email"
+                style={{ marginBottom: "1rem" }}
+              />
             <div className='row form-group1'>
-              {/* Role Field */}
               <div className='col-md-6'>
                 <div className='row'>
                   <div className='col-md-12'>
-                    <label htmlFor="dropRole" className="form-control-label text-dark font-weight-bold">
-                      Role
-                    </label>
-                    <FormControl fullWidth required variant="outlined" margin="normal">
-                      <InputLabel>Role</InputLabel>
-                      <Select
-                        value={formData.Type}
-                        onChange={handleChange}
-                        name="Type"
-                        label="Role"
+                  <InputLabel
+                        htmlFor="dropRole"
+                        className="form-control-label text-dark font-weight-bold"
                       >
-                        <MenuItem value="unset" disabled>Select Role</MenuItem>
-                        <MenuItem value="Admin">Admin</MenuItem>
-                        <MenuItem value="Team Leader">Team Leader</MenuItem>
-                        <MenuItem value="Employee">Employee</MenuItem>
-                      </Select>
-                    </FormControl>
+                        Role
+                      </InputLabel>
+                      
+                      <FormControl fullWidth required variant="outlined">
+                        <InputLabel>Role</InputLabel>
+                        <Select
+                          value={formData.Type}
+                          onChange={handleChange}
+                          name="Type"
+                          label="Role"
+                        >
+                          <MenuItem value="unset" disabled>
+                            Select Role
+                          </MenuItem>
+                          <MenuItem value="Admin">Admin</MenuItem>
+                          <MenuItem value="Team Leader">Team Leader</MenuItem>
+                          <MenuItem value="Employee">Employee</MenuItem>
+                        </Select>
+                      </FormControl>
                   </div>
                 </div>
               </div>
-              {/* Location Field */}
               <div className='col-md-6'>
                 <div className='row'>
                   <div className='col-md-12'>
-                    <label htmlFor="dropLocation" className="form-control-label text-dark font-weight-bold">
-                      Location
-                    </label>
-                    <FormControl fullWidth required variant="outlined" margin="normal">
-                      <InputLabel>Location</InputLabel>
-                      <Select
-                        value={formData.Location}
-                        onChange={handleChange}
-                        name="Location"
-                        label="Location"
+                  <InputLabel
+                        htmlFor="dropLocation"
+                        className="form-control-label text-dark font-weight-bold"
                       >
-                        <MenuItem value="unset" disabled>Select Location</MenuItem>
-                        <MenuItem value="Mumbai">Mumbai</MenuItem>
-                        <MenuItem value="Ratnagiri">Ratnagiri</MenuItem>
-                      </Select>
-                    </FormControl>
+                        Location
+                      </InputLabel>
+                      <FormControl fullWidth required variant="outlined">
+                        <InputLabel>Location</InputLabel>
+                        <Select
+                          value={formData.Location}
+                          onChange={handleChange}
+                          name="Location"
+                          label="Location"
+                        >
+                          <MenuItem value="unset" disabled>
+                            Select Location
+                          </MenuItem>
+                          <MenuItem value="Mumbai">Mumbai</MenuItem>
+                          <MenuItem value="Ratnagiri">Ratnagiri</MenuItem>
+                        </Select>
+                      </FormControl>
                   </div>
                 </div>
               </div>
@@ -279,63 +317,99 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
             <div className='col-md-12'>
               {/* Use Email For Login Checkbox */}
               <FormControlLabel
-                control={<Checkbox checked={formData.loginusinggmail} onChange={handleChange} name="loginusinggmail" />}
-                label="Use Email For Login"
-              />
-            </div>
-
-            {showPasswordFields && (
-              <>
-                {/* Password Field */}
-                <label htmlFor="Emppass" className="form-control-label text-dark font-weight-bold">
-                  Password
-                </label>
-                <TextField
-                  label="Password"
-                  variant="outlined"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  margin="normal"
-                  type="password"
-                />
-                {/* Confirm Password Field */}
-                <label htmlFor="EmpCpass" className="form-control-label text-dark font-weight-bold">
-                  Confirm Password
-                </label>
-                <TextField
-                  label="Confirm Password"
-                  variant="outlined"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  fullWidth
-                  required
-                  margin="normal"
-                  type="password"
-                />
-              </>
-            )}
+                  control={
+                    <Checkbox
+                      checked={formData.loginusinggmail}
+                      onChange={handleChange}
+                      name="loginusinggmail"
+                      color="blue"
+                    />
+                  }
+                  label="Use Email For Login"
+                ></FormControlLabel>
+              </div>
+              {showPasswordFields && (
+                <>
+                  {/* Password Field */}
+                  <InputLabel
+                    htmlFor="Emppass"
+                    className="form-control-label text-dark font-weight-bold"
+                  >
+                    {" "}
+                    Password
+                  </InputLabel>
+                  <TextField
+                    label="Password"
+                    placeholder="Enter Password eg.abc@Protovec123"
+                    variant="outlined"
+                    name="Password" // Corrected from "password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.Password}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    style={{ marginBottom: "1rem" }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            edge="end"
+                          >
+                            {showPassword ? (
+                              <FontAwesomeIcon icon={faEye} />
+                            ) : (
+                              <FontAwesomeIcon icon={faEyeSlash} />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                 {/* Confirm Password Field */}
+                 <InputLabel
+                    htmlFor="Emppass"
+                    className="form-control-label text-dark font-weight-bold"
+                  >
+                    Confirm Password
+                  </InputLabel>
+                  <TextField
+                    label="Confirm Password"
+                    placeholder="Enter Confirm Password"
+                    variant="outlined"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    type="password"
+                    onClick={handleClickShowPassword}
+                  >
+                    {" "}
+                  </TextField>
+                </>
+              )}
           </div>
-
           <div className='col-md-6'>
-            {/* Nickname Field */}
-            <label htmlFor="Empnicnm" className="form-control-label text-dark font-weight-bold">
-              Nickname
-            </label>
-            <TextField
-              label="Nickname"
-              variant="outlined"
-              name="Nickname"
-              value={formData.Nickname}
-              onChange={handleChange}
-              fullWidth
-              required
-              margin="normal"
-            />
-            {/* Access To Table */}
+           {/* Nickname Field */}
+           <InputLabel
+                htmlFor="Empnicnm"
+                className="form-control-label text-dark font-weight-bold"
+              >
+                NickName
+              </InputLabel>
+              <TextField
+                label="Nickname"
+                placeholder="Enter Nickname"
+                variant="outlined"
+                name="Nickname"
+                value={formData.Nickname}
+                onChange={handleChange}
+                fullWidth
+                required
+                style={{ marginBottom: "1rem" }}
+              />
             <label htmlFor="text-input1" className="form-control-label text-dark font-weight-bold">Access To</label>
             <div className="table-responsive text-dark">
               <table className="table table-bordered text-dark" id="tableeditsave">
@@ -352,16 +426,13 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
                     <tr key={page.PageName}>
                       <th className="text-left pagenametable">{page.PageName}</th>
                       <td className="text-center" name='project'>
-                        <input type="checkbox" title='Add' value={0} onChange={() => handleAccessChange(page.PageName, 'add')} checked={formData.access[page.PageName]?.add || false} />
+                        <Checkbox checked={formData.access[page.PageName]?.add || false} onChange={() => handleAccessChange(page.PageName, 'add')} />
                       </td>
                       <td className="text-center" name='employee'>
-                        <input type="checkbox" title='Edit' value={3} onChange={() => handleAccessChange(page.PageName, 'edit')} checked={formData.access[page.PageName]?.edit || false} />
+                        <Checkbox checked={formData.access[page.PageName]?.edit || false} onChange={() => handleAccessChange(page.PageName, 'edit')} />
                       </td>
                       <td className="text-center" name='task'>
-                        <input type="checkbox" title='View' value={1} onChange={() => handleAccessChange(page.PageName, 'view')} checked={formData.access[page.PageName]?.view || false} />
-                      </td>
-                      <td className="text-center" name='none' style={{ display: 'none' }}>
-                        <input type="checkbox" title='none' value={2} onChange={() => handleAccessChange(page.PageName, 'none')} checked={formData.access[page.PageName]?.none || false} />
+                        <Checkbox checked={formData.access[page.PageName]?.view || false} onChange={() => handleAccessChange(page.PageName, 'view')} />
                       </td>
                     </tr>
                   ))}
@@ -372,13 +443,13 @@ const EditEmployee = ({ openEditDialog, setOpenEditDialog, employeeDetails, hand
         </form>
       </DialogContent>
       <DialogActions>
-        <Button className='close-btn'onClick={handleClose} color="danger" variant='contained'>
+        <Button className='close-btn' onClick={handleClose}  variant='contained'>
           Close
         </Button>
-        <Button className='btn-remove' onClick={handleDelete} variant='contained'>
+        <Button className='close-btn' onClick={handleDelete} color="danger" variant='contained'>
           Remove
         </Button>
-        <Button className='save-btn' onClick={handleSubmit} variant='contained'>
+        <Button className='save-btn' onClick={handleSubmit} variant='contained' color='primary'>
           Save
         </Button>
       </DialogActions>
