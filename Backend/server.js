@@ -2740,48 +2740,77 @@ app.get('/api/pages', (req, res) => {
 // });
 
 app.post('/api/add-employee', (req, res) => {
-  const { Name, fname, lname, Nickname, Email, Password, Type, Location, loginusinggmail } = req.body;
+  const { Name, fname, lname, Nickname, Email, Password, Type, Location, loginusinggmail, pagename, pagevalue } = req.body;
 
+  // Validate and sanitize input if needed (e.g., using a library like validator)
+
+  // Create employee object
   const emp = {
     Name,
     fname,
     lname,
     Nickname,
     Email,
-    Password,
+    Password, // The password should be Base64 encoded
     Type,
     Location,
     loginusinggmail
   };
 
+  // SQL query to insert employee data
   const sql = 'INSERT INTO logincrd SET ?';
   db.query(sql, emp, (err, result) => {
-    if (err) throw err;
+    if (err) {
+      console.error('Error inserting employee:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
     console.log('New employee inserted');
 
     // Fetch the ID of the latest created employee
     const fetchLatestId = 'SELECT id FROM logincrd ORDER BY id DESC LIMIT 1';
     db.query(fetchLatestId, (err, result) => {
-      if (err) throw err;
+      if (err) {
+        console.error('Error fetching latest employee ID:', err);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
 
       const latestId = result[0].id;
 
-      // Insert the latest employee ID into MySQL table empaccess
-      const empAccess = {
-        Empid: latestId,
-        AcessTo: 'some_value', // You need to specify the access details
-        accesstype: 'some_type' // You need to specify the access type
-      };
+      // Create an array of promises for inserting access data
+      const insertPromises = pagename.map((val, index) => {
+        const acessval = pagevalue[index];
+        const empAccess = {
+          Empid: latestId,
+          AcessTo: val,
+          acesstype: acessval
+        };
 
-      const insertEmpAccess = 'INSERT INTO empaccess SET ?';
-      db.query(insertEmpAccess, empAccess, (err, result) => {
-        if (err) throw err;
-        console.log('Employee access inserted');
-        res.send('Employee and access inserted successfully');
+        const insertEmpAccess = 'INSERT INTO empacess SET ?';
+        return new Promise((resolve, reject) => {
+          db.query(insertEmpAccess, empAccess, (err, result) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          });
+        });
       });
+
+      Promise.all(insertPromises)
+        .then(() => {
+          console.log('Employee access inserted');
+          res.status(200).json({ message: 'Employee and access inserted successfully' });
+        })
+        .catch(err => {
+          console.error('Error inserting access data:', err);
+          res.status(500).json({ message: 'Internal server error' });
+        });
     });
   });
 });
+
+
 
 app.put('/api/update-employee', (req, res) => {
   const { Email, Password, Type, selctloc, loginusinggmail, empid, Name, Nickname, pagename, pagevalue } = req.body;

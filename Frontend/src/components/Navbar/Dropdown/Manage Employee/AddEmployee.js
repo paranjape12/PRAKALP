@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { Buffer } from "buffer";
 import {
   Dialog,
   DialogTitle,
@@ -15,6 +16,11 @@ import {
   FormControlLabel,
   InputAdornment,
   IconButton,
+  Table,
+  TableHead,
+  TableCell,
+  TableRow,
+  TableBody,
 } from "@material-ui/core";
 import "./AddEmployee.css";
 import EditEmployee from "./EditEmployee";
@@ -25,7 +31,6 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
   const emailRef = useRef(null);
   const [showPasswordFields, setShowPasswordFields] = useState(true);
   const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
-
 
   const [formData, setFormData] = useState({
     Name: "",
@@ -82,21 +87,10 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
     }
   };
 
-  // const handleAccessChange = (pageName, accessType) => {
-  //   setFormData(prevState => ({
-  //     ...prevState,
-  //     access: {
-  //       ...prevState.access,
-  //       [pageName]: {
-  //         ...prevState.access[pageName],
-  //         [accessType]: !prevState.access[pageName]?.[accessType]
-  //       }
-  //     }
-  //   }));
-  // };
+  
 
   const handleAccessChange = (pageName, accessType) => {
-    setFormData(prevState => {
+    setFormData((prevState) => {
       const newAccess = { ...prevState.access };
 
       if (!newAccess[pageName]) {
@@ -105,7 +99,7 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
 
       const currentStatus = newAccess[pageName][accessType];
 
-      if (accessType === 'add') {
+      if (accessType === "add") {
         if (currentStatus) {
           newAccess[pageName].add = false;
         } else {
@@ -113,7 +107,7 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
           newAccess[pageName].edit = true;
           newAccess[pageName].view = true;
         }
-      } else if (accessType === 'edit') {
+      } else if (accessType === "edit") {
         if (currentStatus) {
           newAccess[pageName].edit = false;
           newAccess[pageName].add = false;
@@ -121,7 +115,7 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
           newAccess[pageName].edit = true;
           newAccess[pageName].view = true;
         }
-      } else if (accessType === 'view') {
+      } else if (accessType === "view") {
         if (currentStatus) {
           newAccess[pageName].view = false;
           newAccess[pageName].edit = false;
@@ -133,11 +127,10 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
 
       return {
         ...prevState,
-        access: newAccess
+        access: newAccess,
       };
     });
   };
-
 
   // Validation function
   const valid = (Name, Email, Password, confirmPassword, Type, Location) => {
@@ -188,48 +181,43 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const { Name, Email, Password, confirmPassword, Type, Location, Nickname } =
-      formData;
+    
+    const { Name, Email, Password, confirmPassword, Type, Location, Nickname } = formData;
     const selctrole = Type !== "unset" ? Type : "";
     const selctloc = Location !== "unset" ? Location : "";
-
+  
     // Extract first name and last name from full name
     const [fname, ...lnameParts] = Name.split(" ");
     const lname = lnameParts.join(" ");
-
-    const pagename = [];
-    const pagevalue = [];
-
-    // Loop through the pages to get their names and values
-    pages.forEach((page) => {
-      pagename.push(page.PageName);
-
-      const pageAccess = formData.access[page.PageName];
-      if (pageAccess === 3) {
-        pagevalue.push(0);
-      } else if (pageAccess === 2) {
-        pagevalue.push(3);
-      } else {
-        pagevalue.push(pageAccess);
-      }
+  
+    // Define the pagename and pagevalue arrays
+    const pagename = Object.keys(formData.access);
+    const pagevalue = pagename.map(page => {
+      if (formData.access[page]?.add) return 0; // all permissions
+      if (formData.access[page]?.edit) return 3; // edit and view permissions
+      if (formData.access[page]?.view) return 1; // view permissions only
+      return 2; // default or no permissions
     });
-
-    // Determine if the "Use Email For Login" checkbox is checked
-    const loginusinggmail = formData.loginusinggmail ? 1 : 0;
-
+  
+    // Encode the password
+    const encodedPassword = Buffer.from(Password).toString('base64');
+  
+    // Create request data object
+    const requestData = {
+      Email: formData.Email,
+      Password: encodedPassword,
+      Type: selctrole,
+      Location: selctloc,
+      loginusinggmail: formData.loginusinggmail,
+      Name: formData.Name,
+      Nickname: formData.Nickname,
+      pagename,
+      pagevalue
+    };
+  
     if (valid(Name, Email, Password, confirmPassword, selctrole, selctloc)) {
       axios
-        .post("http://localhost:3001/api/add-employee", {
-          Name,
-          fname,
-          lname,
-          Nickname,
-          Email,
-          Password,
-          Type: selctrole,
-          Location: selctloc,
-          loginusinggmail,
-        })
+        .post("http://localhost:3001/api/add-employee", requestData)
         .then((response) => {
           if (response.data === "User exist") {
             // Handle case where employee already exists
@@ -262,6 +250,7 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
       // You can show an error message here
     }
   };
+  
 
   // Create a ref for Transition
   const nodeRef = useRef(EditEmployee);
@@ -272,7 +261,6 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
     setShowPassword(!showPassword);
   };
 
-
   const handleOpenEditEmployeeDialog = () => {
     setEditEmployeeOpen(true);
   };
@@ -281,7 +269,6 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
     setEditEmployeeOpen(false);
   };
 
-
   return (
     <>
       <Dialog
@@ -289,12 +276,23 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
         onClose={() => setOpenDialog(false)}
         maxWidth="md"
       >
-        <DialogTitle>Add New Employee
-          <Button className='editEmp-btn' style={{ marginLeft: '35rem' }} onClick={handleOpenEditEmployeeDialog} color='primary' variant='contained'>Edit Employee</Button>
-          <EditEmployee open={editEmployeeOpen} handleClose={handleCloseEditEmployeeDialog}/>
+        <DialogTitle>
+          Add New Employee
+          <Button
+            className="editEmp-btn"
+            style={{ marginLeft: "35rem" }}
+            onClick={handleOpenEditEmployeeDialog}
+            color="primary"
+            variant="contained"
+          >
+            Edit Employee
+          </Button>
+          <EditEmployee
+            open={editEmployeeOpen}
+            handleClose={handleCloseEditEmployeeDialog}
+          />
           <hr style={{ marginTop: "0.3rem", marginBottom: "0" }} />
         </DialogTitle>
-
 
         <DialogContent>
           <form onSubmit={handleSubmit} className="row">
@@ -348,7 +346,7 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                       >
                         Role
                       </InputLabel>
-                      
+
                       <FormControl fullWidth required variant="outlined">
                         <InputLabel>Role</InputLabel>
                         <Select
@@ -494,33 +492,53 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                 style={{ marginBottom: "1rem" }}
               />
               {/* Access To Table */}
-              <InputLabel  htmlFor="text-input1"
-                className="form-control-label text-dark font-weight-bold">
-                  Access To
+              <InputLabel
+                htmlFor="text-input1"
+                className="form-control-label text-dark font-weight-bold"
+              >
+                Access To
               </InputLabel>
-              
               <div className="table-responsive text-dark">
-                <table
+                <Table
                   className="table table-bordered text-dark"
                   id="tableeditsave"
                 >
-                  <thead className="bg-primary text-white">
-                    <tr>
-                      <th></th>
-                      <th>Add</th>
-                      <th>Edit</th>
-                      <th>View</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                  <TableHead className="bg-primary text-white">
+                    <TableRow>
+                      <TableCell></TableCell>
+                      <TableCell
+                        className="text-center text-white"
+                        style={{ fontWeight: "bold" }}
+                      >
+                        Add
+                      </TableCell>
+                      <TableCell
+                        className="text-center text-white"
+                        style={{ fontWeight: "bold" }}
+                      >
+                        Edit
+                      </TableCell>
+                      <TableCell
+                        className="text-center text-white"
+                        style={{ fontWeight: "bold" }}
+                      >
+                        View
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
                     {pages &&
                       pages.map((page) => (
-                        <tr key={page.PageName}>
-                          <th className="text-left pagenametable">
+                        <TableRow key={page.PageName}>
+                          <TableCell
+                            className="text-left pagenametable"
+                            style={{ padding: "0", fontWeight: "bold" }}
+                          >
                             {page.PageName}
-                          </th>
-                          <td className="text-center" name="project">
+                          </TableCell>
+                          <TableCell className="text-center" name="project">
                             <Checkbox
+                              style={{ padding: "0" }}
                               checked={
                                 formData.access[page.PageName]?.add || false
                               }
@@ -528,9 +546,10 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                                 handleAccessChange(page.PageName, "add")
                               }
                             />
-                          </td>
-                          <td className="text-center" name="employee">
+                          </TableCell>
+                          <TableCell className="text-center" name="employee">
                             <Checkbox
+                              style={{ padding: "0" }}
                               checked={
                                 formData.access[page.PageName]?.edit || false
                               }
@@ -538,9 +557,10 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                                 handleAccessChange(page.PageName, "edit")
                               }
                             />
-                          </td>
-                          <td className="text-center" name="task">
+                          </TableCell>
+                          <TableCell className="text-center" name="task">
                             <Checkbox
+                              style={{ padding: "0" }}
                               checked={
                                 formData.access[page.PageName]?.view || false
                               }
@@ -548,11 +568,11 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                                 handleAccessChange(page.PageName, "view")
                               }
                             />
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </div>
           </form>
