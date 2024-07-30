@@ -27,10 +27,41 @@ import EditEmployee from "./EditEmployee";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
-const AddEmployee = ({ openDialog, setOpenDialog }) => {
+const AddEmployee = ({ openDialog, handleClose  }) => {
   const emailRef = useRef(null);
   const [showPasswordFields, setShowPasswordFields] = useState(true);
   const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [emailError, setemailError] = useState([]);
+  const [roleError, setRoleError] = useState("");
+  const [locationError, setLocationError] = useState("");
+
+  const [OpenEditEmployeeDialog, setOpenEditEmployeeDialog] = useState(false);
+  const [showMainDialog, setShowMainDialog] = useState(true);
+  
+  const showMessage = (setMessage, message) => {
+    setMessage(message);
+    setTimeout(() => {
+      setMessage("");
+      if (setMessage === setSuccessMessage) handleClose();
+    }, 3000);
+  };
+
+  const handleEditEmployeeClick = () => {
+    setShowMainDialog(false);
+    setOpenEditEmployeeDialog(true);
+  };
+
+  const handleEditEmployeeCloseDialog = () => {
+    setShowMainDialog(false);
+    setOpenEditEmployeeDialog(false);
+  };
+
+  const handleAddEmployeeBackDialog = () => {
+    setShowMainDialog(true);
+    setOpenEditEmployeeDialog(false);
+  };
 
   const [formData, setFormData] = useState({
     Name: "",
@@ -40,20 +71,18 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
     Nickname: "",
     Password: "",
     confirmPassword: "",
-    loginusinggmail: 0,
+    loginusinggmail: false,
     access: {},
   });
 
   const pages = [
     { PageName: "Project" },
-    { PageName: "Epmloyee" },
+    { PageName: "Employee" },
     { PageName: "Task" },
     // Add more pages as needed
   ];
 
-  const [openEditDialog, setOpenEditDialog] = useState(false);
 
-  // const [availabepages, setAvailablePages] = useState([]); //add-emp3
 
   useEffect(() => {
     // Fetch pages
@@ -71,10 +100,10 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
     const { name, value, type, checked } = e.target;
     // If the checkbox "Use Email For Login" is changed
     if (name === "loginusinggmail") {
-      // If checked, set loginusinggmail to 1, otherwise set it to 0
+      // If checked, set loginusinggmail to true, otherwise set it to false
       setFormData({
         ...formData,
-        [name]: checked ? 1 : 0,
+        [name]: checked,
       });
       // Show/hide password fields based on the checkbox state
       setShowPasswordFields(!checked);
@@ -86,8 +115,6 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
       });
     }
   };
-
-  
 
   const handleAccessChange = (pageName, accessType) => {
     setFormData((prevState) => {
@@ -133,15 +160,16 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
   };
 
   // Validation function
-  const valid = (Name, Email, Password, confirmPassword, Type, Location) => {
+  const valid = (Name, Email, Password, confirmPassword, Type, Location,Nickname) => {
     // Check if all fields are filled
     if (
       !Name ||
       !Email ||
-      !Password ||
-      !confirmPassword ||
+      (!Password && !formData.loginusinggmail) ||
+      (!confirmPassword && !formData.loginusinggmail) ||
       Type === "unset" ||
-      Location === "unset"
+      Location === "unset" ||
+      !Nickname 
     ) {
       return false;
     }
@@ -153,12 +181,12 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
     }
 
     // Validate password length
-    if (Password.length < 6) {
+    if (!formData.loginusinggmail && Password.length < 6) {
       return false;
     }
 
     // Confirm password matches
-    if (Password !== confirmPassword) {
+    if (!formData.loginusinggmail && Password !== confirmPassword) {
       return false;
     }
 
@@ -166,69 +194,99 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
     return true;
   };
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   axios.post('http://localhost:3001/api/add-employee', formData)
-  //     .then(response => {
-  //       console.log(response.data);
-  //       // Handle successful form submission
-  //       setOpenDialog(false); // Close the dialog after successful submission
-  //     })
-  //     .catch(error => {
-  //       console.error('There was an error adding the employee!', error);
-  //     });
-  // };
+  useEffect(() => {
+    setFormData({
+      Name: "",
+      Email: "",
+      Type: "unset",
+      Location: "unset",
+      Nickname: "",
+      Password: "",
+      confirmPassword: "",
+      loginusinggmail: false,
+      access: {},
+    });
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const emailDomain = "@protovec.com";
+    if (!formData.Email.endsWith(emailDomain)) {
+      setemailError(`Email must end with ${emailDomain}`);
+      setTimeout(() => {
+        setemailError("");
+       }, 3000);
+      return;
+    }
+
+    const { Name, Email, Password, confirmPassword, Type, Location , Nickname } = formData;
     
-    const { Name, Email, Password, confirmPassword, Type, Location, Nickname } = formData;
-    const selctrole = Type !== "unset" ? Type : "";
-    const selctloc = Location !== "unset" ? Location : "";
-  
+    if (formData.Type === "unset") {
+      setRoleError("Role is required");
+      setTimeout(() => {
+        setRoleError("");
+       }, 3000);
+    } else {
+      setRoleError("");
+    }  
+
+    if (formData.Location === "unset") {
+      setLocationError("Location is required");
+      setTimeout(() => {
+        setLocationError("");
+       }, 3000);
+    } else {
+      setLocationError("");
+    }
+
     // Extract first name and last name from full name
     const [fname, ...lnameParts] = Name.split(" ");
     const lname = lnameParts.join(" ");
-  
+
     // Define the pagename and pagevalue arrays
     const pagename = Object.keys(formData.access);
-    const pagevalue = pagename.map(page => {
+    const pagevalue = pagename.map((page) => {
       if (formData.access[page]?.add) return 0; // all permissions
       if (formData.access[page]?.edit) return 3; // edit and view permissions
       if (formData.access[page]?.view) return 1; // view permissions only
       return 2; // default or no permissions
     });
-  
+
+    // Generate the new password based on the checkbox value
+    const newPassword = formData.loginusinggmail
+      ? `${formData.Email.split("@")[0]}@Protovec123`
+      : formData.Password;
+
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      setErrorMessage("Password must be in format 'Abc@123'");
+      return;
+    }
+
     // Encode the password
-    const encodedPassword = Buffer.from(Password).toString('base64');
-  
+    const encodedPassword = Buffer.from(newPassword).toString("base64");
+
     // Create request data object
     const requestData = {
       Email: formData.Email,
       Password: encodedPassword,
-      Type: selctrole,
-      Location: selctloc,
+      Type: formData.Type,
+      Location:formData.Location ,
       loginusinggmail: formData.loginusinggmail,
       Name: formData.Name,
       Nickname: formData.Nickname,
       pagename,
-      pagevalue
+      pagevalue,
     };
-  
-    if (valid(Name, Email, Password, confirmPassword, selctrole, selctloc)) {
+
+    if (valid(Name, Email, Password, confirmPassword, Type, Location, Nickname)) {
       axios
         .post("http://localhost:3001/api/add-employee", requestData)
         .then((response) => {
-          if (response.data === "User exist") {
-            // Handle case where employee already exists
-            // You can show an error message here
-          } else if (response.data === "Error") {
-            // Handle case where there was an error creating the employee
-            // You can show an error message here
-          } else {
-            // Handle successful creation of employee
-            // You can show a success message here
-            setOpenDialog(false); // Close the dialog after successful submission
+          if (response.status === 200) {
+            showMessage(setSuccessMessage, "Employee added successfully!");
             setFormData({
               Name: "",
               Email: "",
@@ -237,20 +295,22 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
               Nickname: "",
               Password: "",
               confirmPassword: "",
-              loginusinggmail: 0,
+              loginusinggmail: false,
               access: {},
             });
           }
         })
         .catch((error) => {
+          showMessage(setErrorMessage, "Employee add failed!");
           console.error("There was an error adding the employee!", error);
         });
     } else {
-      // Handle case where form validation fails
-      // You can show an error message here
+      setErrorMessage("Please fill all the required fields correctly");
+      setTimeout(() => {
+        setErrorMessage("");
+       }, 3000);
     }
   };
-  
 
   // Create a ref for Transition
   const nodeRef = useRef(EditEmployee);
@@ -261,19 +321,13 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
     setShowPassword(!showPassword);
   };
 
-  const handleOpenEditEmployeeDialog = () => {
-    setEditEmployeeOpen(true);
-  };
-
-  const handleCloseEditEmployeeDialog = () => {
-    setEditEmployeeOpen(false);
-  };
 
   return (
     <>
+     {showMainDialog && (
       <Dialog
         open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        onClose={handleClose}
         maxWidth="md"
       >
         <DialogTitle>
@@ -281,16 +335,12 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
           <Button
             className="editEmp-btn"
             style={{ marginLeft: "35rem" }}
-            onClick={handleOpenEditEmployeeDialog}
+            onClick={handleEditEmployeeClick}
             color="primary"
             variant="contained"
           >
             Edit Employee
           </Button>
-          <EditEmployee
-            open={editEmployeeOpen}
-            handleClose={handleCloseEditEmployeeDialog}
-          />
           <hr style={{ marginTop: "0.3rem", marginBottom: "0" }} />
         </DialogTitle>
 
@@ -334,7 +384,7 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                 required
                 type="email"
                 style={{ marginBottom: "1rem" }}
-              />
+              />{emailError && <p style={{ color: "red" }}>{emailError}</p>}
               <div className="row form-group1">
                 {/* Role Field */}
                 <div className="col-md-6">
@@ -363,6 +413,7 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                           <MenuItem value="Employee">Employee</MenuItem>
                         </Select>
                       </FormControl>
+                      {roleError && <p style={{ color: "red" }}>{roleError}</p>}
                     </div>
                   </div>
                 </div>
@@ -391,6 +442,9 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                           <MenuItem value="Ratnagiri">Ratnagiri</MenuItem>
                         </Select>
                       </FormControl>
+                      {locationError && (
+                        <p style={{ color: "red" }}>{locationError}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -492,53 +546,34 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                 style={{ marginBottom: "1rem" }}
               />
               {/* Access To Table */}
-              <InputLabel
+              <label
                 htmlFor="text-input1"
                 className="form-control-label text-dark font-weight-bold"
               >
                 Access To
-              </InputLabel>
+              </label>
               <div className="table-responsive text-dark">
-                <Table
+                <table
                   className="table table-bordered text-dark"
                   id="tableeditsave"
                 >
-                  <TableHead className="bg-primary text-white">
-                    <TableRow>
-                      <TableCell></TableCell>
-                      <TableCell
-                        className="text-center text-white"
-                        style={{ fontWeight: "bold" }}
-                      >
-                        Add
-                      </TableCell>
-                      <TableCell
-                        className="text-center text-white"
-                        style={{ fontWeight: "bold" }}
-                      >
-                        Edit
-                      </TableCell>
-                      <TableCell
-                        className="text-center text-white"
-                        style={{ fontWeight: "bold" }}
-                      >
-                        View
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
+                  <thead className="bg-primary text-white">
+                    <tr>
+                      <th></th>
+                      <th>Add</th>
+                      <th>Edit</th>
+                      <th>View</th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     {pages &&
                       pages.map((page) => (
-                        <TableRow key={page.PageName}>
-                          <TableCell
-                            className="text-left pagenametable"
-                            style={{ padding: "0", fontWeight: "bold" }}
-                          >
+                        <tr key={page.PageName}>
+                          <th className="text-left pagenametable">
                             {page.PageName}
-                          </TableCell>
-                          <TableCell className="text-center" name="project">
+                          </th>
+                          <td className="text-center" name="project">
                             <Checkbox
-                              style={{ padding: "0" }}
                               checked={
                                 formData.access[page.PageName]?.add || false
                               }
@@ -546,10 +581,9 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                                 handleAccessChange(page.PageName, "add")
                               }
                             />
-                          </TableCell>
-                          <TableCell className="text-center" name="employee">
+                          </td>
+                          <td className="text-center" name="employee">
                             <Checkbox
-                              style={{ padding: "0" }}
                               checked={
                                 formData.access[page.PageName]?.edit || false
                               }
@@ -557,10 +591,9 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                                 handleAccessChange(page.PageName, "edit")
                               }
                             />
-                          </TableCell>
-                          <TableCell className="text-center" name="task">
+                          </td>
+                          <td className="text-center" name="task">
                             <Checkbox
-                              style={{ padding: "0" }}
                               checked={
                                 formData.access[page.PageName]?.view || false
                               }
@@ -568,19 +601,34 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
                                 handleAccessChange(page.PageName, "view")
                               }
                             />
-                          </TableCell>
-                        </TableRow>
+                          </td>
+                        </tr>
                       ))}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
               </div>
             </div>
           </form>
+          {errorMessage && (
+            <p
+              style={{ color: "red", marginTop: "0.5rem", textAlign: "center" }}
+            >
+              {errorMessage}
+            </p>
+          )}
+          {successMessage && (
+            <div className="text-center">
+              <p style={{ color: "green", marginTop: "0.5rem" }}>
+                {successMessage}
+              </p>
+            </div>
+          )}
+          <hr style={{ marginTop: "1rem", marginBottom: "0" }} />
         </DialogContent>
         <DialogActions>
           <Button
             className="close-btn"
-            onClick={() => setOpenDialog(false)}
+            onClick={handleClose}
             color="danger"
             variant="contained"
           >
@@ -596,6 +644,9 @@ const AddEmployee = ({ openDialog, setOpenDialog }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      )}
+      {OpenEditEmployeeDialog && <EditEmployee open={OpenEditEmployeeDialog} handleClose={handleEditEmployeeCloseDialog} onBack={handleAddEmployeeBackDialog }/>}
+
     </>
   );
 };

@@ -22,6 +22,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [addEmployeeDialogOpen ,setAddEmployeeDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);  //add-emp3
 
@@ -53,12 +54,21 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
   const handleCloseAddProjectDialog = () => {
     setAddProjectDialogOpen(false);
   };
+
+  const handleOpenAddEmployeeDialog = () => {
+    setAddEmployeeDialogOpen(true);
+  };
+  const handleCloseAddEmployeeDialog = () => {
+    setAddEmployeeDialogOpen(false);
+  };
+
   const handleOpenAddTaskDialog = () => {
     setAddTaskDialogOpen(true);
   };
   const handleCloseAddTaskDialog = () => {
     setAddTaskDialogOpen(false);
   };
+  
   const handleOpenAssignTaskDialog = () => {
     setAssignTaskDialogOpen(true);
   };
@@ -180,7 +190,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
           <div>
                  <button 
                    className='dropdown-item d-flex align-items-center'
-                   onClick={() => setOpenDialog(true)}
+                   onClick={handleOpenAddEmployeeDialog}
                    title="Add Project"
                   >
                   <div className='mr-3'>
@@ -192,7 +202,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
                       Manage Employee
                 </div>
                </button>
-               <AddEmployee openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} />
+               <AddEmployee openDialog={addEmployeeDialogOpen} handleClose={handleCloseAddEmployeeDialog} pages={pages} />
           </div>
 
           <div>
@@ -247,21 +257,6 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
                </button>
                <SettingsDialog open={settingsDialogOpen} onClose={handleCloseSettingsDialog} />          
                </div>
-                <div>
-                  {/* <div><button onClick={handleOpenAddProjectDialog}><div className='icon-circle bg-primary'>
-                 </div>Add Project</button>
-                    <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} /></div> */}
-                  {/* <div>
-                    <button onClick={() => setOpenDialog(true)}>Manage Employee</button>
-                    <AddEmployee openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} />
-                  </div> */}
-                  {/* <div><button onClick={handleOpenAddTaskDialog}>Add Task</button>
-                    <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} /></div> */}
-                  {/* <div><button onClick={handleOpenAssignTaskDialog}>Assign Task</button>
-                    <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} /></div> */}
-                  {/* <div><button onClick={handleOpenSettingsDialog}>Setting</button>
-                    <SettingsDialog open={settingsDialogOpen} onClose={handleCloseSettingsDialog} /></div> */}
-                </div>
               </div>
             )}
           </div>

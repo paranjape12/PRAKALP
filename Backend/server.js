@@ -2846,6 +2846,7 @@ app.post('/api/add-employee', (req, res) => {
     Location,
     loginusinggmail
   };
+  
 
   // SQL query to insert employee data
   const sql = 'INSERT INTO logincrd SET ?';
@@ -2892,6 +2893,7 @@ app.post('/api/add-employee', (req, res) => {
           console.log('Employee access inserted');
           res.status(200).json({ message: 'Employee and access inserted successfully' });
         })
+
         .catch(err => {
           console.error('Error inserting access data:', err);
           res.status(500).json({ message: 'Internal server error' });
