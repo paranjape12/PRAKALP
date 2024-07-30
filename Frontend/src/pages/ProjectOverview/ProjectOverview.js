@@ -261,7 +261,7 @@ function ProjectOverview() {
                     dates={dates}
                 />
             )}
-            <div className="container-fluid p-0 mt-5">
+            <div className="container-fluid p-0" style={{marginTop:'2.5rem'}}>
                 <div className="card shadow">
                     <div className="card-body p-0">
                         <div className="table-responsive text-dark" id="tb1respon">
@@ -372,9 +372,7 @@ function ProjectOverview() {
                                     
                                 </td>
                                 
-                                <td className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle' }} colSpan="9">
-                                         No Task Found 
-                                </td>
+                                <td className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle' }} colSpan="25">test </td>
                  
               
               
