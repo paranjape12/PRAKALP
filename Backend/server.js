@@ -2045,6 +2045,96 @@ app.get('/api/empOverviewIndIndPATimes', async (req, res) => {
 });
 
 
+// API Endpoint to get employee access data edit employee popup
+app.get('/api/editEmpAccessData', (req, res) => {
+  const empId = req.query.Empid;
+
+  if (!empId) {
+    return res.status(400).json({ error: 'Empid query parameter is required' });
+  }
+
+  const query = 'SELECT * FROM empacess WHERE Empid = ? ORDER BY `id` DESC LIMIT 3';
+  db.query(query, [empId], (err, results) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      return res.status(500).json({ error: 'Database query failed' });
+    }
+
+    res.json(results);
+  });
+});
+
+// API Endpoint to edit existing employee details
+app.put('/api/update-employee', (req, res) => {
+  const { Email, Password, Type, selctloc, loginusinggmail, empid, Name, Nickname, pagename, pagevalue } = req.body;
+  const password = Buffer.from(Password).toString('base64');
+
+  const updateQuery = `
+    UPDATE Logincrd
+    SET Name = ?, Email = ?, Password = ?, Type = ?, Location = ?, loginusinggmail = ?, Nickname = ?
+    WHERE id = ?
+  `;
+
+  const updateValues = [Name, Email, password, Type, selctloc, loginusinggmail, Nickname, empid];
+
+  db.query(updateQuery, updateValues, (err, result) => {
+    if (err) {
+      console.error('Error updating employee:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    const selectQuery = `
+      SELECT id
+      FROM Logincrd
+      WHERE Email = ? AND Password = ? AND Name = ? AND Type = ? AND Location = ?
+    `;
+
+    const selectValues = [Email, password, Name, Type, selctloc];
+
+    db.query(selectQuery, selectValues, (err, rows) => {
+      if (err) {
+        console.error('Error retrieving employee ID:', err);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      if (rows.length === 0) {
+        return res.status(404).json({ message: 'Employee not found after update' });
+      }
+
+      const tempid = rows[0].id;
+
+      const insertPromises = pagename.map((val, index) => {
+        const acessval = pagevalue[index];
+        const insertQuery = `
+          INSERT INTO EmpAcess (Empid, AcessTo, acesstype)
+          VALUES (?, ?, ?)
+        `;
+        return new Promise((resolve, reject) => {
+          db.query(insertQuery, [tempid, val, acessval], (err, result) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          });
+        });
+      });
+
+      Promise.all(insertPromises)
+        .then(() => {
+          res.status(200).json({ message: 'Success' });
+        })
+        .catch(err => {
+          console.error('Error inserting access data:', err);
+          res.status(500).json({ message: 'Internal server error' });
+        });
+    });
+  });
+});
 
 
 // =================================  APIs by GJC for ref. START =====================================
@@ -2810,77 +2900,6 @@ app.post('/api/add-employee', (req, res) => {
   });
 });
 
-
-
-app.put('/api/update-employee', (req, res) => {
-  const { Email, Password, Type, selctloc, loginusinggmail, empid, Name, Nickname, pagename, pagevalue } = req.body;
-
-  const updateQuery = `
-    UPDATE Logincrd
-    SET Name = ?, Email = ?, Password = ?, Type = ?, Location = ?, loginusinggmail = ?, Nickname = ?
-    WHERE id = ?
-  `;
-
-  const updateValues = [Name, Email, Password, Type, selctloc, loginusinggmail, Nickname, empid];
-
-  db.query(updateQuery, updateValues, (err, result) => {
-    if (err) {
-      console.error('Error updating employee:', err);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Employee not found' });
-    }
-
-    const selectQuery = `
-      SELECT id
-      FROM Logincrd
-      WHERE Email = ? AND Password = ? AND Name = ? AND Type = ? AND Location = ?
-    `;
-
-    const selectValues = [Email, Password, Name, Type, selctloc];
-
-    db.query(selectQuery, selectValues, (err, rows) => {
-      if (err) {
-        console.error('Error retrieving employee ID:', err);
-        return res.status(500).json({ message: 'Internal server error' });
-      }
-
-      if (rows.length === 0) {
-        return res.status(404).json({ message: 'Employee not found after update' });
-      }
-
-      const tempid = rows[0].id;
-
-      const insertPromises = pagename.map((val, index) => {
-        const acessval = pagevalue[index];
-        const insertQuery = `
-          INSERT INTO EmpAcess (Empid, AcessTo, acesstype)
-          VALUES (?, ?, ?)
-        `;
-        return new Promise((resolve, reject) => {
-          db.query(insertQuery, [tempid, val, acessval], (err, result) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          });
-        });
-      });
-
-      Promise.all(insertPromises)
-        .then(() => {
-          res.status(200).json({ message: 'Success' });
-        })
-        .catch(err => {
-          console.error('Error inserting access data:', err);
-          res.status(500).json({ message: 'Internal server error' });
-        });
-    });
-  });
-});
 
 app.delete('/api/delete-employee/:id', (req, res) => {
   const id = req.params.id;
