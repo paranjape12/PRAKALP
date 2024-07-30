@@ -169,7 +169,7 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                             <FontAwesomeIcon icon={faPencilAlt} title='Edit Task' style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={() => handleOpenEditTaskDialog(task)} />
                             {task.Status === "1" && (<FontAwesomeIcon icon={faCopyright} color='#1cc88a' title='Marked as Complete' style={{ float: 'right', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />)}
                             <FontAwesomeIcon icon={faCircleInfo} title='Task Info' style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={() => handleTaskInfoDialogOpen(task)} />
-                            {project.projectLastTask === 1 && (<FontAwesomeIcon icon={faL} title='Last Task' style={{ color: '#36b9cc', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />)}
+                            {project.projectLastTask === 1 && (<FontAwesomeIcon icon={faL} title='Last Task' style={{ color: '#36b9cc', paddingTop: '0.2rem',float: 'right', paddingLeft: '0.5rem' }} />)}
                             <FontAwesomeIcon title='Show/Hide Time' icon={localShowTimeDetails ? faEyeSlash : faEye} onClick={handleToggleShowTimeComplete} style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem' }} />
                         </div>
 
