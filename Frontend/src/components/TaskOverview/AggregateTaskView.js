@@ -30,23 +30,26 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
 
   const fetchData = async () => {
     try {
-      // Map dates to formatted strings using date-fns
       const formattedDates = dates.map(item => format(new Date(item.date), 'yyyy-MM-dd'));
-
-      const responses = await Promise.all(formattedDates.map(formattedDate => (
-        axios.post('http://localhost:3001/api/aggViewPATimes', {
-          projectName: project.projectName,
-          dates: [formattedDate]
-        })
-      )));
-
-      const responseData = responses.map(response => response.data);
-
-      setSummaryData(responseData);
+  
+      // Limit the number of concurrent requests
+      const chunkSize = 7;
+      for (let i = 0; i < formattedDates.length; i += chunkSize) {
+        const chunk = formattedDates.slice(i, i + chunkSize);
+        const responses = await Promise.all(chunk.map(formattedDate => (
+          axios.post('http://localhost:3001/api/aggViewPATimes', {
+            projectName: project.projectName,
+            dates: [formattedDate]
+          })
+        )));
+        const responseData = responses.map(response => response.data);
+        setSummaryData(prevData => [...prevData, ...responseData]);
+      }
     } catch (error) {
       console.error('Error fetching summary data:', error);
     }
   };
+  
 
   useEffect(() => {
     fetchData();
