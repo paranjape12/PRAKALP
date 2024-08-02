@@ -55,7 +55,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
       inputhraray: hours,
       Activity: activity,
       Dateassign: date,
-      token: localStorage.getItem('token'),
+      employeeId: selectedEmployeeId,
     };
 
     axios.post('http://localhost:3001/api/assignTask', data)
@@ -133,7 +133,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
         <DialogContent>
           <div>
             <FormControl style={{ marginTop: '1rem', marginRight: '3rem' }}>
-              <InputLabel >Select Project</InputLabel>
+              <InputLabel>Select Project</InputLabel>
               <Select
                 label="Select Project"
                 id="addprojdrop"
@@ -175,13 +175,13 @@ const AssignTaskDialog = ({ open, onClose }) => {
               </FormControl>
             )}
             <FormControl style={{ marginTop: '1rem' }}>
-              <InputLabel >Select Employee</InputLabel>
+              <InputLabel>Select Employee</InputLabel>
               <Select
                 id="selempdrop"
                 label="Select Employee"
                 size='small'
-                value={selectedEmployeeName}
-                onChange={(e) => setSelectedEmployeeName(e.target.value)}
+                value={selectedEmployeeId}
+                onChange={handleEmployeeChange}
                 style={{ fontFamily: 'Nunito', width: '15rem' }}
                 MenuProps={{
                   PaperProps: {
@@ -193,7 +193,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
                 }}
               >
                 {employees.map((employee) => (
-                  <MenuItem key={employee.id} value={employee.Name} dense>
+                  <MenuItem key={employee.id} value={employee.id} dense>
                     {employee.Name}
                   </MenuItem>
                 ))}
@@ -253,7 +253,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
                 onChange={(e) => setMinutes(e.target.value)}
                 InputProps={{
                   endAdornment: (
-                    <InputAdornment position="end" style={{ outline: 'none', }}>Min</InputAdornment>
+                    <InputAdornment position="end" style={{ outline: 'none' }}>Min</InputAdornment>
                   ),
                   style: { fontFamily: 'Nunito', color: 'black', fontWeight: '700', fontSize: '18px', border: 'none' },
                   inputProps: { min: 0, max: 59, style: { padding: '25px' } }
