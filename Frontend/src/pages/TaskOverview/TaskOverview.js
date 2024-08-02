@@ -311,7 +311,7 @@ function TaskOverview() {
                     <th
                       key={index}
                       className={isSunday ? 'th1th' : `th${date.day}`}
-                      style={{ backgroundColor: isSunday ? 'red' : '', color: 'white', width: '8.7rem' }}
+                      style={{ backgroundColor: isSunday ? 'red' : '', color: 'white', width: '8.57rem' }}
                     >
                       {currentDate.toLocaleString('default', { month: 'short', day: 'numeric' })}
                       <br />

@@ -129,7 +129,7 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
 
     const seconds2dayhrmin = (ss) => {
         if (ss === 0) {
-            return '';
+            return '00 : 00 : 00';
         }
 
         const h = Math.floor((ss % 28800) / 3600); // 8 hours = 28,800 seconds
