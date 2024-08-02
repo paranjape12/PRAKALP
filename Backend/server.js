@@ -365,30 +365,28 @@ app.post('/api/assignTask', (req, res) => {
     inputhraray,
     Activity,
     Dateassign,
-    token
+    employeeId
   } = req.body;
 
-  const userData = decryptToken(token);
-  const empid = userData.id;
-
   const date = new Date(Dateassign);
+  date.setDate(date.getDate() + 1);
   date.setHours(0, 0, 1); // Set hours, minutes, seconds to 00:00:01
   const todaydatetime = date.toISOString().split('T')[0] + ' 00:00:01';
   const todaydatetime2 = date.toISOString().replace('T', ' ').slice(0, 19);
 
   const selectQuery = `SELECT * FROM Taskemp WHERE DATE(tasktimeemp) = ? AND taskid = ? AND AssignedTo_emp = ?`;
-  db.query(selectQuery, [todaydatetime.split(' ')[0], valuetask, empid], (err, result) => {
+  db.query(selectQuery, [todaydatetime.split(' ')[0], valuetask, employeeId], (err, result) => {
     if (err) throw err;
 
     const taskcomleteat = parseInt(inputhraray) * 3600 + parseInt(inputminaray) * 60;
 
     if (result.length > 0) {
       const updateQuery = `UPDATE Taskemp SET timetocomplete_emp = ?, Activity = ? WHERE DATE(tasktimeemp) = ? AND taskid = ? AND AssignedTo_emp = ?`;
-      db.query(updateQuery, [taskcomleteat, Activity, todaydatetime.split(' ')[0], valuetask, empid], (err, result) => {
+      db.query(updateQuery, [taskcomleteat, Activity, todaydatetime.split(' ')[0], valuetask, employeeId], (err, result) => {
         if (err) throw err;
 
         const query = `SELECT * FROM Logincrd WHERE id = ?`;
-        db.query(query, [empid], (err, queryResult) => {
+        db.query(query, [employeeId], (err, queryResult) => {
           if (err) throw err;
           const rowqueryResult = queryResult[0];
           const finalmsg = 'Task already assigned to ' + rowqueryResult.Name + '.';
@@ -397,11 +395,11 @@ app.post('/api/assignTask', (req, res) => {
       });
     } else {
       const insertQuery = `INSERT INTO Taskemp (taskid, tasktimeemp, timetocomplete_emp, taskDetails_emp, AssignedTo_emp, Activity) VALUES (?, ?, ?, ?, ?, ?)`;
-      db.query(insertQuery, [valuetask, todaydatetime, taskcomleteat, '', empid, Activity], (err, result) => {
+      db.query(insertQuery, [valuetask, todaydatetime, taskcomleteat, '', employeeId, Activity], (err, result) => {
         if (err) throw err;
 
         const query = `SELECT * FROM Logincrd WHERE id = ?`;
-        db.query(query, [empid], (err, queryResult) => {
+        db.query(query, [employeeId], (err, queryResult) => {
           if (err) throw err;
           const rowqueryResult = queryResult[0];
           const finalmsg = 'Task assigned successfully to ' + rowqueryResult.Name + '.';
@@ -1116,6 +1114,7 @@ app.post('/api/indViewPATimes', (req, res) => {
 // FAMT API Endpoint to edit complete the task popup
 app.post('/api/completeTask', (req, res) => {
   const { id, min, hr, msg, tid, isChecked, isChecked2, isChecked3, token } = req.body;
+  console.log(req.body);
 
   let userData;
   try {
@@ -1482,7 +1481,7 @@ function seconds2human(ss) {
 //     SELECT DISTINCT taskid 
 //     FROM Taskemp 
 //     WHERE AssignedTo_emp = ? AND DATE(tasktimeemp) >= ? AND DATE(tasktimeemp) <= ?`;
-  
+
 //   db.query(selectTaskIdFromAssignTask, [id, fromdate, todate], (err, taskResults) => {
 //     if (err) {
 //       return res.status(500).json({ error: err.message });
@@ -1507,7 +1506,7 @@ function seconds2human(ss) {
 //           if (projALL === 'All') {
 //             const projectName = row.projectName;
 //             const selectProject = `SELECT id FROM projects WHERE ProjectName = ?`;
-            
+
 //             db.query(selectProject, [projectName], (err, projectResults) => {
 //               if (err) {
 //                 return res.status(500).json({ error: err.message });
@@ -1525,7 +1524,7 @@ function seconds2human(ss) {
 //             SELECT projectName 
 //             FROM Task 
 //             WHERE id IN (${idString})`;
-          
+
 //           db.query(selectTaskAndProjNotAll, (err, projNotAllResults) => {
 //             if (err) {
 //               return res.status(500).json({ error: err.message });
@@ -1533,7 +1532,7 @@ function seconds2human(ss) {
 //             projNotAllResults.forEach(row => {
 //               const projectName = row.projectName;
 //               const selectProject = `SELECT id FROM projects WHERE ProjectName = ?`;
-              
+
 //               db.query(selectProject, [projectName], (err, projectResults) => {
 //                 if (err) {
 //                   return res.status(500).json({ error: err.message });
@@ -1750,7 +1749,7 @@ app.get('/api/EmpOverviewPlusMinus', async (req, res) => {
             projectName,
             projectSalesOrder,
             assigntaskpresent,
-            noofassigntasks,         
+            noofassigntasks,
             proj_status,
             projectLastTask,
             requiredTime,
@@ -1799,14 +1798,14 @@ app.post('/api/employeeLogs', async (req, res) => {
   try {
     // Execute the combined query
     const [results] = await db.promise().query(query, [employeeId, fromDate, toDate]);
-    
+
     // Log raw results
     // console.log('Raw results length:', results.length);
     // console.log('Raw results:', results);
 
     // Map results to the final structure
     const finalResults = results.map(row => ({
-      results : results.length,
+      results: results.length,
       date: row.tasktimeemp,
       projectName: row.projectName || 'Unknown',
       taskName: row.TaskName || 'Unknown',
@@ -1837,24 +1836,39 @@ function seconds2human(seconds) {
 app.get('/api/empOverviewTaskDtlsIndIndView', async (req, res) => {
   const { assignBy, projectName } = req.query;
 
-  // Check if the required parameters are provided
-  if (!assignBy || !projectName) {
-    return res.status(400).json({ error: 'Missing required query parameters: assignBy or projectName' });
-  }
-
   try {
-    // 1. Get task IDs based on the criteria
-    const tasksQuery = `
-      SELECT * FROM task WHERE (AssignBy = ? OR statusby = ?) AND projectName = ?`;
-    const tasks = await new Promise((resolve, reject) => {
-      db.query(tasksQuery, [assignBy, assignBy, projectName], (error, results) => {
+    // 1a. Get task IDs based on the projectName
+    const taskIdsQuery = `SELECT id FROM task WHERE projectName = ?`;
+    const taskIdsResult = await new Promise((resolve, reject) => {
+      db.query(taskIdsQuery, [projectName], (error, results) => {
         if (error) return reject(error);
         resolve(results);
       });
     });
 
-    // Extract the IDs into a constant
-    const taskIds = tasks.map(task => task.id).join(',');
+    // Extract task IDs and join them into a string
+    const taskIds = taskIdsResult.map(task => task.id).join(',');
+
+    // 1b. Use the task IDs to query taskemp for distinct task IDs assigned to a specific employee
+    const distinctTaskIdsQuery = `SELECT DISTINCT(taskid) FROM taskemp WHERE taskid IN (${taskIds}) AND AssignedTo_emp = ?`;
+    const distinctTaskIdsResult = await new Promise((resolve, reject) => {
+      db.query(distinctTaskIdsQuery, [assignBy], (error, results) => {
+        if (error) return reject(error);
+        resolve(results);
+      });
+    });
+
+    // Extract distinct task IDs and join them into a string
+    const distinctTaskIds = distinctTaskIdsResult.map(task => task.taskid).join(',');
+
+    // 1c. Use the distinct task IDs to get the task details
+    const tasksQuery = `SELECT * FROM task WHERE id IN (${distinctTaskIds})`;
+    const tasks = await new Promise((resolve, reject) => {
+      db.query(tasksQuery, (error, results) => {
+        if (error) return reject(error);
+        resolve(results);
+      });
+    });
 
     // 2. Use the IDs to query taskemp
     const taskempQuery = `
@@ -1881,52 +1895,74 @@ app.get('/api/empOverviewTaskDtlsIndAggView', (req, res) => {
   const assignBy = req.query.assignBy;
   const projectName = req.query.projectName;
 
-  const query1 = `
-    SELECT COUNT(id) as tasks 
+  // First query to get task IDs for the given project name
+  const initialQuery = `
+    SELECT id as tasks 
     FROM task 
-    WHERE (AssignBy = ? OR statusby = ?) 
-      AND projectName = ?;
+    WHERE projectName = ?;
   `;
 
+
+
+  // Third query to sum up time to complete and actual time taken for tasks assigned to a specific employee
   const query2 = `
     SELECT SUM(p.timetocomplete) as Required, SUM(te.actualtimetocomplete_emp) as Taken 
-    FROM Taskemp te 
-    JOIN Task p ON te.taskid = p.id 
+    FROM taskemp te 
+    JOIN task p ON te.taskid = p.id 
     WHERE te.AssignedTo_emp = ? 
       AND p.ProjectName = ?;
   `;
 
-  db.query(query1, [assignBy, assignBy, projectName], (error1, results1) => {
-    if (error1) {
-      return res.status(500).json({ error: error1.message });
+  // Execute the initial query
+  db.query(initialQuery, [projectName], (errorInitial, resultsInitial) => {
+    if (errorInitial) {
+      return res.status(500).json({ error: errorInitial.message });
     }
 
-    db.query(query2, [assignBy, projectName], (error2, results2) => {
-      if (error2) {
-        return res.status(500).json({ error: error2.message });
+    // Extract task IDs and format them as a comma-separated string
+    const taskIds = resultsInitial.map(task => task.tasks).join(',');
+
+    const query1 = `
+      SELECT COUNT(DISTINCT taskid) as tasks
+      FROM taskemp
+      WHERE taskid IN (${taskIds}) 
+        AND AssignedTo_emp = ?;
+    `;
+
+    // Execute the first query using the obtained task IDs
+    db.query(query1, [assignBy], (error1, results1) => {
+      if (error1) {
+        return res.status(500).json({ error: error1.message });
       }
 
-      res.json({
-        tasks: results1[0].tasks,
-        required: results2[0].Required,
-        taken: results2[0].Taken
+      // Execute the second query
+      db.query(query2, [assignBy, projectName], (error2, results2) => {
+        if (error2) {
+          return res.status(500).json({ error: error2.message });
+        }
+
+        res.json({
+          tasks: results1[0].tasks,
+          required: results2[0].Required,
+          taken: results2[0].Taken
+        });
       });
     });
   });
 });
 
 
+
 app.get('/api/empOverviewIndAggPATimes', (req, res) => {
   const { projectName, userId, startDate } = req.query;
 
-  // Step 1: Get task IDs
   const taskIdQuery = `
     SELECT id 
     FROM Task 
-    WHERE projectName = ? AND (AssignBy = ? OR statusby = ?)
+    WHERE projectName = ?
   `;
 
-  db.query(taskIdQuery, [projectName, userId, userId], (err, taskIds) => {
+  db.query(taskIdQuery, [projectName], (err, taskIds) => {
     if (err) {
       console.error('Error executing task ID query:', err);
       return res.status(500).json({ message: 'Internal server error', error: err.message });
@@ -1941,26 +1977,32 @@ app.get('/api/empOverviewIndAggPATimes', (req, res) => {
     // Convert taskIdList to a comma-separated string
     const taskIdString = taskIdList.join(', ');
 
+    // Generate the array of dates within the range
+    const startDateObj = new Date(startDate);
+    const dateArray = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startDateObj);
+      date.setDate(date.getDate() + i);
+      dateArray.push(date.toISOString().split('T')[0]);
+    }
+
+    // Convert dateArray to a comma-separated string for the SQL query
+    const dateArrayString = dateArray.map(date => `'${date}'`).join(', ');
+
     // Step 2: Get planned and actual time data within the date range
     const taskDataQuery = `
-      WITH RECURSIVE DateRange AS (
-        SELECT DATE(?) AS task_date
-        UNION ALL
-        SELECT task_date + INTERVAL 1 DAY
-        FROM DateRange
-        WHERE task_date + INTERVAL 1 DAY <= DATE(?) + INTERVAL 6 DAY
-      )
       SELECT 
-        d.task_date AS taskDate, 
-        COALESCE(SUM(te.timetocomplete_emp), 0) AS planned, 
-        COALESCE(SUM(te.actualtimetocomplete_emp), 0) AS actual 
-      FROM DateRange d
-      LEFT JOIN Taskemp te ON DATE(te.tasktimeemp) = d.task_date AND te.taskid IN (${taskIdString})
-      GROUP BY d.task_date
-      ORDER BY d.task_date
+        DATE(tasktimeemp) AS date, 
+        SUM(timetocomplete_emp) AS planned, 
+        SUM(actualtimetocomplete_emp) AS actual 
+      FROM Taskemp 
+      WHERE taskid IN (${taskIdString}) 
+      AND AssignedTo_emp = ? 
+      AND DATE(tasktimeemp) IN (${dateArrayString}) 
+      GROUP BY DATE(tasktimeemp)
     `;
 
-    db.query(taskDataQuery, [startDate, startDate], (err, taskData) => {
+    db.query(taskDataQuery, [userId], (err, taskData) => {
       if (err) {
         console.error('Error executing task data query:', err);
         return res.status(500).json({ message: 'Internal server error', error: err.message });
@@ -1968,10 +2010,14 @@ app.get('/api/empOverviewIndAggPATimes', (req, res) => {
 
       // Format the dates to local date format
       const formattedData = taskData.map(row => {
-        const taskDate = new Date(row.taskDate);        
-        taskDate.setDate(taskDate.getDate() + 1);
+        const taskDate = new Date(row.date);
+        // Adjust the date for the desired output format (DD-MM-YYYY)
+        const adjustedDate = new Date(taskDate.getTime() - taskDate.getTimezoneOffset() * 60000); // Adjust for timezone offset
+        const day = String(adjustedDate.getDate()).padStart(2, '0');
+        const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const year = adjustedDate.getFullYear();
         return {
-          taskDate: taskDate.toISOString().split('T')[0], // Format date to YYYY-MM-DD
+          taskDate: `${year}-${month}-${day}`, 
           planned: row.planned,
           actual: row.actual
         };
@@ -1983,18 +2029,25 @@ app.get('/api/empOverviewIndAggPATimes', (req, res) => {
 });
 
 
-app.get('/api/empOverviewIndIndPATimes', async (req, res) => {
-  const { assignBy, projectName, taskDate } = req.query;
 
+app.get('/api/empOverviewIndIndPATimes', async (req, res) => {
+  const { projectName, assignedTo, taskDates } = req.query;
+  
+  // Validate taskDates format (assume it's a comma-separated list of dates)
+  if (!taskDates || !Array.isArray(taskDates.split(','))) {
+    return res.status(400).json({ error: 'Invalid taskDates format' });
+  }
+
+  const dateArray = taskDates.split(',').map(date => new Date(date).toISOString().split('T')[0]);
+
+  // Query 1: Fetch all tasks for the given project
   const query1 = `
-    SELECT id, timetocomplete 
+    SELECT id
     FROM task 
-    WHERE (AssignBy = ? OR statusby = ?) 
-      AND projectName = ? 
-      AND DATE(TaskTime) = ?;
+    WHERE projectName = ?;
   `;
 
-  db.query(query1, [assignBy, assignBy, projectName, taskDate], (err, tasks) => {
+  db.query(query1, [projectName], (err, tasks) => {
     if (err) {
       return res.status(500).json({ error: 'Error executing query1' });
     }
@@ -2006,24 +2059,32 @@ app.get('/api/empOverviewIndIndPATimes', async (req, res) => {
       return res.status(200).json([]);
     }
 
+    // Create a comma-separated list of IDs for the SQL query
+    const taskIdsList = taskIds.join(',');
+
+    // Query 2: Fetch details from taskemp for the given tasks and assigned employee
     const query2 = `
-      SELECT taskid, actualtimetocomplete_emp, DATE(tasktimeemp) as tasktimeemp_date, timetocomplete_emp
+      SELECT id, taskid, actualtimetocomplete_emp, DATE(tasktimeemp) as tasktimeemp_date, timetocomplete_emp
       FROM taskemp 
-      WHERE taskid IN (?);
+      WHERE taskid IN (${taskIdsList})
+        AND AssignedTo_emp = ?
+        AND DATE(tasktimeemp) IN (?);
     `;
 
-    db.query(query2, [taskIds], (err, taskEmpDetails) => {
+    // Use a prepared statement for query2
+    db.query(query2, [assignedTo, dateArray], (err, taskEmpDetails) => {
       if (err) {
         return res.status(500).json({ error: 'Error executing query2' });
       }
 
-      // Create a map for easy lookup of actualtimetocomplete_emp, tasktimeemp_date, and timetocomplete_emp by taskid
+      // Create a map for easy lookup
       const empDetailsMap = taskEmpDetails.reduce((acc, curr) => {
         let tasktimeemp_date = new Date(curr.tasktimeemp_date);
         tasktimeemp_date.setDate(tasktimeemp_date.getDate() + 1);
         tasktimeemp_date = tasktimeemp_date.toISOString().split('T')[0];
 
         acc[curr.taskid] = {
+          id: curr.id, // Store the id from taskemp
           actualtimetocomplete_emp: curr.actualtimetocomplete_emp,
           tasktimeemp_date: tasktimeemp_date,
           timetocomplete_emp: curr.timetocomplete_emp
@@ -2031,9 +2092,10 @@ app.get('/api/empOverviewIndIndPATimes', async (req, res) => {
         return acc;
       }, {});
 
-      // Combine the results from both queries
+      // Combine the results
       const combinedResults = tasks.map(task => ({
         taskid: task.id,
+        id: empDetailsMap[task.id] ? empDetailsMap[task.id].id : null, // Add id to combinedResults
         planned: empDetailsMap[task.id] ? empDetailsMap[task.id].timetocomplete_emp : null,
         actual: empDetailsMap[task.id] ? empDetailsMap[task.id].actualtimetocomplete_emp : null,
         taskDate: empDetailsMap[task.id] ? empDetailsMap[task.id].tasktimeemp_date : null,
@@ -2846,7 +2908,7 @@ app.post('/api/add-employee', (req, res) => {
     Location,
     loginusinggmail
   };
-  
+
 
   // SQL query to insert employee data
   const sql = 'INSERT INTO logincrd SET ?';
