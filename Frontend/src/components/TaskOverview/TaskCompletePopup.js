@@ -16,7 +16,7 @@ import {
   InputAdornment,
 } from '@mui/material';
 
-const TaskCompletePopup = ({ open, task, handleClose, completionTime }) => {
+const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId }) => {
   const [taskComplete, setTaskComplete] = useState(false);
   const [taskInProgress, setTaskInProgress] = useState(false);
   const [taskNotComplete, setTaskNotComplete] = useState(false);
@@ -69,19 +69,21 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime }) => {
   const handleSaveClick = async () => {
     setErrorMessage('');
     setSuccessMessage('');
-    
+
     const token = localStorage.getItem('token');
     const taskCompleteData = {
-      id: task.taskempId,
+      id: task.taskempId || timingId,
       min: minutes,
       hr: hours,
       msg: log,
-      tid: task.taskId,
+      tid: task.taskId || task.id,
       isChecked: taskComplete,
       isChecked2: taskInProgress,
       isChecked3: taskNotComplete,
       token: token,
     };
+
+    console.log("taskcomdata : ", taskCompleteData);
     if ((hours === '' && minutes === '') || (hours == 0 && minutes == 0) || hours > 8 || minutes > 59) {
       setErrorMessage("Please check time format (hr less than 8 and min less than 59)");
       return;

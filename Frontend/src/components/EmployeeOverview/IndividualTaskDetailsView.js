@@ -21,6 +21,8 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
     const [taskCompleteOpen, setTaskCompleteOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [taskCompletionTime, setTaskCompletionTime] = useState(null);
+    const [selectedTimingId, setSelectedTimingId] = useState(null);
+
 
     const cache = {
         taskDetails: null,
@@ -28,6 +30,8 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
     };
 
     const seconds2hrmin = (ss) => {
+
+        if (ss == 0) { return ` `; }
         const h = Math.floor(ss / 3600); // Total hours
         const m = Math.floor((ss % 3600) / 60); // Remaining minutes
 
@@ -47,8 +51,9 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
         setDeleteTaskDialogOpen(false);
     };
 
-    const handleOpenTaskCompleteDialog = (time) => {
+    const handleOpenTaskCompleteDialog = (time, timingId) => {
         setTaskCompletionTime(time);
+        setSelectedTimingId(timingId); 
         setTaskCompleteOpen(true);
     };
 
@@ -64,7 +69,6 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
         }
 
         try {
-            console.log('Fetching task individual details for', assignBy, projectName);
             const response = await axios.get('http://localhost:3001/api/empOverviewTaskDtlsIndIndView', {
                 params: { assignBy, projectName }
             });
@@ -79,14 +83,29 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
     const fetchTaskTimings = async (assignBy, projectName, taskDate) => {
         try {
             const response = await axios.get('http://localhost:3001/api/empOverviewIndIndPATimes', {
-                params: { assignBy, projectName, taskDate }
+                params: { assignedTo: assignBy, projectName, taskDates: taskDate }
             });
-            setTaskTimings(response.data);
+
+            // Extract the new timings from the response
+            const newTimings = response.data;
+
+            // Combine existing timings with new timings
+            setTaskTimings(prevTimings => {
+                // Filter out duplicates based on timing properties (e.g., taskDate and taskid)
+                const uniqueTimings = [...prevTimings, ...newTimings].filter((timing, index, self) =>
+                    index === self.findIndex((t) => (
+                        t.taskDate === timing.taskDate && t.taskid === timing.taskid && t.id === timing.id 
+                    ))
+                );
+
+                return uniqueTimings;
+            });
             setLoading(false);
         } catch (error) {
             console.error('Error fetching task timings:', error);
         }
     };
+
 
     useEffect(() => {
         const assignBy = employee.id;
@@ -94,6 +113,21 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
         fetchTaskDetails(assignBy, projectName);
         dates.forEach(date => fetchTaskTimings(assignBy, projectName, date.ymdDate));
     }, [employee.id, project.projectName, dates]);
+
+    const transformTimingsData = (timings) => {
+        const groupedTimings = {};
+
+        timings.forEach(timing => {
+            const key = `${timing.id}_${timing.taskid}_${timing.taskDate}`;
+            if (!groupedTimings[key]) {
+                groupedTimings[key] = timing;
+            }
+        });
+
+        return groupedTimings;
+    };
+
+    const transformedTimings = transformTimingsData(taskTimings);
 
     const fetchTaskInfoDetails = async (taskId) => {
         if (cache.taskInfoDetails[taskId]) {
@@ -169,7 +203,7 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                             <FontAwesomeIcon icon={faPencilAlt} title='Edit Task' style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={() => handleOpenEditTaskDialog(task)} />
                             {task.Status === "1" && (<FontAwesomeIcon icon={faCopyright} color='#1cc88a' title='Marked as Complete' style={{ float: 'right', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />)}
                             <FontAwesomeIcon icon={faCircleInfo} title='Task Info' style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={() => handleTaskInfoDialogOpen(task)} />
-                            {project.projectLastTask === 1 && (<FontAwesomeIcon icon={faL} title='Last Task' style={{ color: '#36b9cc', paddingTop: '0.2rem',float: 'right', paddingLeft: '0.5rem' }} />)}
+                            {project.projectLastTask === 1 && (<FontAwesomeIcon icon={faL} title='Last Task' style={{ color: '#36b9cc', paddingTop: '0.2rem', float: 'right', paddingLeft: '0.5rem' }} />)}
                             <FontAwesomeIcon title='Show/Hide Time' icon={localShowTimeDetails ? faEyeSlash : faEye} onClick={handleToggleShowTimeComplete} style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem' }} />
                         </div>
 
@@ -182,14 +216,13 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                             handleClose={handleTaskInfoDialogClose}
                         />
 
-                        {taskCompleteOpen && (
-                            <TaskCompletePopup
-                                open={taskCompleteOpen}
-                                task={task}
-                                handleClose={handleCloseTaskCompleteDialog}
-                                completionTime={taskCompletionTime}  // Pass the task completion time as a prop
-                            />
-                        )}
+                        <TaskCompletePopup
+                            open={taskCompleteOpen}
+                            task={task}
+                            handleClose={handleCloseTaskCompleteDialog}
+                            completionTime={taskCompletionTime}
+                            timingId={selectedTimingId}
+                        />
 
                         {selectedTask && selectedTask.id === task.id && (
                             <EditTaskTeamLeadVersion
@@ -225,7 +258,7 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                                     >
                                         {loading ? '' : (
                                             taskTimings.filter(timing => timing.taskDate === date.ymdDate && timing.taskid === task.id).map(timing => (
-                                                <span key={timing.taskid} style={{ fontWeight:'700'}}>
+                                                <span key={timing.taskid} style={{ fontWeight: '700' }}>
                                                     {employee.Nickname} : {seconds2hrmin(timing.planned || 0)}
                                                 </span>
                                             ))
@@ -239,7 +272,7 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                                     <td key={i} style={{ minWidth: '7.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
                                         {loading ? '' : (
                                             taskTimings.filter(timing => timing.taskDate === date.ymdDate && timing.taskid === task.id).map(timing => (
-                                                <><span key={timing.id} style={{ fontWeight:'700',color:'#1cc88a',cursor: 'pointer' }} onClick={() => handleOpenTaskCompleteDialog(timing.actual)} >
+                                                <><span key={timing.id} style={{ fontWeight: '700', color: '#1cc88a', cursor: 'pointer' }} onClick={() => handleOpenTaskCompleteDialog(timing.actual, timing.id)} >
                                                     {employee.Nickname} :</span> {seconds2hrmin(timing.actual || 0)}
                                                 </>
 
