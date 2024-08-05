@@ -652,3 +652,128 @@ exports.empOverviewIndAggPATimes = (req, res ) => {
     });
   });
 };
+
+exports.task = (req, res ) => {
+  const projectName = req.query.projectName;
+
+  if (!projectName) {
+    return res.status(400).send('Project name is required');
+  }
+
+  const query = 'SELECT * FROM `Task` WHERE `projectName` = ?';
+  db.query(query, [projectName], (err, results) => {
+    if (err) {
+      console.error('Error fetching tasks:', err);
+      return res.status(500).send('Error fetching tasks');
+    }
+
+    res.json(results);
+  });
+};
+
+exports.assignTask = (req, res) => {
+  const {
+    valuetask,
+    inputminaray,
+    inputhraray,
+    Activity,
+    Dateassign,
+    token
+  } = req.body;
+
+  const userData = decryptToken(token);
+  const empid = userData.id;
+
+  const date = new Date(Dateassign);
+  date.setHours(0, 0, 1); // Set hours, minutes, seconds to 00:00:01
+  const todaydatetime = date.toISOString().split('T')[0] + ' 00:00:01';
+  const todaydatetime2 = date.toISOString().replace('T', ' ').slice(0, 19);
+
+  const selectQuery = `SELECT * FROM Taskemp WHERE DATE(tasktimeemp) = ? AND taskid = ? AND AssignedTo_emp = ?`;
+  db.query(selectQuery, [todaydatetime.split(' ')[0], valuetask, empid], (err, result) => {
+    if (err) throw err;
+
+    const taskcomleteat = parseInt(inputhraray) * 3600 + parseInt(inputminaray) * 60;
+
+    if (result.length > 0) {
+      const updateQuery = `UPDATE Taskemp SET timetocomplete_emp = ?, Activity = ? WHERE DATE(tasktimeemp) = ? AND taskid = ? AND AssignedTo_emp = ?`;
+      db.query(updateQuery, [taskcomleteat, Activity, todaydatetime.split(' ')[0], valuetask, empid], (err, result) => {
+        if (err) throw err;
+
+        const query = `SELECT * FROM Logincrd WHERE id = ?`;
+        db.query(query, [empid], (err, queryResult) => {
+          if (err) throw err;
+          const rowqueryResult = queryResult[0];
+          const finalmsg = 'Task already assigned to ' + rowqueryResult.Name + '.';
+          res.send(finalmsg);
+        });
+      });
+    } else {
+      const insertQuery = `INSERT INTO Taskemp (taskid, tasktimeemp, timetocomplete_emp, taskDetails_emp, AssignedTo_emp, Activity) VALUES (?, ?, ?, ?, ?, ?)`;
+      db.query(insertQuery, [valuetask, todaydatetime, taskcomleteat, '', empid, Activity], (err, result) => {
+        if (err) throw err;
+
+        const query = `SELECT * FROM Logincrd WHERE id = ?`;
+        db.query(query, [empid], (err, queryResult) => {
+          if (err) throw err;
+          const rowqueryResult = queryResult[0];
+          const finalmsg = 'Task assigned successfully to ' + rowqueryResult.Name + '.';
+          res.send(finalmsg);
+        });
+      });
+    }
+  });
+  };
+  
+  exports.employeeLogs = async (req, res) => {
+      const { employeeId, fromDate, toDate } = req.body;
+    
+      // Validate input
+      if (!employeeId || !fromDate || !toDate) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+      }
+    
+      // Log input values
+      // console.log('Employee ID:', employeeId);
+      // console.log('From Date:', fromDate);
+      // console.log('To Date:', toDate);
+    
+      const query = `
+        SELECT te.*, t.projectName, t.TaskName
+        FROM Taskemp te
+        JOIN task t ON te.taskid = t.id
+        WHERE te.AssignedTo_emp = ?
+          AND DATE(te.tasktimeemp) BETWEEN ? AND ?
+        ORDER BY te.tasktimeemp DESC
+      `;
+    
+      try {
+        // Execute the combined query
+        const [results] = await db.promise().query(query, [employeeId, fromDate, toDate]);
+        
+        // Log raw results
+        // console.log('Raw results length:', results.length);
+        // console.log('Raw results:', results);
+    
+        // Map results to the final structure
+        const finalResults = results.map(row => ({
+          results : results.length,
+          date: row.tasktimeemp,
+          projectName: row.projectName || 'Unknown',
+          taskName: row.TaskName || 'Unknown',
+          timeRequired: row.timetocomplete_emp,
+          timeTaken: row.actualtimetocomplete_emp,
+          activity: row.Activity,
+          logs: row.tasklog
+        }));
+    
+        // Log final mapped results
+        // console.log('Final results length:', finalResults.length);
+        // console.log('Final results:', finalResults);
+    
+        res.json(finalResults);
+      } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: error.message });
+      }    
+  };

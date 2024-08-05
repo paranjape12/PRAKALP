@@ -47,6 +47,8 @@ const LogsPopup = ({ open, handleClose, employee }) => {
   const [ApplyProject, setApplyProject] = useState(false);
   const [pageLength, setPageLength] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filteredTasks, setFilteredTasks] = useState([]);
+
 
   const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
     backgroundColor: "#6c6e7e",
@@ -186,8 +188,10 @@ const LogsPopup = ({ open, handleClose, employee }) => {
   const handleApply = () => {
     // Apply logic can be added here
     setApplyProject(true);
-    console.log("Selected Projects:", selectedProjects);
-    console.log("Selected Tasks:", selectedTasks);
+    const filtered = logs.filter((log) =>
+      selectedProjects.includes(log.projectName)
+    );
+    setFilteredTasks([...new Set(filtered.map((log) => log.taskName))]);
   };
 
   const filteredLogs = logs.filter((log) => {
@@ -278,7 +282,7 @@ const LogsPopup = ({ open, handleClose, employee }) => {
                   width: "11rem",
                 }}
                 MenuProps={{
-                  PaperProps: { style: { maxHeight: 400, width: "15rem" } },
+                  PaperProps: { style: { maxHeight: 200, width: "15rem", } },
                 }}
               >
                 <MenuItem value="" disabled>
@@ -296,7 +300,7 @@ const LogsPopup = ({ open, handleClose, employee }) => {
                 inputProps={{ "aria-label": "Select Project" }}
                 style={{ color: "black", fontFamily: "Nunito", width: "11rem" }}
                 MenuProps={{
-                  PaperProps: { style: { maxHeight: 400, width: "15rem" } },
+                  PaperProps: { style: { maxHeight:250, width:'25rem', }},
                 }}
               >
                 <MenuItem>
@@ -316,7 +320,7 @@ const LogsPopup = ({ open, handleClose, employee }) => {
                     <MenuItem
                       key={index}
                       value={project}
-                      sx={{ textAlign: "right" }}
+                      sx={{ textAlign: "right", padding:"0", width:"10rem"}}dense
                     >
                       <FormControlLabel
                         control={
@@ -348,8 +352,7 @@ const LogsPopup = ({ open, handleClose, employee }) => {
           )}
 
           {ApplyProject && (
-            <MenuItem size="small" sx={{ mr: 2 }}>
-               <InputLabel style={{color:'black'}}>Select Task</InputLabel>
+            <FormControl size="small" sx={{ mr: 2 }}>
               <Select
                 value=""
                 displayEmpty
@@ -371,22 +374,22 @@ const LogsPopup = ({ open, handleClose, employee }) => {
                     label="All"
                   />
                 </MenuItem>
-                {logs.map((log, index) => (
+                {filteredTasks.map((task, index) => (
                   <MenuItem
                     key={index}
-                    value={log.taskName}
+                    value={task}
                     sx={{ textAlign: "right" }}
                   >
                     <FormControlLabel
                       control={
                         <Checkbox
                           name="task"
-                          checked={selectedTasks.includes(log.taskName)}
+                          checked={selectedTasks.includes(task)}
                           onChange={handleCheckboxChange}
-                          value={log.taskName}
+                          value={task}
                         />
                       }
-                      label={log.taskName}
+                      label={task}
                     />
                   </MenuItem>
                 ))}
@@ -401,7 +404,7 @@ const LogsPopup = ({ open, handleClose, employee }) => {
                   </Button>
                 </MenuItem>
               </Select>
-            </MenuItem>
+            </FormControl>
           )}
           <hr style={{ marginTop: "2rem" }} />
         </Box>
@@ -518,3 +521,4 @@ const LogsPopup = ({ open, handleClose, employee }) => {
 };
 
 export default LogsPopup;
+  

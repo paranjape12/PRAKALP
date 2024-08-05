@@ -47,10 +47,6 @@ function CreateCopyProject({ open, onClose, onBack }) {
 
  
 
-  const handleSelectChange = (e) => {
-    console.log(e.target.value);
-  };
-
   //Save button
   const handleSubmit = async (event) => {
     event.preventDefault();

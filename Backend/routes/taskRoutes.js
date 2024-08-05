@@ -13,5 +13,9 @@ router.post('/emptaskDtlsAggTimes', taskController.emptaskDtlsAggTimes);
 router.get('/empAggtasktimes', taskController.empAggtasktimes);
 router.get('/empOverviewTaskDtlsIndAggView', taskController.empOverviewTaskDtlsIndAggView);
 router.get('/empOverviewIndAggPATimes', taskController.empOverviewIndAggPATimes);
+router.get('/task', taskController.task);
+router.post('/assignTask', taskController.assignTask);
+router.post('/employeeLogs',taskController.employeeLogs);
+
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const decryptToken = require('../middleware/decryptToken');
 
 exports.addProject = (req, res) => {
   const { ProjectName, sales_order } = req.body;
@@ -190,5 +191,96 @@ exports.EmpOverviewPlusMinus = async(req, res ) => {
   } catch (error) {
     console.error('Error fetching tasks:', error);
     res.status(500).send('Internal server error');
+  }
+};
+//navbar
+exports.createCopyProject = async(req, res ) => {
+  const { projectName, salesOrder, taskNames, taskValues } = req.body;
+
+  if (!projectName || !salesOrder) {
+    return res.status(400).send('Project name and sales order are required');
+  }
+
+  const checkProjectQuery = 'SELECT * FROM projects WHERE ProjectName = ? OR sales_order = ?';
+  db.query(checkProjectQuery, [projectName, salesOrder], (err, results) => {
+    if (err) {
+      console.error('Error querying the database:', err);
+      return res.status(500).send('Database error');
+    }
+
+    if (results.length > 0) {
+      return res.status(200).send('Project exist');
+    }
+
+    const insertProjectQuery = 'INSERT INTO projects (ProjectName, sales_order) VALUES (?, ?)';
+    db.query(insertProjectQuery, [projectName, salesOrder], (err, result) => {
+      if (err) {
+        console.error('Error inserting into the database:', err);
+        return res.status(500).send('Database error');
+      }
+
+      const projectId = result.insertId;
+      const insertTaskQueries = taskNames.map((taskName, index) => {
+        const taskValue = taskValues[index];
+        return new Promise((resolve, reject) => {
+          const insertTaskQuery = 'INSERT INTO Task (projectName, TaskName, timetocomplete) VALUES (?, ?, ?)';
+          db.query(insertTaskQuery, [projectName, taskName, taskValue], (err, result) => {
+            if (err) {
+              return reject(err);
+            }
+            resolve(result);
+          });
+        });
+      });
+
+      Promise.all(insertTaskQueries)
+        .then(() => res.status(200).send('Success'))
+        .catch(err => {
+          console.error('Error inserting tasks into the database:', err);
+          res.status(500).send('Database error');
+        });
+    });
+  });
+};
+
+//navbar
+exports.updateProjectSorting = (req, res ) => {
+  const { token, projshowval, projshowval2, projshowval_pv } = req.body;
+  if (!token) {
+    return res.status(400).json({ error: 'Token is required' });
+  }
+  const userData = decryptToken(token);
+  const userId = userData.id;
+  if (!userId) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  // Function to update project sorting in the database
+  const updateProjectSorting = (column, value) => {
+    let projshowvalFinal = '';
+    if (value && !value.includes("-")) {
+      projshowvalFinal = value.join(' ');
+    }
+
+    const query = `UPDATE Logincrd SET ${column} = ? WHERE id = ?`;
+    db.query(query, [projshowvalFinal, userId], (err) => {
+      if (err) {
+        console.error('Error updating database: ', err);
+        res.status(500).json({ error: 'Database error' });
+      } else {
+        res.json({ message: 'Success' });
+      }
+    });
+  };
+
+  // Determine which sorting value to update
+  if (projshowval) {
+    updateProjectSorting('projsorting', projshowval);
+  } else if (projshowval2) {
+    updateProjectSorting('projsorting2', projshowval2);
+  } else if (projshowval_pv) {
+    updateProjectSorting('projsorting_pv', projshowval_pv);
+  } else {
+    res.status(400).json({ error: 'Bad Request' });
   }
 };

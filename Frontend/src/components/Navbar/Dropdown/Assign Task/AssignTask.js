@@ -56,6 +56,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
       Activity: activity,
       Dateassign: date,
       employeeId: selectedEmployeeId,
+      token:localStorage.getItem('token'),
     };
 
     axios.post('http://localhost:3001/api/assignTask', data)

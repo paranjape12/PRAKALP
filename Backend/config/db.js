@@ -1,18 +1,18 @@
 const mysql = require('mysql2');
 
-// const db = mysql.createConnection({
-//   host: 'localhost',
-//   user: 'root',
-//   password: '',
-//   database: 'indiscpx_taskdb_2',
-// });
-
 const db = mysql.createConnection({
   host: 'localhost',
-  user: 'myuser',
-  password: 'Mypassword@1',
+  user: 'root',
+  password: '',
   database: 'indiscpx_taskdb_2',
 });
+
+// const db = mysql.createConnection({
+//   host: 'localhost',
+//   user: 'myuser',
+//   password: 'Mypassword@1',
+//   database: 'indiscpx_taskdb_2',
+// });
 
 // const db = mysql.createConnection({
 //   host: '103.195.185.168',

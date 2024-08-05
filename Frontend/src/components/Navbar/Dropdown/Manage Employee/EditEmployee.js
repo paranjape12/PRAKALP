@@ -220,7 +220,7 @@ const EditEmployee = ({ open, handleClose }) => {
       pagevalue
     };
 
-    axios.put('http://localhost:3001/api/update-employee', requestData)
+    axios.put('http://localhost:3001/api/updateemployee', requestData)
       .then(response => {
         showMessage(setSuccessMessage, "Employee updated successfully!");
       })
@@ -247,28 +247,6 @@ const EditEmployee = ({ open, handleClose }) => {
       });
   }, []);
 
-  const handleDelete = () => {
-    axios.delete(`http://localhost:3001/api/delete-employee/${formData.id}`)
-      .then(response => {
-        console.log(response.data);
-        axios.post('http://localhost:3001/api/empDropdown', {
-          token: localStorage.getItem('token'),
-        })
-          .then(response => {
-            if (Array.isArray(response.data)) {
-              setEmployees(response.data);
-            } else {
-              console.error('Error: Expected an array but got', response.data);
-            }
-          })
-          .catch(error => {
-            console.error('Error fetching employees:', error);
-          });
-      })
-      .catch(error => {
-        console.error('There was an error deleting the employee!', error);
-      });
-  };
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -287,7 +265,7 @@ const EditEmployee = ({ open, handleClose }) => {
   };
 
   return (
-    <Dialog open={open} maxWidth='md'>
+    <Dialog open={open} onClick={handleClose} maxWidth='md'>
       <DialogTitle>Edit Employee
         <Button className='addEmp-btn' style={{ marginLeft: '35rem' }} onClick={() => setOpenDialog(true)} color='primary' variant='contained'>Add Employee</Button>
         <AddEmployee openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} />
