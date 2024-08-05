@@ -76,14 +76,13 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId }
       min: minutes,
       hr: hours,
       msg: log,
-      tid: task.taskId || task.id,
+      tid: Number(task.taskId) || task.id,
       isChecked: taskComplete,
       isChecked2: taskInProgress,
       isChecked3: taskNotComplete,
       token: token,
     };
 
-    console.log("taskcomdata : ", taskCompleteData);
     if ((hours === '' && minutes === '') || (hours == 0 && minutes == 0) || hours > 8 || minutes > 59) {
       setErrorMessage("Please check time format (hr less than 8 and min less than 59)");
       return;

@@ -82,20 +82,6 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
     // Add more pages as needed
   ];
 
-
-
-  useEffect(() => {
-    // Fetch pages
-    axios
-      .get("http://localhost:3001/api/pages")
-      .then((response) => {
-        console.log("Pages fetched successfully:", response.data);
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the pages!", error);
-      });
-  }, []);
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     // If the checkbox "Use Email For Login" is changed

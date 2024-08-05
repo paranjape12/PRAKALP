@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import deletebtn from '../../assets/delete.png';
-import editbtn from '../../assets/edit-text.png';
-import infobtn from '../../assets/information-sign.png';
+import deletebtn from '../../assets/images/delete.png';
+import editbtn from '../../assets/images/edit-text.png';
+import infobtn from '../../assets/images/information-sign.png';
 import '../TaskOverview/TaskOverviewGJC.css';
 import TaskDetailsPopup from '../../components/TaskDetailsPopup';
 import EditTask from '../../components/EditTask';

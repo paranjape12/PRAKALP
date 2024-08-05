@@ -11,7 +11,7 @@ html {
 }
 
 .bg-login-image {
-  background: url(../../img/loginimage2.jpg);
+  background: url(../../assets/images/loginimage.jpeg);
   background-position: unset;
   background-size: cover;
   object-fit: unset;

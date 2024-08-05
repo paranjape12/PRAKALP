@@ -14,7 +14,7 @@ input {
 }
 
 .bg-register-image {
-    background: url("../../assets/register.jpg");
+    background: url("../../assets/images/register.jpg");
     background-position: unset;
     background-size: cover;
     object-fit: unset;

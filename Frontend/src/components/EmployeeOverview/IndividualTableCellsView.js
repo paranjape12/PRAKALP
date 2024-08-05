@@ -150,7 +150,7 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
                     <React.Fragment key={project.projectId}>
                         <tr>
                             <td style={{ fontSize: '13.5px', padding: '0', backgroundColor: getBackgroundColor(project.proj_status), minWidth: '15rem' }}>
-                                <div className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', padding: '0.5rem', fontSize: '13.44px' }}>
+                                <div className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', paddingLeft: '0.5rem', fontSize: '13.44px' }}>
                                     {project.assigntaskpresent && (
                                         <FontAwesomeIcon
                                             icon={expandedProjects[project.projectId] === 'individual' ? faMinus : faPlus}

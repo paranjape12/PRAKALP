@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Register.css';
-import eyeIcon from '../../assets/eye.svg';
-import eyeIconSlash from '../../assets/eye-slash.svg';
+import eyeIcon from '../../assets/images/eye.svg';
+import eyeIconSlash from '../../assets/images/eye-slash.svg';
 import ErrorMessageModal from "../../components/ErrorMessageModal";
 import { Link } from 'react-router-dom';
 import axios from 'axios';

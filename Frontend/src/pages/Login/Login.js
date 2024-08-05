@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import eyeIcon from "../../assets/eye.svg";
-import eyeIconSlash from "../../assets/eye-slash.svg";
-import googleIcon from "../../assets/google.svg";
+import eyeIcon from "../../assets/images/eye.svg";
+import eyeIconSlash from "../../assets/images/eye-slash.svg";
+import googleIcon from "../../assets/images/google.svg";
 import axios from "axios";
 import { Buffer } from "buffer";
 import "./Login.css";

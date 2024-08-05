@@ -1,6 +1,6 @@
 // TaskDetailsPopup.js
 import React from 'react';
-import '../css/TaskDetailsPopup.css'
+import '../assets/styles/TaskDetailsPopup.css'
 
 function TaskDetailsPopup({ task, onClose }) {
   return (

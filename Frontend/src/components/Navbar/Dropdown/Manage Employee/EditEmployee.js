@@ -136,12 +136,6 @@ const EditEmployee = ({ open, handleClose }) => {
     }
   };
 
-  useEffect(() => {
-    axios.get('http://localhost:3001/api/pages')
-      .then(response => { })
-      .catch(error => { console.error('There was an error fetching the pages!', error); });
-  }, []);
-
   const handleAccessChange = (pageName, accessType) => {
     setFormData(prevState => {
       const newAccess = { ...prevState.access };

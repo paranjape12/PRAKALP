@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import '../css/EditTask.css'
-import arrow from '../assets/down-arrow.png';
+import '../assets/styles/EditTask.css'
+import arrow from '../assets/images/down-arrow.png';
 import axios from 'axios';
 
 

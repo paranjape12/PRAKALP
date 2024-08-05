@@ -172,13 +172,11 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
             handleClose={handleTaskInfoDialogClose}
           />
 
-          {selectedProject && (
-            <EditTaskPopup
-              open={editTaskDialogOpen}
-              handleClose={handleCloseEditTaskDialog}
-              projectDetails={selectedProject}
-            />
-          )}
+          <EditTaskPopup
+            open={editTaskDialogOpen}
+            handleClose={handleCloseEditTaskDialog}
+            projectDetails={selectedProject}
+          />
 
           {deleteTaskDialogOpen && (
             <DeleteTaskPopup
@@ -211,7 +209,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
             <tr>
               <td title='Planned Timings' style={{ padding: '0.73rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
               {dates.map((date, i) => (
-                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
+                <td key={i} style={{ minWidth: '8.5rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
                   {loading ? '' : (
                     taskTimings[i]?.map(timing => (
                       timing.taskid === task.taskId ? `${nickname} : ${seconds2hrmin(timing.planned)}` : ''
@@ -223,7 +221,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
             <tr>
               <td title='Actual Timings' style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
               {dates.map((date, i) => (
-                <td key={i} style={{ minWidth: '8.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
+                <td key={i} style={{ minWidth: '8.5rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
                   {loading ? '' : (
                     taskTimings[i]?.map(timing => (
                       timing.taskid === task.taskId ? (

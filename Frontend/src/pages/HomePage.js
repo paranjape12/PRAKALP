@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import '../css/HomePage.css';
-import deletebtn from '../assets/delete.png';
-import editbtn from '../assets/edit-text.png';
+import '../assets/styles/HomePage.css';
+import deletebtn from '../assets/images/delete.png';
+import editbtn from '../assets/images/edit-text.png';
 import axios from 'axios';
 import EditProject from '../components/TaskOverview/EditProjectPopup';
 //import WeeklyCalender from './WeeklyCalender';
