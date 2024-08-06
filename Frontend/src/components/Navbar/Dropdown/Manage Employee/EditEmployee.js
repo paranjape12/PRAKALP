@@ -525,6 +525,7 @@ const EditEmployee = ({ open, handleClose }) => {
         open={openDeletePopup}
         handleClose={handleCloseDeletePopup}
         selectedEmployeeId={selectedEmployeeId}
+        onEmployeeDeleted={handleEmployeeDeleted} // Pass the callback function
       />
     </Dialog>
   );
