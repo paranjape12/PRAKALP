@@ -204,10 +204,9 @@ exports.taskOverview = (req, res ) => {
 };
 
 exports.aggViewPATimes = (req, res ) => {
-  const projectName = req.body.projectName; // Project name received from frontend
-  const dates = req.body.dates; // Array of dates received from frontend
+  const projectName = req.body.projectName;
+  const dates = req.body.dates;
 
-  // Query to get task IDs based on project name
   const sqlGetTaskIds = `
     SELECT id
     FROM Task
@@ -233,7 +232,6 @@ exports.aggViewPATimes = (req, res ) => {
         AND taskid IN (?)
     `;
 
-    // Execute the second query with task IDs and dates
     db.query(sqlGetSums, [dates, taskIds], (err, sumResults) => {
       if (err) {
         console.log('Error executing SUM query:', err);
@@ -241,9 +239,8 @@ exports.aggViewPATimes = (req, res ) => {
         return;
       }
 
-      // Assuming results are returned as an array with a single object
       const summary = sumResults[0];
-      res.json(summary); // Return the summary as JSON response
+      res.json(summary);
     });
   });
 };
@@ -275,7 +272,6 @@ exports.indViewPATimes = (req, res) => {
         AND taskid IN (?)
     `;
 
-    // Execute the second query with task IDs and dates
     db.query(sqlGetSums, [dates, taskIds], (err, sumResults) => {
       if (err) {
         console.log('Error executing ind query:', err);
@@ -777,3 +773,135 @@ exports.assignTask = (req, res) => {
         res.status(500).json({ error: error.message });
       }    
   };
+
+exports.empOverviewTaskDtlsIndIndView = async(req, res) => {
+  const { assignBy, projectName } = req.query;
+
+  try {
+    // 1a. Get task IDs based on the projectName
+    const taskIdsQuery = `SELECT id FROM task WHERE projectName = ?`;
+    const taskIdsResult = await new Promise((resolve, reject) => {
+      db.query(taskIdsQuery, [projectName], (error, results) => {
+        if (error) return reject(error);
+        resolve(results);
+      });
+    });
+
+    // Extract task IDs and join them into a string
+    const taskIds = taskIdsResult.map(task => task.id).join(',');
+
+    // 1b. Use the task IDs to query taskemp for distinct task IDs assigned to a specific employee
+    const distinctTaskIdsQuery = `SELECT DISTINCT(taskid) FROM taskemp WHERE taskid IN (${taskIds}) AND AssignedTo_emp = ?`;
+    const distinctTaskIdsResult = await new Promise((resolve, reject) => {
+      db.query(distinctTaskIdsQuery, [assignBy], (error, results) => {
+        if (error) return reject(error);
+        resolve(results);
+      });
+    });
+
+    // Extract distinct task IDs and join them into a string
+    const distinctTaskIds = distinctTaskIdsResult.map(task => task.taskid).join(',');
+
+    // 1c. Use the distinct task IDs to get the task details
+    const tasksQuery = `SELECT * FROM task WHERE id IN (${distinctTaskIds})`;
+    const tasks = await new Promise((resolve, reject) => {
+      db.query(tasksQuery, (error, results) => {
+        if (error) return reject(error);
+        resolve(results);
+      });
+    });
+
+    const taskempQuery = `
+      SELECT t.*, total.actual FROM taskemp t JOIN ( SELECT taskid, SUM(actualtimetocomplete_emp) AS actual FROM taskemp WHERE taskid IN (${taskIds}) GROUP BY taskid ) total ON t.taskid = total.taskid WHERE t.taskid IN (${taskIds});
+    `;
+    const taskemps = await new Promise((resolve, reject) => {
+      db.query(taskempQuery, (error, results) => {
+        if (error) return reject(error);
+        resolve(results);
+      });
+    });
+
+    res.json({
+      tasks,
+      taskemps
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.empOverviewIndIndPATimes = (req, res ) => {
+  const { projectName, assignedTo, taskDates } = req.query;
+  
+  // Validate taskDates format (assume it's a comma-separated list of dates)
+  if (!taskDates || !Array.isArray(taskDates.split(','))) {
+    return res.status(400).json({ error: 'Invalid taskDates format' });
+  }
+
+  const dateArray = taskDates.split(',').map(date => new Date(date).toISOString().split('T')[0]);
+
+  // Query 1: Fetch all tasks for the given project
+  const query1 = `
+    SELECT id
+    FROM task 
+    WHERE projectName = ?;
+  `;
+
+  db.query(query1, [projectName], (err, tasks) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error executing query1' });
+    }
+
+    // Extract task IDs
+    const taskIds = tasks.map(task => task.id);
+
+    if (taskIds.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    // Create a comma-separated list of IDs for the SQL query
+    const taskIdsList = taskIds.join(',');
+
+    // Query 2: Fetch details from taskemp for the given tasks and assigned employee
+    const query2 = `
+      SELECT id, taskid, actualtimetocomplete_emp, DATE(tasktimeemp) as tasktimeemp_date, timetocomplete_emp
+      FROM taskemp 
+      WHERE taskid IN (${taskIdsList})
+        AND AssignedTo_emp = ?
+        AND DATE(tasktimeemp) IN (?);
+    `;
+
+    // Use a prepared statement for query2
+    db.query(query2, [assignedTo, dateArray], (err, taskEmpDetails) => {
+      if (err) {
+        return res.status(500).json({ error: 'Error executing query2' });
+      }
+
+      // Create a map for easy lookup
+      const empDetailsMap = taskEmpDetails.reduce((acc, curr) => {
+        let tasktimeemp_date = new Date(curr.tasktimeemp_date);
+        tasktimeemp_date.setDate(tasktimeemp_date.getDate() + 1);
+        tasktimeemp_date = tasktimeemp_date.toISOString().split('T')[0];
+
+        acc[curr.taskid] = {
+          id: curr.id, // Store the id from taskemp
+          actualtimetocomplete_emp: curr.actualtimetocomplete_emp,
+          tasktimeemp_date: tasktimeemp_date,
+          timetocomplete_emp: curr.timetocomplete_emp
+        };
+        return acc;
+      }, {});
+
+      // Combine the results
+      const combinedResults = tasks.map(task => ({
+        taskid: task.id,
+        id: empDetailsMap[task.id] ? empDetailsMap[task.id].id : null, // Add id to combinedResults
+        planned: empDetailsMap[task.id] ? empDetailsMap[task.id].timetocomplete_emp : null,
+        actual: empDetailsMap[task.id] ? empDetailsMap[task.id].actualtimetocomplete_emp : null,
+        taskDate: empDetailsMap[task.id] ? empDetailsMap[task.id].tasktimeemp_date : null,
+      }));
+
+      res.json(combinedResults);
+    });
+  });
+};

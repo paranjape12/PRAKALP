@@ -6,6 +6,7 @@ import AggregateTaskDetailsView from './AggregateTaskDetailsView';
 import IndividualTaskDetailsView from './IndividualTaskDetailsView';
 import EditProjectPopup from '../TaskOverview/EditProjectPopup';
 import DeleteProjectPopup from '../TaskOverview/DeleteProjectPopup';
+import { CircularProgress } from '@mui/material';
 
 const getBackgroundColor = (proj_status) => {
     switch (proj_status) {
@@ -22,6 +23,23 @@ const getBackgroundColor = (proj_status) => {
     }
 };
 
+function GradientCircularProgress() {
+    return (
+        <td colSpan={9} style={{ padding: '0.4rem 40rem', minWidth:'auto' }}>
+            <svg width={0} height={0}>
+                <defs>
+                    <linearGradient id="my_gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#ff9900" />
+                        <stop offset="50%" stopColor="#0099cc" />
+                        <stop offset="100%" stopColor="#009933" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <CircularProgress sx={{ 'svg circle': { stroke: 'url(#my_gradient)' } }} />
+        </td>
+    );
+}
+
 function IndividualTableCellsView({ employee, isComplete, dates }) {
     const [localShowTimeDetails, setLocalShowTimeDetails] = useState(true);
     const [totalTasks, setTotalTasks] = useState(0);
@@ -32,6 +50,7 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
     const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
     const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
     const [projectName, setProjectName] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [expandedProjects, setExpandedProjects] = useState({});
     const empId = employee.id;
     const empType = employee.Type;
@@ -46,6 +65,7 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
                         params: { empid: empId, U_type: empType }
                     });
                     setProjects(response.data);
+                    setLoading(false);
                     setCachedProjects(prevState => ({ ...prevState, [empId]: response.data }));
                 } catch (error) {
                     console.error('Error fetching project data:', error);
@@ -145,43 +165,47 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
 
     return (
         <>
-            {projects.length > 0 ? (
-                projects.map((project) => (
-                    <React.Fragment key={project.projectId}>
-                        <tr>
-                            <td style={{ fontSize: '13.5px', padding: '0', backgroundColor: getBackgroundColor(project.proj_status), minWidth: '15rem' }}>
-                                <div className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', paddingLeft: '0.5rem', fontSize: '13.44px' }}>
-                                    {project.assigntaskpresent && (
-                                        <FontAwesomeIcon
-                                            icon={expandedProjects[project.projectId] === 'individual' ? faMinus : faPlus}
-                                            style={{ cursor: 'pointer', marginRight:'0.2rem' }}
-                                            title='Expand/Collapse Tasks'
-                                            onClick={() => handleExpandTasks(project.projectId)}
-                                        />
-                                    )}
-                                    [{project.projectSalesOrder}]
-                                    <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
-                                        <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
-                                    </a>
-                                    <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.projectId} name={project.projectName} value={project.proj_status} onClick={() => handleOpenEditProjectDialog(project)}>
-                                        <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
-                                    </a>
-                                    <br />
-                                    {project.projectName}
-                                </div>
-                            </td>
-                            {expandedProjects[project.projectId] === 'individual' ? (
-                                <IndividualTaskDetailsView dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
-                                    seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} />
-                            ) : (
-                                <AggregateTaskDetailsView dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
-                                    seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} />
-                            )}
-                        </tr>
-                    </React.Fragment>
-                ))
+            {loading ? (
+                    <GradientCircularProgress />
             ) : (
-                <td style={{ textAlign: 'center' }} colSpan={9}>No Projects Assigned.</td>
+                projects.length > 0 ? (
+                    projects.map((project) => (
+                        <React.Fragment key={project.projectId}>
+                            <tr>
+                                <td style={{ fontSize: '13.5px', padding: '0', backgroundColor: getBackgroundColor(project.proj_status), minWidth: '15rem' }}>
+                                    <div className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', paddingLeft: '0.5rem', fontSize: '13.44px' }}>
+                                        {project.assigntaskpresent && (
+                                            <FontAwesomeIcon
+                                                icon={expandedProjects[project.projectId] === 'individual' ? faMinus : faPlus}
+                                                style={{ cursor: 'pointer', marginRight: '0.2rem' }}
+                                                title='Expand/Collapse Tasks'
+                                                onClick={() => handleExpandTasks(project.projectId)}
+                                            />
+                                        )}
+                                        [{project.projectSalesOrder}]
+                                        <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
+                                            <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
+                                        </a>
+                                        <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.projectId} name={project.projectName} value={project.proj_status} onClick={() => handleOpenEditProjectDialog(project)}>
+                                            <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
+                                        </a>
+                                        <br />
+                                        {project.projectName}
+                                    </div>
+                                </td>
+                                {expandedProjects[project.projectId] === 'individual' ? (
+                                    <IndividualTaskDetailsView dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
+                                        seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} />
+                                ) : (
+                                    <AggregateTaskDetailsView dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
+                                        seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} />
+                                )}
+                            </tr>
+                        </React.Fragment>
+                    ))
+                ) : (
+                    <td style={{ textAlign: 'center' }} colSpan={9}>No Projects Assigned.</td>
+                )
             )}
             {selectedProject && (
                 <EditProjectPopup

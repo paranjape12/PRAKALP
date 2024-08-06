@@ -16,6 +16,7 @@ router.get('/empOverviewIndAggPATimes', taskController.empOverviewIndAggPATimes)
 router.get('/task', taskController.task);
 router.post('/assignTask', taskController.assignTask);
 router.post('/employeeLogs',taskController.employeeLogs);
-
+router.get('/empOverviewTaskDtlsIndIndView', taskController.empOverviewTaskDtlsIndIndView);
+router.get('/empOverviewIndIndPATimes', taskController.empOverviewIndIndPATimes);
 
 module.exports = router;

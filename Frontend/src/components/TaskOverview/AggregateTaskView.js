@@ -4,6 +4,7 @@ import { format } from 'date-fns'; // Import format function from date-fns
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask';
+import { Buffer } from 'buffer';
 
 const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2dayhrmin, showComplete }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(() => {
@@ -16,9 +17,11 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     return details[project.projectId];
   });
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
-  const [summaryData, setSummaryData] = useState([]); // State to store backend response
+  const [projectTimeDetails, setProjectTimeDetails] = useState({ planned: {}, actual: {} });
+  const [summaryData, setSummaryData] = useState([]);
 
   const seconds2hrmin = (ss) => {
+    if (ss == 0) { return ``; }
     const h = Math.floor(ss / 3600); // Total hours
     const m = Math.floor((ss % 3600) / 60); // Remaining minutes
 
@@ -28,41 +31,47 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     return `${formattedH} : ${formattedM}`;
   };
 
-  const fetchData = async () => {
+  const fetchProjectTimeDetails = async (projectName, userId, startDate) => {
     try {
-      const formattedDates = dates.map(item => format(new Date(item.date), 'yyyy-MM-dd'));
-  
-      // Limit the number of concurrent requests
-      const chunkSize = 7;
-      for (let i = 0; i < formattedDates.length; i += chunkSize) {
-        const chunk = formattedDates.slice(i, i + chunkSize);
-        const responses = await Promise.all(chunk.map(formattedDate => (
-          axios.post('http://localhost:3001/api/aggViewPATimes', {
-            projectName: project.projectName,
-            dates: [formattedDate]
-          })
-        )));
-        const responseData = responses.map(response => response.data);
-        setSummaryData(prevData => [...prevData, ...responseData]);
-      }
+      const response = await axios.get('http://localhost:3001/api/empOverviewIndAggPATimes', {
+        params: { projectName, userId, startDate }
+      });
+
+      const updatedProjectTimeDetails = { planned: {}, actual: {} };
+      response.data.data.forEach(row => {
+        updatedProjectTimeDetails.planned[row.taskDate] = row.planned || 0;
+        updatedProjectTimeDetails.actual[row.taskDate] = row.actual || 0;
+      });
+
+      setProjectTimeDetails(updatedProjectTimeDetails);
     } catch (error) {
-      console.error('Error fetching summary data:', error);
+      console.error('Error fetching project time details:', error);
     }
   };
-  
+
+  function decryptToken(token) {
+    const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+    const userData = JSON.parse(decodedToken)[0];
+    return userData;
+  }
+
+  const decrypToken = decryptToken(localStorage.getItem('token'));
 
   useEffect(() => {
-    fetchData();
+    const assignBy = decrypToken.id;
+    const projectName = project.projectName;
+    const startDate = dates[0]?.ymdDate;
+    fetchProjectTimeDetails(projectName, assignBy, startDate);
   }, [project.projectName, dates]);
 
   // Fetch projects every 7 second to update task timings
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      fetchData();
-    }, 7000);
+  // useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     fetchData();      
+  //   }, 30000);
 
-    return () => clearInterval(intervalId);
-  }, [project.projectName, dates]);
+  //   return () => clearInterval(intervalId);
+  // }, [project.projectName, dates]);
 
 
   const handleToggleShowTimeComplete = (e) => {
@@ -122,27 +131,19 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
           </div>
         </div>
         <div style={{ verticalAlign: 'middle', height: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <td title='Planned Timings' style={{ padding: '0.3rem 0.4rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none solid' }}>P</td>
+          <td title='Planned Timings' style={{ padding: '0.35rem 0.4rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none solid' }}>P</td>
           <td title='Actual Timings' style={{ padding: '0.3rem 0.35rem', fontSize: '13.44px', borderStyle: 'solid none none solid' }}>A</td>
         </div>
       </td>
-      {/* Display fetched data here */}
-      {[...Array(7)].map((_, i) => (
-        <td key={i} style={{ padding: '0' }}>
-          <tr
-            title='Create new Task'
-            style={{ padding: '0.2rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', cursor: 'pointer', textAlign: 'center', height: '1.9rem' }}
-            onClick={handleOpenAddTaskDialog}
-          >
-            {summaryData.length > 0 && summaryData[i]?.planned !== null
-              ? seconds2hrmin(summaryData[i]?.planned)
-              : ''}
-          </tr>
-          <tr style={{ padding: '0.17rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '1.9rem' }}>
-            {summaryData.length > 0 && summaryData[i]?.actual != null
-              ? seconds2hrmin(summaryData[i]?.actual)
-              : ''}
-          </tr>
+      {dates.map((date, i) => (
+        <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden' }}>
+          <div title='Create New Task' style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
+            onClick={handleOpenAddTaskDialog}>
+            {seconds2hrmin(projectTimeDetails.planned[date.ymdDate] || 0)}
+          </div>
+          <div style={{ paddingTop: '0.2rem', width: '8.55rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
+            {seconds2hrmin(projectTimeDetails.actual[date.ymdDate] || 0)}
+          </div>
         </td>
       ))}
       {<AddTaskModal projectName={project.projectName} open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />}

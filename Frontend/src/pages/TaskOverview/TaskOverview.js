@@ -129,8 +129,10 @@ function TaskOverview() {
     let currentDate = new Date(today);
     for (let i = 0; i < 7; i++) {
       const newDate = new Date(currentDate.setDate(currentDate.getDate() + startDateIndex + i));
+      const formattedDate = newDate.toISOString().slice(0, 10); // Format as "YYYY-MM-DD"
       newDates.push({
         date: newDate,
+        ymdDate: formattedDate,
         dateString: newDate.toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
@@ -205,7 +207,7 @@ function TaskOverview() {
   useEffect(() => {
     const intervalId = setInterval(() => {
       fetchProjects();
-    }, 4000);
+    }, 5000);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -372,7 +374,7 @@ function TaskOverview() {
                   )}
                   {!project.assigntaskpresent && (
                     <td title='Create new Task' className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'none' }} onClick={() => handleOpenAddTaskModal(project.projectName)} colSpan="9">
-                      No Task Found today.
+                      No Task Found.
                     </td>
                   )}
                 </tr>
