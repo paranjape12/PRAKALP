@@ -162,6 +162,8 @@ function EmployeeOverview() {
   const [logsPopupOpen, setLogsPopupOpen] = useState(false);
   const [deleteEmployeeOpen, setDeleteEmployeeOpen] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null); // Add state to track the selected employee ID for deletion
+  const [userRole, setUserRole] = useState('');
+
 
   useEffect(() => {
     const initialProjectTimeDetails = {};
@@ -235,6 +237,25 @@ function EmployeeOverview() {
   const handleCloseLogsDialog = () => {
     setLogsPopupOpen(false);
     setSelectedEmployee(null);
+  };
+
+
+   // Define the callback function to handle successful deletion
+   const handleEmployeeDeleted = () => {
+    // Fetch updated employees list
+    axios.post("http://localhost:3001/api/empDropdown", {
+      token: localStorage.getItem("token"),
+    })
+    .then(response => {
+      if (Array.isArray(response.data)) {
+        setEmployees(response.data);
+      } else {
+        console.error("Error: Expected an array but got", response.data);
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching employees:", error);
+    });
   };
 
   const handleOpenDeleteEmployeeDialog = (employeeId) => {
@@ -347,7 +368,7 @@ function EmployeeOverview() {
         <LogsPopup
           open={logsPopupOpen}
           handleClose={handleCloseLogsDialog}
-          employee={employee}
+          employee={selectedEmployee}
         />
       )}
             </>
@@ -369,6 +390,7 @@ function EmployeeOverview() {
           open={deleteEmployeeOpen}
           handleClose={handleCloseDeleteEmployeeDialog}
           selectedEmployeeId={selectedEmployeeId}
+          onEmployeeDeleted={handleEmployeeDeleted} // Pass the callback function
 
         />
       )}
