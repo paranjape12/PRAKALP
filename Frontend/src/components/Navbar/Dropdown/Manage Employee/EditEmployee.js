@@ -248,12 +248,31 @@ const EditEmployee = ({ open, handleClose }) => {
   }, []);
 
 
+  const handleEmployeeDeleted = () => {
+    // Fetch updated employees list
+    axios.post("http://localhost:3001/api/empDropdown", {
+      token: localStorage.getItem("token"),
+    })
+    .then(response => {
+      if (Array.isArray(response.data)) {
+        setEmployees(response.data);
+      } else {
+        console.error("Error: Expected an array but got", response.data);
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching employees:", error);
+    });
+  };
+
+
+
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
-
+  
   const handleOpenDeletePopup = (id) => {
     setSelectedEmployeeId(id);
     setOpenDeletePopup(true);
