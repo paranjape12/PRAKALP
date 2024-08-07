@@ -77,62 +77,6 @@ function ProjectOverview() {
             return '#FFFFFF';
         }
       };
-     
-
-      
-    //Calculate project
-    // const [projects, setProjects] = useState([]);
-    // const [totalProjects, setTotalProjects] = useState(0);
-  
-    // useEffect(() => {
-    //   // Fetch projects
-    //   axios.get('http://localhost:3001/api/projectview')
-    //     .then(response => {
-    //       if (response.data.result === 'projectfound') {
-    //         const projectData = response.data.data;
-    //         setProjects(projectData);
-    //         setTotalProjects(projectData.length); // Update total project count
-    //       } else {
-    //         console.error('No projects found');
-    //       }
-    //     })
-    //     .catch(error => {
-    //       console.error('Error fetching projects:', error);
-    //     });
-    // }, []);
-
-
-    // const [projects, setProjects] = useState([]);
-
-    
-   
-     
-    // useEffect(() => {
-    //     // Replace this with your actual data fetching logic
-    //     fetch('/api/projects')
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             if (data.result === 'projectfound') {
-    //                 setProjects(data.data);
-    //             }
-    //         })
-    //         .catch(error => console.error('Error fetching projects:', error));
-    // }, []);
-
-    // const getStatusStyle = (status) => {
-    //     switch(status) {
-    //         case "1":
-    //             return { backgroundColor: '#ADD8E6', color: 'black' };
-    //         case "2":
-    //             return { backgroundColor: '#ffff00ad', color: 'black' };
-    //         case "3":
-    //             return { backgroundColor: '#ff8d00b8', color: 'black' };
-    //         case "4":
-    //             return { backgroundColor: '#04ff00b8', color: 'black' };
-    //         default:
-    //             return { backgroundColor: '#FFFFFF', color: 'black' };
-    //     }
-    // };
 
     //Taskoverview
     const [showComplete, setShowComplete] = useState(() => {
@@ -197,8 +141,6 @@ function ProjectOverview() {
     
         return () => clearInterval(intervalId);
       }, []);
-    
-     
     
       const handleOpenEditProjectDialog = (project) => {
         setSelectedProject({

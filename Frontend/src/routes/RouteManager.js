@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import '../App.css';
-import HomePage from '../pages/HomePage';
-import AddEmployee from '../components/Navbar/Dropdown/Manage Employee/AddEmployee';
 import TaskOveriew from '../pages/TaskOverview/TaskOverview';
 //import EmployeePage from '../pages/EmployeePage';
 import Login from '../pages/Login/Login';
@@ -26,11 +24,6 @@ function RouteManager() {
                 <Route path="/task" element={<TaskOveriew/>} />
                 <Route path="/employeeOverview" element={<EmployeeOverview isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
                 <Route path="/project" element={<ProjectOverview />} />
-
-
-                <Route path="/homepage" element={<HomePage isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
-                <Route path="/edit-employee" element={<EditEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
-                <Route path="/add-employee" element={<AddEmployee isPopupVisible={showAddProject || showAddTask || showAssignTask} />} />
             </Routes>
         </Router>
     );
