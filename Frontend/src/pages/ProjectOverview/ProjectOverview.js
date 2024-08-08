@@ -438,6 +438,7 @@ const ProjectOverview = () => {
                   open={deleteProjectDialogOpen}
                   handleClose={handleCloseDeleteProjectDialog}
                   selectedProjectId={selectedProjectId}
+                  projectName={projectName} 
                 />
               )}
             </div>
