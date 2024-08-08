@@ -1,33 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { format } from 'date-fns'; // Import format function from date-fns
+import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask';
 import { Buffer } from 'buffer';
+import Skeleton from '@mui/material/Skeleton'; // Import Skeleton from Material-UI
 
 const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2dayhrmin, showComplete }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(() => {
     const storedValue = localStorage.getItem('showTimeDetails');
     const details = storedValue ? JSON.parse(storedValue) : {};
     if (details[project.projectId] === undefined) {
-      details[project.projectId] = true; // Default to true if not set
+      details[project.projectId] = true;
       localStorage.setItem('showTimeDetails', JSON.stringify(details));
     }
     return details[project.projectId];
   });
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [projectTimeDetails, setProjectTimeDetails] = useState({ planned: {}, actual: {} });
-  const [summaryData, setSummaryData] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
 
   const seconds2hrmin = (ss) => {
-    if (ss == 0) { return ``; }
-    const h = Math.floor(ss / 3600); // Total hours
-    const m = Math.floor((ss % 3600) / 60); // Remaining minutes
-
+    if (ss === 0) { return ``; }
+    const h = Math.floor(ss / 3600);
+    const m = Math.floor((ss % 3600) / 60);
     const formattedH = h < 10 ? '0' + h : h;
     const formattedM = m < 10 ? '0' + m : m;
-
     return `${formattedH} : ${formattedM}`;
   };
 
@@ -61,18 +60,16 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     const assignBy = decrypToken.id;
     const projectName = project.projectName;
     const startDate = dates[0]?.ymdDate;
+
+    setLoading(true); // Set loading to true whenever dates change
     fetchProjectTimeDetails(projectName, assignBy, startDate);
+
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, [project.projectName, dates]);
-
-  // Fetch projects every 7 second to update task timings
-  // useEffect(() => {
-  //   const intervalId = setInterval(() => {
-  //     fetchData();      
-  //   }, 30000);
-
-  //   return () => clearInterval(intervalId);
-  // }, [project.projectName, dates]);
-
 
   const handleToggleShowTimeComplete = (e) => {
     e.stopPropagation();
@@ -98,7 +95,6 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     }
   }
 
-  // Filter tasks based on the showComplete state and approved value
   const filteredTasks = project.tasks.filter(task => showComplete || task.taskAproved !== 1);
   const noOfAssignedTasks = filteredTasks.length;
 
@@ -137,13 +133,22 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
       </td>
       {dates.map((date, i) => (
         <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden' }}>
-          <div title='Create New Task' style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
-            onClick={handleOpenAddTaskDialog}>
-            {seconds2hrmin(projectTimeDetails.planned[date.ymdDate] || 0)}
-          </div>
-          <div style={{ paddingTop: '0.2rem', width: '8.55rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
-            {seconds2hrmin(projectTimeDetails.actual[date.ymdDate] || 0)}
-          </div>
+          {loading ? (
+            <>
+              <Skeleton variant="text" width={95} height={25} style={{ marginLeft: '1rem' }} />
+              <Skeleton variant="text" width={95} height={25} style={{ marginLeft: '1rem' }} />
+            </>
+          ) : (
+            <>
+              <div title='Create New Task' style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
+                onClick={handleOpenAddTaskDialog}>
+                {seconds2hrmin(projectTimeDetails.planned[date.ymdDate] || 0)}
+              </div>
+              <div style={{ paddingTop: '0.2rem', width: '8.55rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
+                {seconds2hrmin(projectTimeDetails.actual[date.ymdDate] || 0)}
+              </div>
+            </>
+          )}
         </td>
       ))}
       {<AddTaskModal projectName={project.projectName} open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />}
