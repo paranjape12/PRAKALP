@@ -89,8 +89,8 @@ function TaskOverview() {
     }, 7000);
 
     return () => {
-      clearInterval(timer); // Clean up the timer when component unmounts or when changing state
-      clearTimeout(timeout); // Clean up the timeout to prevent memory leaks
+      clearInterval(timer); 
+      clearTimeout(timeout); 
     };
   }, []);
 
@@ -98,13 +98,11 @@ function TaskOverview() {
     e.stopPropagation();
     setShowComplete((prevShowComplete) => {
       const newValue = !prevShowComplete;
-      // Store new value in localStorage
       localStorage.setItem('showCompletedTasks', JSON.stringify(newValue));
       return newValue;
     });
   };
 
-  // Modify the toggleShowTimeComplete function to toggle time details for a specific project
   const toggleShowTimeComplete = (projectId) => {
     setProjectTimeDetails((prevState) => ({
       ...prevState,
@@ -112,7 +110,6 @@ function TaskOverview() {
     }));
   };
 
-  // Inside the useEffect hook for fetching projects, initialize the projectTimeDetails state with default values
   useEffect(() => {
     const initialProjectTimeDetails = {};
     projects.forEach((project) => {
@@ -129,7 +126,7 @@ function TaskOverview() {
     let currentDate = new Date(today);
     for (let i = 0; i < 7; i++) {
       const newDate = new Date(currentDate.setDate(currentDate.getDate() + startDateIndex + i));
-      const formattedDate = newDate.toISOString().slice(0, 10); // Format as "YYYY-MM-DD"
+      const formattedDate = newDate.toISOString().slice(0, 10); 
       newDates.push({
         date: newDate,
         ymdDate: formattedDate,
@@ -172,7 +169,7 @@ function TaskOverview() {
   };
 
   const handleCloseAddTaskModal = () => {
-    setShowAddTaskModal(false); // Close AddTaskModal
+    setShowAddTaskModal(false); 
   };
 
   const fetchProjects = async () => {
@@ -202,15 +199,6 @@ function TaskOverview() {
   useEffect(() => {
     fetchProjects();
   }, [showComplete]);
-
-  // Fetch projects every 4 second to update colors
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      fetchProjects();
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, []);
 
   function getTaskStatusColor(requiredTime, takenTime) {
     if (requiredTime < takenTime) {

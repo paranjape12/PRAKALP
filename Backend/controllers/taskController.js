@@ -77,133 +77,126 @@ exports.createTask = (req, res) => {
   }
 };
 
-exports.taskOverview = (req, res ) => {
-    const token = req.body.token;
-    const is_complete = req.body.is_complete;
-  
-    if (!token) {
-      return res.status(400).send('Token is required');
+exports.taskOverview = (req, res) => {
+  const token = req.body.token;
+  const is_complete = req.body.is_complete;
+
+  if (!token) {
+    return res.status(400).send('Token is required');
+  }
+
+  const userData = decryptToken(token);
+  const U_type = userData.Type;
+  const u_id = userData.id;
+  let arrselectemptask = [];
+
+  const selectTaskEmpQuery = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`;
+  db.query(selectTaskEmpQuery, [u_id], (err, taskResults) => {
+    if (err) {
+      console.error('Error executing task query:', err.stack);
+      return res.status(500).send('Database query error');
     }
-  
-    const userData = decryptToken(token);
-    const U_type = userData.Type;
-    const u_id = userData.id;
-    let arrselectemptask = [];
-  
-    if (U_type !== 'Admin' && U_type !== 'Team Leader') {
-      const selectTaskEmpQuery = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`;
-      db.query(selectTaskEmpQuery, [u_id], (err, taskResults) => {
+
+    arrselectemptask = taskResults.map(row => row.taskid);
+
+    getProjSortingAndProjects();
+  });
+
+  function getProjSortingAndProjects() {
+    const loginQuerySort = `SELECT projsorting FROM Logincrd WHERE id = ?`;
+    db.query(loginQuerySort, [u_id], (err, loginResults) => {
+      if (err) {
+        console.error('Error executing login query:', err.stack);
+        return res.status(500).send('Database query error');
+      }
+
+      const proj_sort_str = loginResults.length > 0 ? loginResults[0].projsorting : '';
+      const proj_sort = proj_sort_str ? proj_sort_str.split(' ') : [];
+
+      let selectProjectQuery;
+      if (proj_sort_str === '') {
+        selectProjectQuery = `SELECT * FROM projects`;
+      } else {
+        const sort_Status = proj_sort.map(status => `'${status}'`).join(',');
+        selectProjectQuery = `SELECT * FROM projects WHERE Status IN (${sort_Status})`;
+      }
+
+      db.query(selectProjectQuery, (err, projectResults) => {
         if (err) {
-          console.error('Error executing task query:', err.stack);
+          console.error('Error executing project query:', err.stack);
           return res.status(500).send('Database query error');
         }
-  
-        arrselectemptask = taskResults.map(row => row.taskid);
-  
-        getProjSortingAndProjects();
-      });
-    } else {
-      getProjSortingAndProjects();
-    }
-  
-    function getProjSortingAndProjects() {
-      const loginQuerySort = `SELECT projsorting FROM Logincrd WHERE id = ?`;
-      db.query(loginQuerySort, [u_id], (err, loginResults) => {
-        if (err) {
-          console.error('Error executing login query:', err.stack);
-          return res.status(500).send('Database query error');
-        }
-  
-        const proj_sort_str = loginResults.length > 0 ? loginResults[0].projsorting : '';
-        const proj_sort = proj_sort_str ? proj_sort_str.split(' ') : [];
-  
-        let selectProjectQuery;
-        if (proj_sort_str === '') {
-          selectProjectQuery = `SELECT * FROM projects`;
-        } else {
-          const sort_Status = proj_sort.map(status => `'${status}'`).join(',');
-          selectProjectQuery = `SELECT * FROM projects WHERE Status IN (${sort_Status})`;
-        }
-  
-        db.query(selectProjectQuery, (err, projectResults) => {
-          if (err) {
-            console.error('Error executing project query:', err.stack);
-            return res.status(500).send('Database query error');
-          }
-  
-          let response = [];
-          let count = 0;
-          projectResults.forEach(project => {
-            const projectId = project.id;
-            const projectName = project.ProjectName;
-            const projectSalesOrder = project.sales_order;
-            const proj_status = project.Status;
-            const projectLastTask = project.lasttask;
-  
-            let selcttask;
-            if (U_type !== 'Admin' && U_type !== 'Team Leader') {
-              selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time,p.taskDetails,p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
-            } else {
-              selcttask = `SELECT * FROM Task WHERE projectName = ?`;
+
+        let response = [];
+        let count = 0;
+        projectResults.forEach(project => {
+          const projectId = project.id;
+          const projectName = project.ProjectName;
+          const projectSalesOrder = project.sales_order;
+          const proj_status = project.Status;
+          const projectLastTask = project.lasttask;
+
+          let selcttask;
+          selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time,p.taskDetails,p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
+
+
+          db.query(selcttask, [u_id, projectName], (err, taskResults) => {
+            if (err) {
+              console.error('Error executing task query:', err.stack);
+              return res.status(500).send('Database query error');
             }
-  
-            db.query(selcttask, [u_id, projectName], (err, taskResults) => {
+
+            let assigntaskpresent = taskResults.length > 0;
+            let noofassigntasks = taskResults.length;
+            // Prepare task details for each task
+            const tasks = taskResults.map(task => ({
+              taskId: task.taskid,
+              taskempId: task.id,
+              taskName: task.TaskName,
+              taskGivenTime: task.timetocomplete_emp,
+              taskRequiredTime: task.timetocomplete,
+              taskActualTime: task.total_actual_time,
+              taskDetails: task.taskDetails,
+              taskStatus: task.Status,
+              taskAproved: task.aproved
+            }));
+
+            const timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
+            db.query(timeQuery, [u_id, projectName], (err, timeResults) => {
               if (err) {
-                console.error('Error executing task query:', err.stack);
+                console.error('Error executing time query:', err.stack);
                 return res.status(500).send('Database query error');
               }
-  
-              let assigntaskpresent = taskResults.length > 0;
-              let noofassigntasks = taskResults.length;
-              // Prepare task details for each task
-              const tasks = taskResults.map(task => ({
-                taskId: task.taskid,
-                taskempId: task.id,
-                taskName: task.TaskName,
-                taskGivenTime: task.timetocomplete_emp,
-                taskRequiredTime: task.timetocomplete,
-                taskActualTime: task.total_actual_time,
-                taskDetails: task.taskDetails,
-                taskStatus: task.Status,
-                taskAproved: task.aproved
-              }));
-  
-              const timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
-              db.query(timeQuery, [u_id, projectName], (err, timeResults) => {
-                if (err) {
-                  console.error('Error executing time query:', err.stack);
-                  return res.status(500).send('Database query error');
-                }
-  
-                const requiredTime = timeResults[0].required || 0;
-                const takenTime = timeResults[0].taken || 0;
-  
-                response.push({
-                  projectId,
-                  projectName,
-                  projectSalesOrder,
-                  assigntaskpresent,
-                  noofassigntasks,
-                  proj_status,
-                  projectLastTask,
-                  requiredTime,
-                  takenTime,
-                  tasks
-                });
-  
-                count++;
-                if (count === projectResults.length) {
-                  res.json(response);
-                }
+
+              const requiredTime = timeResults[0].required || 0;
+              const takenTime = timeResults[0].taken || 0;
+
+              response.push({
+                projectId,
+                projectName,
+                projectSalesOrder,
+                assigntaskpresent,
+                noofassigntasks,
+                proj_status,
+                projectLastTask,
+                requiredTime,
+                takenTime,
+                tasks
               });
+
+              count++;
+              if (count === projectResults.length) {
+                res.json(response);
+              }
             });
           });
         });
       });
-    }
+    });
+  }
 };
 
-exports.aggViewPATimes = (req, res ) => {
+exports.aggViewPATimes = (req, res) => {
   const projectName = req.body.projectName;
   const dates = req.body.dates;
 
@@ -246,8 +239,8 @@ exports.aggViewPATimes = (req, res ) => {
 };
 
 exports.indViewPATimes = (req, res) => {
-  const projectName = req.body.projectName; 
-  const dates = req.body.dates; 
+  const projectName = req.body.projectName;
+  const dates = req.body.dates;
 
   const sqlGetTaskIds = `
     SELECT id
@@ -284,7 +277,7 @@ exports.indViewPATimes = (req, res) => {
   });
 };
 
-exports.taskInfoDialog = (req, res ) => {
+exports.taskInfoDialog = (req, res) => {
   const { token, taskId } = req.body;
 
   if (!token || !taskId) {
@@ -316,7 +309,7 @@ exports.taskInfoDialog = (req, res ) => {
   }
 };
 
-exports.completeTask = (req, res ) => {
+exports.completeTask = (req, res) => {
   const { id, min, hr, msg, tid, isChecked, isChecked2, isChecked3, token } = req.body;
 
   let userData;
@@ -365,7 +358,7 @@ exports.completeTask = (req, res ) => {
   });
 };
 
-exports.EmpOverviewtaskDtlsAggView = async (req, res ) => {
+exports.EmpOverviewtaskDtlsAggView = async (req, res) => {
   const { empid, iscomplete } = req.body;
 
   try {
@@ -416,7 +409,7 @@ function query(sql, params) {
   });
 }
 
-exports.emptaskDtlsAggTimes = async (req, res ) => {
+exports.emptaskDtlsAggTimes = async (req, res) => {
   const { empid, iscomplete } = req.body;
 
   try {
@@ -433,7 +426,7 @@ exports.emptaskDtlsAggTimes = async (req, res ) => {
     const assignedTaskIds = taskRows.map(row => row.taskid);
 
     if (assignedTaskIds.length === 0) {
-      return res.status(404).send('No tasks found for the given employee');
+      return res.status(200).send('No tasks found for the given employee');
     }
 
     // Step 2: Get filtered task IDs based on completion status
@@ -484,7 +477,7 @@ exports.emptaskDtlsAggTimes = async (req, res ) => {
   }
 };
 
-exports.empAggtasktimes = (req, res ) => {
+exports.empAggtasktimes = (req, res) => {
   const { startDate, endDate, assignedToEmp } = req.query;
 
   const query = `
@@ -514,14 +507,14 @@ exports.empAggtasktimes = (req, res ) => {
   });
 };
 
-exports.empOverviewTaskDtlsIndAggView = (req, res ) => {
+exports.empOverviewTaskDtlsIndAggView = (req, res) => {
   const assignBy = req.query.assignBy;
   const projectName = req.query.projectName;
 
   // First query to get task IDs for the given project name
   const initialQuery = `
     SELECT id as tasks 
-    FROM task 
+    FROM Task 
     WHERE projectName = ?;
   `;
 
@@ -530,8 +523,8 @@ exports.empOverviewTaskDtlsIndAggView = (req, res ) => {
   // Third query to sum up time to complete and actual time taken for tasks assigned to a specific employee
   const query2 = `
     SELECT SUM(p.timetocomplete) as Required, SUM(te.actualtimetocomplete_emp) as Taken 
-    FROM taskemp te 
-    JOIN task p ON te.taskid = p.id 
+    FROM Taskemp te 
+    JOIN Task p ON te.taskid = p.id 
     WHERE te.AssignedTo_emp = ? 
       AND p.ProjectName = ?;
   `;
@@ -547,7 +540,7 @@ exports.empOverviewTaskDtlsIndAggView = (req, res ) => {
 
     const query1 = `
       SELECT COUNT(DISTINCT taskid) as tasks
-      FROM taskemp
+      FROM Taskemp
       WHERE taskid IN (${taskIds}) 
         AND AssignedTo_emp = ?;
     `;
@@ -574,7 +567,7 @@ exports.empOverviewTaskDtlsIndAggView = (req, res ) => {
   });
 };
 
-exports.empOverviewIndAggPATimes = (req, res ) => {
+exports.empOverviewIndAggPATimes = (req, res) => {
   const { projectName, userId, startDate } = req.query;
 
   const taskIdQuery = `
@@ -638,7 +631,7 @@ exports.empOverviewIndAggPATimes = (req, res ) => {
         const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
         const year = adjustedDate.getFullYear();
         return {
-          taskDate: `${year}-${month}-${day}`, 
+          taskDate: `${year}-${month}-${day}`,
           planned: row.planned,
           actual: row.actual
         };
@@ -649,7 +642,7 @@ exports.empOverviewIndAggPATimes = (req, res ) => {
   });
 };
 
-exports.task = (req, res ) => {
+exports.task = (req, res) => {
   const projectName = req.query.projectName;
 
   if (!projectName) {
@@ -719,67 +712,67 @@ exports.assignTask = (req, res) => {
       });
     }
   });
-  };
-  
-  exports.employeeLogs = async (req, res) => {
-      const { employeeId, fromDate, toDate } = req.body;
-    
-      // Validate input
-      if (!employeeId || !fromDate || !toDate) {
-        return res.status(400).json({ error: 'Missing required parameters' });
-      }
-    
-      // Log input values
-      // console.log('Employee ID:', employeeId);
-      // console.log('From Date:', fromDate);
-      // console.log('To Date:', toDate);
-    
-      const query = `
+};
+
+exports.employeeLogs = async (req, res) => {
+  const { employeeId, fromDate, toDate } = req.body;
+
+  // Validate input
+  if (!employeeId || !fromDate || !toDate) {
+    return res.status(400).json({ error: 'Missing required parameters' });
+  }
+
+  // Log input values
+  // console.log('Employee ID:', employeeId);
+  // console.log('From Date:', fromDate);
+  // console.log('To Date:', toDate);
+
+  const query = `
         SELECT te.*, t.projectName, t.TaskName
         FROM Taskemp te
-        JOIN task t ON te.taskid = t.id
+        JOIN Task t ON te.taskid = t.id
         WHERE te.AssignedTo_emp = ?
           AND DATE(te.tasktimeemp) BETWEEN ? AND ?
         ORDER BY te.tasktimeemp DESC
       `;
-    
-      try {
-        // Execute the combined query
-        const [results] = await db.promise().query(query, [employeeId, fromDate, toDate]);
-        
-        // Log raw results
-        // console.log('Raw results length:', results.length);
-        // console.log('Raw results:', results);
-    
-        // Map results to the final structure
-        const finalResults = results.map(row => ({
-          results : results.length,
-          date: row.tasktimeemp,
-          projectName: row.projectName || 'Unknown',
-          taskName: row.TaskName || 'Unknown',
-          timeRequired: row.timetocomplete_emp,
-          timeTaken: row.actualtimetocomplete_emp,
-          activity: row.Activity,
-          logs: row.tasklog
-        }));
-    
-        // Log final mapped results
-        // console.log('Final results length:', finalResults.length);
-        // console.log('Final results:', finalResults);
-    
-        res.json(finalResults);
-      } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: error.message });
-      }    
-  };
 
-exports.empOverviewTaskDtlsIndIndView = async(req, res) => {
+  try {
+    // Execute the combined query
+    const [results] = await db.promise().query(query, [employeeId, fromDate, toDate]);
+
+    // Log raw results
+    // console.log('Raw results length:', results.length);
+    // console.log('Raw results:', results);
+
+    // Map results to the final structure
+    const finalResults = results.map(row => ({
+      results: results.length,
+      date: row.tasktimeemp,
+      projectName: row.projectName || 'Unknown',
+      taskName: row.TaskName || 'Unknown',
+      timeRequired: row.timetocomplete_emp,
+      timeTaken: row.actualtimetocomplete_emp,
+      activity: row.Activity,
+      logs: row.tasklog
+    }));
+
+    // Log final mapped results
+    // console.log('Final results length:', finalResults.length);
+    // console.log('Final results:', finalResults);
+
+    res.json(finalResults);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.empOverviewTaskDtlsIndIndView = async (req, res) => {
   const { assignBy, projectName } = req.query;
 
   try {
     // 1a. Get task IDs based on the projectName
-    const taskIdsQuery = `SELECT id FROM task WHERE projectName = ?`;
+    const taskIdsQuery = `SELECT id FROM Task WHERE projectName = ?`;
     const taskIdsResult = await new Promise((resolve, reject) => {
       db.query(taskIdsQuery, [projectName], (error, results) => {
         if (error) return reject(error);
@@ -791,7 +784,7 @@ exports.empOverviewTaskDtlsIndIndView = async(req, res) => {
     const taskIds = taskIdsResult.map(task => task.id).join(',');
 
     // 1b. Use the task IDs to query taskemp for distinct task IDs assigned to a specific employee
-    const distinctTaskIdsQuery = `SELECT DISTINCT(taskid) FROM taskemp WHERE taskid IN (${taskIds}) AND AssignedTo_emp = ?`;
+    const distinctTaskIdsQuery = `SELECT DISTINCT(taskid) FROM Taskemp WHERE taskid IN (${taskIds}) AND AssignedTo_emp = ?`;
     const distinctTaskIdsResult = await new Promise((resolve, reject) => {
       db.query(distinctTaskIdsQuery, [assignBy], (error, results) => {
         if (error) return reject(error);
@@ -803,7 +796,7 @@ exports.empOverviewTaskDtlsIndIndView = async(req, res) => {
     const distinctTaskIds = distinctTaskIdsResult.map(task => task.taskid).join(',');
 
     // 1c. Use the distinct task IDs to get the task details
-    const tasksQuery = `SELECT * FROM task WHERE id IN (${distinctTaskIds})`;
+    const tasksQuery = `SELECT * FROM Task WHERE id IN (${distinctTaskIds})`;
     const tasks = await new Promise((resolve, reject) => {
       db.query(tasksQuery, (error, results) => {
         if (error) return reject(error);
@@ -812,7 +805,7 @@ exports.empOverviewTaskDtlsIndIndView = async(req, res) => {
     });
 
     const taskempQuery = `
-      SELECT t.*, total.actual FROM taskemp t JOIN ( SELECT taskid, SUM(actualtimetocomplete_emp) AS actual FROM taskemp WHERE taskid IN (${taskIds}) GROUP BY taskid ) total ON t.taskid = total.taskid WHERE t.taskid IN (${taskIds});
+      SELECT t.*, total.actual FROM Taskemp t JOIN ( SELECT taskid, SUM(actualtimetocomplete_emp) AS actual FROM Taskemp WHERE taskid IN (${taskIds}) GROUP BY taskid ) total ON t.taskid = total.taskid WHERE t.taskid IN (${taskIds});
     `;
     const taskemps = await new Promise((resolve, reject) => {
       db.query(taskempQuery, (error, results) => {
@@ -830,9 +823,9 @@ exports.empOverviewTaskDtlsIndIndView = async(req, res) => {
   }
 };
 
-exports.empOverviewIndIndPATimes = (req, res ) => {
+exports.empOverviewIndIndPATimes = (req, res) => {
   const { projectName, assignedTo, taskDates } = req.query;
-  
+
   // Validate taskDates format (assume it's a comma-separated list of dates)
   if (!taskDates || !Array.isArray(taskDates.split(','))) {
     return res.status(400).json({ error: 'Invalid taskDates format' });
@@ -843,7 +836,7 @@ exports.empOverviewIndIndPATimes = (req, res ) => {
   // Query 1: Fetch all tasks for the given project
   const query1 = `
     SELECT id
-    FROM task 
+    FROM Task 
     WHERE projectName = ?;
   `;
 
@@ -865,7 +858,7 @@ exports.empOverviewIndIndPATimes = (req, res ) => {
     // Query 2: Fetch details from taskemp for the given tasks and assigned employee
     const query2 = `
       SELECT id, taskid, actualtimetocomplete_emp, DATE(tasktimeemp) as tasktimeemp_date, timetocomplete_emp
-      FROM taskemp 
+      FROM Taskemp 
       WHERE taskid IN (${taskIdsList})
         AND AssignedTo_emp = ?
         AND DATE(tasktimeemp) IN (?);
