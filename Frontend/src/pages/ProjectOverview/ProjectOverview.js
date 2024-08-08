@@ -120,7 +120,7 @@ const ProjectOverview = () => {
       salesOrder: project.sales_order,
       projectName: project.ProjectName,
       projectStatus: project.Status,
-      projectId: project.Id,
+      projectId: project.projectId,
     });
     setEditProjectDialogOpen(true);
   };
