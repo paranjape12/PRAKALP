@@ -75,7 +75,6 @@ exports.empOverviewPrjIndividual = (req, res ) => {
     });
   });
 };
-
 function query(sql, params) {
   return new Promise((resolve, reject) => {
     db.query(sql, params, (error, results) => {
@@ -283,4 +282,59 @@ exports.updateProjectSorting = (req, res ) => {
   } else {
     res.status(400).json({ error: 'Bad Request' });
   }
+};
+
+//projectoverview Project fectching api 
+exports.projectOverview = (req, res) => {
+  const token = req.query.token; // Use query parameter for GET request
+
+  if (!token) {
+    return res.status(400).send('Token is required');
+  }
+
+  const userData = decryptToken(token);
+  const AssignBy = userData.Type;
+
+  let selectProjectQuery;
+
+  if (AssignBy === 'Employee') {
+    selectProjectQuery = `
+      SELECT id, ProjectName, sales_order, Status 
+      FROM projects 
+      WHERE complete_status = 0 AND Status IN (1, 2, 3, 4)`;
+  } else if (AssignBy === 'Team Leader' || AssignBy === 'Admin') {
+    selectProjectQuery = `SELECT id, ProjectName, sales_order, Status FROM projects`;
+  } else {
+    return res.status(403).send('Unauthorized user type');
+  }
+
+  db.query(selectProjectQuery, (err, projectResults) => {
+    if (err) {
+      console.error('Error executing project query:', err.stack);
+      return res.status(500).send('Database query error');
+    }
+
+    const projectCountQuery = `SELECT COUNT(*) as totalProjects FROM projects`;
+
+    db.query(projectCountQuery, (err, countResult) => {
+      if (err) {
+        console.error('Error executing count query:', err.stack);
+        return res.status(500).send('Database query error');
+      }
+
+      const totalProjects = countResult[0].totalProjects;
+
+      const response = {
+        projects: projectResults.map(project => ({
+          ProjectName: project.ProjectName,
+          sales_order: project.sales_order,
+          Status: project.Status,
+          projectId: project.id
+        })),
+        totalProjects
+      };
+
+      res.json(response);
+    });
+  });
 };

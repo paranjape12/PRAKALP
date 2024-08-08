@@ -8,5 +8,7 @@ router.post('/empOverviewPrjIndividual', projectController.empOverviewPrjIndivid
 router.get('/EmpOverviewPlusMinus', projectController.EmpOverviewPlusMinus);
 router.post('/createCopyProject', projectController.createCopyProject);
 router.post('/updateProjectSorting',projectController.updateProjectSorting);
+router.get('/projectOverview',projectController.projectOverview);
+
 
 module.exports = router;
