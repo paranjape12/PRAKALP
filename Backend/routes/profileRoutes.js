@@ -5,7 +5,7 @@ const profileController = require('../controllers/profileController');
 router.post('/getProfile', profileController.getProfile);
 router.post('/getLogin', profileController.getLogin);
 router.post('/empDropdown', profileController.empDropdown);
-router.put('/updateProfile', profileController.updateProfile);
+router.post('/updateUser', profileController.updateUser);
 router.post('/addemployee',profileController.addemployee);
 router.get('/editEmpAccessData',profileController.editEmpAccessData);
 router.put('/updateemployee',profileController.updateemployee);

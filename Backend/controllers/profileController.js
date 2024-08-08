@@ -83,20 +83,6 @@ exports.getProfile = (req, res) => {
   });
 };
 
-exports.updateProfile = (req, res) => {
-  const { U_id, name, email, password, location } = req.body;
-  const encodedPassword = Buffer.from(password).toString('base64');
-  const query = `
-      UPDATE Logincrd
-      SET Name = ?, Email = ?, Password = ?, Location = ?
-      WHERE id = ?
-  `;
-  db.query(query, [name, email, encodedPassword, location, U_id], (err, result) => {
-    if (err) return res.status(500).send(err);
-    res.send('Profile updated successfully');
-  });
-};
-
 exports.empDropdown = (req, res ) => {
   const { token } = req.body;
   const userData = decryptToken(token);
