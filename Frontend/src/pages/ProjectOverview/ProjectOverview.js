@@ -5,7 +5,7 @@ import "./ProjectOverview.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import { faTrashAlt, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
-
+import { Buffer } from "buffer";
 import "../../pages/TaskOverview/TaskOverview.css";
 import EditProjectPopup from "../../components/TaskOverview/EditProjectPopup";
 import DeleteProjectPopup from "../../components/TaskOverview/DeleteProjectPopup";
@@ -31,6 +31,7 @@ const ProjectOverview = () => {
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [projectName, setProjectName] = useState("");
   const [totalProjects, setTotalProjects] = useState(0);
+  const [projectDetails, setProjectDetails] = useState({});
 
   const navigate = useNavigate();
 
@@ -86,6 +87,16 @@ const ProjectOverview = () => {
         return "#FFFFFF";
     }
   };
+  const seconds2hrmin = (ss) => {
+    if (ss === 0) {
+        return '0.0'; // Return '0.0' if the input is zero seconds
+    }
+    
+    const hours = ss / 3600; // Convert seconds to hours
+    const formattedHours = (Math.round(hours * 10) / 10).toFixed(1); // Round to one decimal place and format
+
+    return `${formattedHours}`;//hours
+};
 
   const fetchProjects = async () => {
     try {
@@ -96,9 +107,25 @@ const ProjectOverview = () => {
       setProjects(response.data.projects); // Set projects state with the response data
       setTotalProjects(response.data.totalProjects); // Set total projects count
       setLoading(false);
+      fetchProjectDetails(response.data.projects); // Fetch project details after getting projects
     } catch (err) {
       setError(err);
       setLoading(false);
+    }
+  };
+
+  const fetchProjectDetails = async (projects) => {
+    try {
+      const projectNames = projects.map(project => project.ProjectName);
+      const response = await axios.get('http://localhost:3001/api/totalHrs', {
+        params: {
+          employeeId: decryptToken(localStorage.getItem('token')).id,
+          projectNames
+        }
+      });
+      setProjectDetails(response.data.projects); // Set project details state with the response data
+    } catch (err) {
+      console.error("Error fetching project details:", err);
     }
   };
 
@@ -106,7 +133,7 @@ const ProjectOverview = () => {
     console.log("Fetching projects...");
     fetchProjects();
   }, []);
-  
+
   // Log the projects state to check if it is populated
   useEffect(() => {
     console.log("Projects state:", projects);
@@ -148,10 +175,10 @@ const ProjectOverview = () => {
           prevProjects.map((proj) =>
             proj.projectSalesOrder === updatedProject.salesOrder
               ? {
-                  ...proj,
-                  projectName: updatedProject.projectName,
-                  proj_status: updatedProject.projectStatus,
-                }
+                ...proj,
+                projectName: updatedProject.projectName,
+                proj_status: updatedProject.projectStatus,
+              }
               : proj
           )
         );
@@ -315,115 +342,85 @@ const ProjectOverview = () => {
                   </tr>
                 </thead>
                 <tbody id="projectviewtbody">
-                  {projects.map((project, index) => (
-                    <tr key={index}>
-                      <td
-                        className="text-left"
-                        style={{
-                          backgroundColor: getBackgroundColor(project.Status),
-                          color: "black",
-                          padding: "0 0 0 0.5rem",
-                          fontSize: "13.44px",
-                        }}
-                      >
-                        [{project.sales_order}]
-                        <a
-                          className="deleteproj p-1"
-                          style={{ float: "right", cursor: "pointer" }}
-                          title="Delete project"
-                          name={project.sales_order}
-                          onClick={() =>
-                            handleOpenDeleteProjectDialog(
-                              project.projectId,
-                              project.ProjectName
-                            )
-                          }
-                        >
-                          <FontAwesomeIcon
-                            icon={faTrashAlt}
-                            className="text-danger"
-                          />
-                        </a>
-                        <a
-                          className="editproj p-1"
-                          style={{ float: "right", cursor: "pointer" }}
-                          title="Edit project"
-                          name={project.ProjectName}
-                          value={project.Status}
-                          onClick={() => handleOpenEditProjectDialog(project)}
-                        >
-                          <FontAwesomeIcon
-                            icon={faPencilAlt}
-                            className="text-primary"
-                          />
-                        </a>
-                        <br />
-                        {project.ProjectName}
-                      </td>
-                      <td
-                        className="text-center addtask"
-                        name={project.ProjectName}
-                        style={{ fontSize: "13.44px", verticalAlign: "middle" }}
-                        colSpan="25"
-                      >
-                        test
-                      </td>
-                    </tr>
-                  ))}
+                  {projects.map((project, index) => {
+                    const projectDetail = projectDetails[project.ProjectName] || {};
+                    const taskCount = projectDetail.task_count || 0;
+                    const totalCompTask = projectDetail.total_comp_task || 0;
 
-                  {/* <tbody id="projectviewtbody">
-                {projects.map((valueproject, index) => (
-                    <React.Fragment key={index}>
-                        {valueproject.task_details_count === "0" ? (
-                            <tr className="small">
-                                <td className="text-left pname_total" style={{ verticalAlign: 'top', ...getStatusStyle(valueproject.Status) }}>
-                                    [ {valueproject.sales_order} ]
-                                    <button className="deleteproj p-1" value="2" title="" name={valueproject.id} style={{ float: 'right' }}><i className="fas fa-trash-alt text-danger"></i></button>
-                                    <button className="editproj p-1" value={valueproject.Status} title={valueproject.sales_order} name={valueproject.ProjectName} id={valueproject.id} style={{ float: 'right' }}><i className="fas fa-pencil-alt text-primary"></i></button>
-                                    <br />
-                                    {valueproject.ProjectName}
-                                </td>
-                                <td className="text-center small" colSpan="28">No Task Found</td>
-                            </tr>
+                    return (
+                      <tr key={index}>
+                        {/* Always display project details */}
+                        <td
+                          className="text-left"
+                          style={{
+                            backgroundColor: getBackgroundColor(project.Status),
+                            color: "black",
+                            padding: "0 0 0 0.5rem",
+                            fontSize: "13.44px",
+                          }}
+                        >
+                          [{project.sales_order}]
+                          <a
+                            className="deleteproj p-1"
+                            style={{ float: "right", cursor: "pointer" }}
+                            title="Delete project"
+                            name={project.sales_order}
+                            onClick={() =>
+                              handleOpenDeleteProjectDialog(project.projectId, project.ProjectName)
+                            }
+                          >
+                            <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
+                          </a>
+                          <a
+                            className="editproj p-1"
+                            style={{ float: "right", cursor: "pointer" }}
+                            title="Edit project"
+                            name={project.ProjectName}
+                            value={project.Status}
+                            onClick={() => handleOpenEditProjectDialog(project)}
+                          >
+                            <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
+                          </a>
+                          <br />
+                          {project.ProjectName}
+                        </td>
+
+                        {/* Conditionally render task-related cells */}
+                        {taskCount > 0 ? (
+                          <>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle'}}>{taskCount}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle'}}>{seconds2hrmin(totalCompTask)}</td>
+                            
+                            {/* Add placeholder cells or additional columns as needed */}
+                            <td
+                              className="text-center addtask"
+                              style={{ fontSize: "13.44px", verticalAlign: "middle" }}
+                              colSpan="23"
+                            >
+                              test
+                            </td>
+                          </>
                         ) : (
-                            <tr className="small">
-                                <td className="text-left pname_total" style={{ verticalAlign: 'top', ...getStatusStyle(valueproject.Status) }}>
-                                    [ {valueproject.sales_order} ]
-                                    <button className="deleteproj p-1" value="2" title="" name={valueproject.id} style={{ float: 'right' }}><i className="fas fa-trash-alt text-danger"></i></button>
-                                    <button className="editproj p-1" value={valueproject.Status} title={valueproject.sales_order} name={valueproject.ProjectName} id={valueproject.id} style={{ float: 'right' }}><i className="fas fa-pencil-alt text-primary"></i></button>
-                                    <br />
-                                    {valueproject.ProjectName}
-                                </td>
-                                <td className="rowDataSd bg-total">{valueproject.task_details_count}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.Total_Hrs_P}</td>
-                                <td className="rowDataSd bg-actual">{valueproject.Total_Hrs_A}</td>
-                                <td className="rowDataSd bg-total">{valueproject.Total_YTC}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.YTS_Hrs_P}</td>
-                                <td className="rowDataSd bg-total">{valueproject.total_wip_comp_task}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.WIP_Hrs_P}</td>
-                                <td className="rowDataSd bg-actual">{valueproject.WIP_Hrs_A}</td>
-                                <td className="rowDataSd bg-total">{valueproject.total_comp_task}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.COMP_Hrs_P}</td>
-                                <td className="rowDataSd bg-actual">{valueproject.COMP_Hrs_A}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.total_d1_P}</td>
-                                <td className="rowDataSd bg-actual">{valueproject.total_d1_A}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.total_d2_P}</td>
-                                <td className="rowDataSd bg-actual">{valueproject.total_d2_A}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.total_d3_P}</td>
-                                <td className="rowDataSd bg-actual">{valueproject.total_d3_A}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.total_d4_P}</td>
-                                <td className="rowDataSd bg-actual">{valueproject.total_d4_A}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.total_d5_P}</td>
-                                <td className="rowDataSd bg-actual">{valueproject.total_d5_A}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.total_d6_P}</td>
-                                <td className="rowDataSd bg-actual">{valueproject.total_d6_A}</td>
-                                <td className="rowDataSd bg-secondary">{valueproject.total_d7_P}</td>
-                                <td className="rowDataSd bg-actual">{valueproject.total_d7_A}</td>
-                            </tr>
+                          <td
+                            title='Create new Task'
+                            className="text-center addtask"
+                            name={project.ProjectName}
+                            style={{
+                              fontSize: '13.44px',
+                              verticalAlign: 'middle',
+                              cursor: 'pointer',
+                              textDecoration: 'none'
+                            }}
+                            colSpan="25"
+                          >
+                            No Task Found.
+                          </td>
                         )}
-                    </React.Fragment>
-                ))} */}
+                      </tr>
+                    );
+                  })}
                 </tbody>
+
               </table>
               {selectedProject && (
                 <EditProjectPopup
@@ -438,7 +435,7 @@ const ProjectOverview = () => {
                   open={deleteProjectDialogOpen}
                   handleClose={handleCloseDeleteProjectDialog}
                   selectedProjectId={selectedProjectId}
-                  projectName={projectName} 
+                  projectName={projectName}
                 />
               )}
             </div>

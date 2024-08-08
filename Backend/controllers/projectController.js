@@ -410,4 +410,91 @@ exports.updateProject = async(req, res ) => {
       }
     });
   });
-}
+};
+
+
+exports.totalHrs = (req, res) => {
+  const employeeId = req.query.employeeId;
+  const projectNames = req.query.projectNames; // Expecting an array of project names
+
+  if (!employeeId || !projectNames || !Array.isArray(projectNames)) {
+    return res.status(400).send('employeeId and projectNames are required, and projectNames should be an array');
+  }
+
+  const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
+
+  db.query(query1, (err, taskIdsResult) => {
+    if (err) {
+      console.error('Error executing query 1:', err.stack);
+      return res.status(500).send('Database query error');
+    }
+
+    const taskIds = taskIdsResult.map(row => row.taskid).join(',');
+
+    if (!taskIds.length) {
+      return res.status(200).json({
+        projects: projectNames.reduce((acc, projectName) => {
+          acc[projectName] = { total_comp_task: 0, task_count: 0 };
+          return acc;
+        }, {})
+      });
+    }
+
+    const projectQueries = projectNames.map(projectName => {
+      return new Promise((resolve, reject) => {
+        const totalTimeQuery = `
+          SELECT SUM(timetocomplete) as total_comp_task 
+          FROM Task 
+          WHERE projectName='${projectName}' AND id IN (${taskIds});
+        `;
+
+        const taskCountQuery = `
+          SELECT COUNT(*) as task_count 
+          FROM Task 
+          WHERE projectName='${projectName}' AND id IN (${taskIds});
+        `;
+
+        db.query(totalTimeQuery, (err, totalTimeResult) => {
+          if (err) {
+            console.error(`Error executing total time query for project ${projectName}:`, err.stack);
+            return reject('Database query error');
+          }
+
+          const totalCompTask = totalTimeResult[0]?.total_comp_task || 0;
+
+          db.query(taskCountQuery, (err, taskCountResult) => {
+            if (err) {
+              console.error(`Error executing task count query for project ${projectName}:`, err.stack);
+              return reject('Database query error');
+            }
+
+            const taskCount = taskCountResult[0]?.task_count || 0;
+
+            resolve({
+              projectName,
+              totalCompTask,
+              taskCount
+            });
+          });
+        });
+      });
+    });
+
+    Promise.all(projectQueries)
+      .then(results => {
+        const response = results.reduce((acc, result) => {
+          acc[result.projectName] = {
+            total_comp_task: result.totalCompTask,
+            task_count: result.taskCount
+          };
+          return acc;
+        }, {});
+
+        res.json({ projects: response });
+      })
+      .catch(error => {
+        console.error('Error processing project queries:', error);
+        res.status(500).send(error);
+      });
+  });
+};

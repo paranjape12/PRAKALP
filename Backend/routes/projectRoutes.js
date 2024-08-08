@@ -10,6 +10,6 @@ router.get('/EmpOverviewPlusMinus', projectController.EmpOverviewPlusMinus);
 router.post('/createCopyProject', projectController.createCopyProject);
 router.post('/updateProjectSorting',projectController.updateProjectSorting);
 router.get('/projectOverview',projectController.projectOverview);
-
+router.get('/totalHrs',projectController.totalHrs);
 
 module.exports = router;
