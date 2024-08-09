@@ -306,12 +306,12 @@ const ProjectOverview = () => {
                     </th>
                   </tr>
                   <tr className="text-center small totalColumn">
-                    <th className="bg-total text-dark"></th>
+                    <th className="bg-total text-dark" style={{background:'#dda5e7'}}></th>
                     <th className="bg-secondary text-dark">P</th>
-                    <th className="bg-actual text-dark">A</th>
-                    <th className="bg-total text-dark"></th>
+                    <th className="bg-actual text-dark"style={{background:'#c6e6eb'}}>A</th>
+                    <th className="bg-total text-dark" style={{background:'#dda5e7'}}></th>
                     <th className="bg-secondary text-dark">P</th>
-                    <th className="bg-total text-dark"></th>
+                    <th className="bg-total text-dark"style={{background:'#dda5e7'}}></th>
                     <th className="bg-secondary text-dark">P</th>
                     <th className="bg-actual text-dark">A</th>
                     <th className="bg-total text-dark"></th>
@@ -414,9 +414,9 @@ const ProjectOverview = () => {
 
                         {taskCount > 0 ? (
                           <>
-                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle'}}>{taskCount}</td>
-                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle'}}>{seconds2hrmin(planned)}</td>
-                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle'}}>{seconds2hrmin(actual)}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#dda5e7'}}>{taskCount}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle' ,background:'#858796'}}>{seconds2hrmin(planned)}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#c6e6eb'}}>{seconds2hrmin(actual)}</td>
                             <td
                               className="text-center addtask"
                               style={{ fontSize: "13.44px", verticalAlign: "middle" }}
