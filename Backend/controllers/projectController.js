@@ -434,46 +434,88 @@ exports.totalHrs = (req, res) => {
     if (!taskIds.length) {
       return res.status(200).json({
         projects: projectNames.reduce((acc, projectName) => {
-          acc[projectName] = { total_comp_task: 0, task_count: 0 };
+          acc[projectName] = { planned: 0, task_count: 0, actual: 0 };
           return acc;
-        }, {})
+        }, {}),
+        totalTaskCount: 0 // Return 0 if no tasks are found
       });
     }
 
     const projectQueries = projectNames.map(projectName => {
       return new Promise((resolve, reject) => {
-        const totalTimeQuery = `
-          SELECT SUM(timetocomplete) as total_comp_task 
+        const taskIdsQuery = `
+          SELECT id 
           FROM Task 
           WHERE projectName='${projectName}' AND id IN (${taskIds});
         `;
 
-        const taskCountQuery = `
-          SELECT COUNT(*) as task_count 
-          FROM Task 
-          WHERE projectName='${projectName}' AND id IN (${taskIds});
-        `;
-
-        db.query(totalTimeQuery, (err, totalTimeResult) => {
+        db.query(taskIdsQuery, (err, taskIdResults) => {
           if (err) {
-            console.error(`Error executing total time query for project ${projectName}:`, err.stack);
+            console.error(`Error executing task IDs query for project ${projectName}:`, err.stack);
             return reject('Database query error');
           }
 
-          const totalCompTask = totalTimeResult[0]?.total_comp_task || 0;
+          const projectTaskIds = taskIdResults.map(row => row.id).join(',');
 
-          db.query(taskCountQuery, (err, taskCountResult) => {
+          if (!projectTaskIds.length) {
+            resolve({
+              projectName,
+              planned: 0,
+              taskCount: 0,
+              actual: 0
+            });
+            return;
+          }
+
+          const plannedQuery = `
+            SELECT SUM(timetocomplete) as planned 
+            FROM Task 
+            WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
+          `;
+
+          const taskCountQuery = `
+            SELECT COUNT(*) as task_count 
+            FROM Task 
+            WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
+          `;
+
+          const actualQuery = `
+            SELECT SUM(actualtimetocomplete_emp) as actual 
+            FROM Taskemp 
+            WHERE taskid IN (${projectTaskIds});
+          `;
+
+          db.query(plannedQuery, (err, plannedResult) => {
             if (err) {
-              console.error(`Error executing task count query for project ${projectName}:`, err.stack);
+              console.error(`Error executing planned query for project ${projectName}:`, err.stack);
               return reject('Database query error');
             }
 
-            const taskCount = taskCountResult[0]?.task_count || 0;
+            const planned = plannedResult[0]?.planned || 0;
 
-            resolve({
-              projectName,
-              totalCompTask,
-              taskCount
+            db.query(taskCountQuery, (err, taskCountResult) => {
+              if (err) {
+                console.error(`Error executing task count query for project ${projectName}:`, err.stack);
+                return reject('Database query error');
+              }
+
+              const taskCount = taskCountResult[0]?.task_count || 0;
+
+              db.query(actualQuery, (err, actualResult) => {
+                if (err) {
+                  console.error(`Error executing actual query for project ${projectName}:`, err.stack);
+                  return reject('Database query error');
+                }
+
+                const actual = actualResult[0]?.actual || 0;
+
+                resolve({
+                  projectName,
+                  planned,
+                  taskCount,
+                  actual
+                });
+              });
             });
           });
         });
@@ -482,15 +524,18 @@ exports.totalHrs = (req, res) => {
 
     Promise.all(projectQueries)
       .then(results => {
+        const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
+
         const response = results.reduce((acc, result) => {
           acc[result.projectName] = {
-            total_comp_task: result.totalCompTask,
-            task_count: result.taskCount
+            planned: result.planned,
+            task_count: result.taskCount,
+            actual: result.actual
           };
           return acc;
         }, {});
 
-        res.json({ projects: response });
+        res.json({ projects: response, totalTaskCount }); // Include totalTaskCount in the response
       })
       .catch(error => {
         console.error('Error processing project queries:', error);
@@ -498,3 +543,7 @@ exports.totalHrs = (req, res) => {
       });
   });
 };
+
+
+
+

@@ -32,6 +32,9 @@ const ProjectOverview = () => {
   const [projectName, setProjectName] = useState("");
   const [totalProjects, setTotalProjects] = useState(0);
   const [projectDetails, setProjectDetails] = useState({});
+  const [totalTaskCount, setTotalTaskCount] = useState(0);
+  const [totalPlannedSum, setTotalPlannedSum] = useState(0);
+  const [totalActualSum, setTotalActualSum] = useState(0);
 
   const navigate = useNavigate();
 
@@ -87,16 +90,23 @@ const ProjectOverview = () => {
         return "#FFFFFF";
     }
   };
+
   const seconds2hrmin = (ss) => {
     if (ss === 0) {
-        return '0.0'; // Return '0.0' if the input is zero seconds
+        return '-'; // Return '-' if the input is zero seconds
     }
     
     const hours = ss / 3600; // Convert seconds to hours
-    const formattedHours = (Math.round(hours * 10) / 10).toFixed(1); // Round to one decimal place and format
+    const formattedHours = Math.round(hours * 10) / 10; // Round to one decimal place
 
-    return `${formattedHours}`;//hours
+    // Check if the decimal part is zero
+    if (formattedHours % 1 === 0) {
+        return `${formattedHours.toFixed(0)}`; // Return as integer
+    } else {
+        return `${formattedHours.toFixed(1)}`; // Return as decimal
+    }
 };
+
 
   const fetchProjects = async () => {
     try {
@@ -123,7 +133,22 @@ const ProjectOverview = () => {
           projectNames
         }
       });
+
+      // Calculate the sums of planned and actual times
+      const totalPlannedSum = Object.values(response.data.projects).reduce(
+        (acc, projectDetail) => acc + (projectDetail.planned || 0),
+        0
+      );
+
+      const totalActualSum = Object.values(response.data.projects).reduce(
+        (acc, projectDetail) => acc + (projectDetail.actual || 0),
+        0
+      );
+
       setProjectDetails(response.data.projects); // Set project details state with the response data
+      setTotalTaskCount(response.data.totalTaskCount); // Set the total task count
+      setTotalPlannedSum(totalPlannedSum); // Set the total planned sum in state
+      setTotalActualSum(totalActualSum); // Set the total actual sum in state
     } catch (err) {
       console.error("Error fetching project details:", err);
     }
@@ -134,7 +159,6 @@ const ProjectOverview = () => {
     fetchProjects();
   }, []);
 
-  // Log the projects state to check if it is populated
   useEffect(() => {
     console.log("Projects state:", projects);
   }, [projects]);
@@ -314,8 +338,10 @@ const ProjectOverview = () => {
                     >
                       Total Project : {projects.length} / {totalProjects}
                     </th>
-                    <th className="totalCol"></th>
-                    <th className="totalCol"></th>
+                    <th className="totalCol">{totalTaskCount} </th>
+                    <th className="totalCol">{seconds2hrmin(totalPlannedSum)} </th>
+                    <th className="totalCol">{seconds2hrmin(totalActualSum)} </th>
+                    {/* Placeholder cells for the remaining columns */}
                     <th className="totalCol"></th>
                     <th className="totalCol"></th>
                     <th className="totalCol"></th>
@@ -345,11 +371,11 @@ const ProjectOverview = () => {
                   {projects.map((project, index) => {
                     const projectDetail = projectDetails[project.ProjectName] || {};
                     const taskCount = projectDetail.task_count || 0;
-                    const totalCompTask = projectDetail.total_comp_task || 0;
+                    const planned = projectDetail.planned || 0;
+                    const actual = projectDetail.actual || 0;
 
                     return (
                       <tr key={index}>
-                        {/* Always display project details */}
                         <td
                           className="text-left"
                           style={{
@@ -385,17 +411,15 @@ const ProjectOverview = () => {
                           {project.ProjectName}
                         </td>
 
-                        {/* Conditionally render task-related cells */}
                         {taskCount > 0 ? (
                           <>
                             <td style={{padding:'0', textAlign:'center',verticalAlign:'middle'}}>{taskCount}</td>
-                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle'}}>{seconds2hrmin(totalCompTask)}</td>
-                            
-                            {/* Add placeholder cells or additional columns as needed */}
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle'}}>{seconds2hrmin(planned)}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle'}}>{seconds2hrmin(actual)}</td>
                             <td
                               className="text-center addtask"
                               style={{ fontSize: "13.44px", verticalAlign: "middle" }}
-                              colSpan="23"
+                              colSpan="22"
                             >
                               test
                             </td>
