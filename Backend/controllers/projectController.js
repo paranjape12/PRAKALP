@@ -629,6 +629,7 @@ exports.totalHrs = (req, res) => {
 
     Promise.all(projectQueries)
       .then(results => {
+        const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
         const response = results.reduce((acc, result) => {
           acc[result.projectName] = {
             planned: result.planned,
@@ -638,7 +639,7 @@ exports.totalHrs = (req, res) => {
           return acc;
         }, {});
 
-        res.json({ projects: response });
+        res.json({ projects: response, totalTaskCount });
       })
       .catch(error => {
         console.error('Error processing project queries:', error);
