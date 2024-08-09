@@ -415,38 +415,157 @@ exports.updateProject = async(req, res ) => {
 
 exports.totalHrs = (req, res) => {
   const employeeId = req.query.employeeId;
-  const projectNames = req.query.projectNames; // Expecting an array of project names
+  const projectNames = req.query.projectNames; 
+  const token = req.query.token; 
+
+  if (!token) {
+    return res.status(400).send('Token is required');
+  }
+
+  let userRole;
+  try {
+    const decryptedToken = decryptToken(token);
+    userRole = decryptedToken?.Type; // Extract the user role from the decrypted token
+  } catch (error) {
+    console.error('Error decrypting token:', error);
+    return res.status(400).send('Invalid token');
+  }
 
   if (!employeeId || !projectNames || !Array.isArray(projectNames)) {
     return res.status(400).send('employeeId and projectNames are required, and projectNames should be an array');
   }
 
-  const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
+  // If the user role is "Employee", proceed with the original logic
+  if (userRole === 'Employee') {
+    const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
 
-  db.query(query1, (err, taskIdsResult) => {
-    if (err) {
-      console.error('Error executing query 1:', err.stack);
-      return res.status(500).send('Database query error');
-    }
+    db.query(query1, (err, taskIdsResult) => {
+      if (err) {
+        console.error('Error executing query 1:', err.stack);
+        return res.status(500).send('Database query error');
+      }
 
-    const taskIds = taskIdsResult.map(row => row.taskid).join(',');
+      const taskIds = taskIdsResult.map(row => row.taskid).join(',');
 
-    if (!taskIds.length) {
-      return res.status(200).json({
-        projects: projectNames.reduce((acc, projectName) => {
-          acc[projectName] = { planned: 0, task_count: 0, actual: 0 };
-          return acc;
-        }, {}),
-        totalTaskCount: 0 // Return 0 if no tasks are found
+      if (!taskIds.length) {
+        return res.status(200).json({
+          projects: projectNames.reduce((acc, projectName) => {
+            acc[projectName] = { planned: 0, task_count: 0, actual: 0 };
+            return acc;
+          }, {}),
+          totalTaskCount: 0 // Return 0 if no tasks are found
+        });
+      }
+
+      const projectQueries = projectNames.map(projectName => {
+        return new Promise((resolve, reject) => {
+          const taskIdsQuery = `
+            SELECT id 
+            FROM Task 
+            WHERE projectName='${projectName}' AND id IN (${taskIds});
+          `;
+
+          db.query(taskIdsQuery, (err, taskIdResults) => {
+            if (err) {
+              console.error(`Error executing task IDs query for project ${projectName}:`, err.stack);
+              return reject('Database query error');
+            }
+
+            const projectTaskIds = taskIdResults.map(row => row.id).join(',');
+
+            if (!projectTaskIds.length) {
+              resolve({
+                projectName,
+                planned: 0,
+                taskCount: 0,
+                actual: 0
+              });
+              return;
+            }
+
+            const plannedQuery = `
+              SELECT SUM(timetocomplete) as planned 
+              FROM Task 
+              WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
+            `;
+
+            const taskCountQuery = `
+              SELECT COUNT(*) as task_count 
+              FROM Task 
+              WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
+            `;
+
+            const actualQuery = `
+              SELECT SUM(actualtimetocomplete_emp) as actual 
+              FROM Taskemp 
+              WHERE taskid IN (${projectTaskIds});
+            `;
+
+            db.query(plannedQuery, (err, plannedResult) => {
+              if (err) {
+                console.error(`Error executing planned query for project ${projectName}:`, err.stack);
+                return reject('Database query error');
+              }
+
+              const planned = plannedResult[0]?.planned || 0;
+
+              db.query(taskCountQuery, (err, taskCountResult) => {
+                if (err) {
+                  console.error(`Error executing task count query for project ${projectName}:`, err.stack);
+                  return reject('Database query error');
+                }
+
+                const taskCount = taskCountResult[0]?.task_count || 0;
+
+                db.query(actualQuery, (err, actualResult) => {
+                  if (err) {
+                    console.error(`Error executing actual query for project ${projectName}:`, err.stack);
+                    return reject('Database query error');
+                  }
+
+                  const actual = actualResult[0]?.actual || 0;
+
+                  resolve({
+                    projectName,
+                    planned,
+                    taskCount,
+                    actual
+                  });
+                });
+              });
+            });
+          });
+        });
       });
-    }
 
+      Promise.all(projectQueries)
+        .then(results => {
+          const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
+
+          const response = results.reduce((acc, result) => {
+            acc[result.projectName] = {
+              planned: result.planned,
+              task_count: result.taskCount,
+              actual: result.actual
+            };
+            return acc;
+          }, {});
+
+          res.json({ projects: response, totalTaskCount }); // Include totalTaskCount in the response
+        })
+        .catch(error => {
+          console.error('Error processing project queries:', error);
+          res.status(500).send(error);
+        });
+    });
+
+  } else { // If the user role is not "Employee"
     const projectQueries = projectNames.map(projectName => {
       return new Promise((resolve, reject) => {
         const taskIdsQuery = `
           SELECT id 
           FROM Task 
-          WHERE projectName='${projectName}' AND id IN (${taskIds});
+          WHERE projectName='${projectName}';
         `;
 
         db.query(taskIdsQuery, (err, taskIdResults) => {
@@ -456,6 +575,7 @@ exports.totalHrs = (req, res) => {
           }
 
           const projectTaskIds = taskIdResults.map(row => row.id).join(',');
+          const taskCount = taskIdResults.length;
 
           if (!projectTaskIds.length) {
             resolve({
@@ -467,54 +587,39 @@ exports.totalHrs = (req, res) => {
             return;
           }
 
-          const plannedQuery = `
-            SELECT SUM(timetocomplete) as planned 
-            FROM Task 
-            WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
-          `;
-
-          const taskCountQuery = `
-            SELECT COUNT(*) as task_count 
-            FROM Task 
-            WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
-          `;
-
           const actualQuery = `
-            SELECT SUM(actualtimetocomplete_emp) as actual 
+            SELECT SUM(actualtimetocomplete_emp) as TLTotalActual 
             FROM Taskemp 
             WHERE taskid IN (${projectTaskIds});
           `;
 
-          db.query(plannedQuery, (err, plannedResult) => {
+          const plannedQuery = `
+            SELECT SUM(timetocomplete) as TLTotalPlanned 
+            FROM Task 
+            WHERE projectName='${projectName}';
+          `;
+
+          db.query(actualQuery, (err, actualResult) => {
             if (err) {
-              console.error(`Error executing planned query for project ${projectName}:`, err.stack);
+              console.error(`Error executing actual query for project ${projectName}:`, err.stack);
               return reject('Database query error');
             }
 
-            const planned = plannedResult[0]?.planned || 0;
+            const actual = actualResult[0]?.TLTotalActual || 0;
 
-            db.query(taskCountQuery, (err, taskCountResult) => {
+            db.query(plannedQuery, (err, plannedResult) => {
               if (err) {
-                console.error(`Error executing task count query for project ${projectName}:`, err.stack);
+                console.error(`Error executing planned query for project ${projectName}:`, err.stack);
                 return reject('Database query error');
               }
 
-              const taskCount = taskCountResult[0]?.task_count || 0;
+              const planned = plannedResult[0]?.TLTotalPlanned || 0;
 
-              db.query(actualQuery, (err, actualResult) => {
-                if (err) {
-                  console.error(`Error executing actual query for project ${projectName}:`, err.stack);
-                  return reject('Database query error');
-                }
-
-                const actual = actualResult[0]?.actual || 0;
-
-                resolve({
-                  projectName,
-                  planned,
-                  taskCount,
-                  actual
-                });
+              resolve({
+                projectName,
+                planned,
+                actual,
+                taskCount,
               });
             });
           });
@@ -524,25 +629,25 @@ exports.totalHrs = (req, res) => {
 
     Promise.all(projectQueries)
       .then(results => {
-        const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
-
         const response = results.reduce((acc, result) => {
           acc[result.projectName] = {
             planned: result.planned,
+            actual: result.actual,
             task_count: result.taskCount,
-            actual: result.actual
           };
           return acc;
         }, {});
 
-        res.json({ projects: response, totalTaskCount }); // Include totalTaskCount in the response
+        res.json({ projects: response });
       })
       .catch(error => {
         console.error('Error processing project queries:', error);
         res.status(500).send(error);
       });
-  });
+  }
 };
+
+
 
 
 

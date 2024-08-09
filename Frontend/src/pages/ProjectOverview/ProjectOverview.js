@@ -130,7 +130,8 @@ const ProjectOverview = () => {
       const response = await axios.get('http://localhost:3001/api/totalHrs', {
         params: {
           employeeId: decryptToken(localStorage.getItem('token')).id,
-          projectNames
+          projectNames,
+          token : localStorage.getItem('token')
         }
       });
 
