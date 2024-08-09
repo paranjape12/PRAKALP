@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import CircularProgressWithLabel from '../../components/TaskOverview/CircularProgressWithLabel';
+import { useNavigate } from 'react-router-dom';
 
 const today = new Date();
 
@@ -53,6 +54,16 @@ const getBackgroundColor = (proj_status) => {
 };
 
 function TaskOverview() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      navigate("/");
+    }
+  }, [navigate]);
+
+
+
   const [showComplete, setShowComplete] = useState(() => {
     // Get initial state from localStorage or set default value to true
     const storedValue = localStorage.getItem('showComplete');

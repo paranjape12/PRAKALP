@@ -12,8 +12,18 @@ import { MenuItem } from '@material-ui/core';
 import EditEmployee from '../../components/Navbar/Dropdown/Manage Employee/EditEmployee';
 import LogsPopup from '../../components/EmployeeOverview/LogsPopup';
 import DeleteEmployeePopup from '../../components/EmployeeOverview/DeleteEmployeePopup';
+import { useNavigate } from 'react-router-dom';
 
 function EmployeeOverview() {
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      navigate("/");
+    }
+  }, [navigate]);
+
   const getBackgroundColor = (proj_status) => {
     switch (proj_status) {
       case 1:
