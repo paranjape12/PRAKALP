@@ -61,12 +61,12 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     const projectName = project.projectName;
     const startDate = dates[0]?.ymdDate;
 
-    setLoading(true); // Set loading to true whenever dates change
+    setLoading(true); 
     fetchProjectTimeDetails(projectName, assignBy, startDate);
 
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 1000);
+    }, 700);
 
     return () => clearTimeout(timer);
   }, [project.projectName, dates]);
@@ -131,26 +131,36 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
           <td title='Actual Timings' style={{ padding: '0.3rem 0.35rem', fontSize: '13.44px', borderStyle: 'solid none none solid' }}>A</td>
         </div>
       </td>
-      {dates.map((date, i) => (
-        <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden' }}>
-          {loading ? (
-            <>
-              <Skeleton variant="text" width={95} height={25} style={{ marginLeft: '1rem' }} />
-              <Skeleton variant="text" width={95} height={25} style={{ marginLeft: '1rem' }} />
-            </>
-          ) : (
-            <>
-              <div title='Create New Task' style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
-                onClick={handleOpenAddTaskDialog}>
-                {seconds2hrmin(projectTimeDetails.planned[date.ymdDate] || 0)}
-              </div>
-              <div style={{ paddingTop: '0.2rem', width: '8.55rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
-                {seconds2hrmin(projectTimeDetails.actual[date.ymdDate] || 0)}
-              </div>
-            </>
-          )}
-        </td>
-      ))}
+      {dates.map((date, i) => {
+        const plannedTime = projectTimeDetails.planned[date.ymdDate] || 0;
+        const actualTime = projectTimeDetails.actual[date.ymdDate] || 0;
+        const showSkeleton = loading && (plannedTime !== 0 || actualTime !== 0);
+
+        return (
+          <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden' }}>
+            {showSkeleton ? (
+              <>
+                <div style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}>
+                  <Skeleton variant="text" width={95} height={25} style={{ marginLeft: '1rem', backgroundColor: 'rgba(1,1,1,0.5)', }} />
+                </div>
+                <div style={{ paddingTop: '0.2rem', width: '8.55rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
+                  <Skeleton variant="text" width={95} height={25} style={{ marginLeft: '1rem', backgroundColor: 'rgba(0,0,0,0.2)' }} />
+                </div>
+              </>
+            ) : (
+              <>
+                <div title='Create New Task' style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
+                  onClick={handleOpenAddTaskDialog}>
+                  {seconds2hrmin(plannedTime)}
+                </div>
+                <div style={{ paddingTop: '0.2rem', width: '8.55rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
+                  {seconds2hrmin(actualTime)}
+                </div>
+              </>
+            )}
+          </td>
+        );
+      })}
       {<AddTaskModal projectName={project.projectName} open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />}
     </>
   );
