@@ -10,7 +10,7 @@ import IndividualTaskView from '../../components/TaskOverview/IndividualTaskView
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
-import CircularProgressWithLabel from '../../components/TaskOverview/CircularProgressWithLabel';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
 
 const today = new Date();
@@ -81,29 +81,7 @@ function TaskOverview() {
   const [showTimeDetails, setShowTimeDetails] = useState(true);
   const [projectTimeDetails, setProjectTimeDetails] = useState({});
   const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    
-    fetchProjects();
-    
-    const timer = setInterval(() => {
-      setProgress((prevProgress) => {
-        const nextProgress = prevProgress + 10;
-        return nextProgress > 100 ? 100 : nextProgress;
-      });
-    }, 600);
-
-    const timeout = setTimeout(() => {
-      setLoading(false);
-      clearInterval(timer);
-    }, 7000);
-
-    return () => {
-      clearInterval(timer); 
-      clearTimeout(timeout); 
-    };
-  }, []);
+  const [showMask, setShowMask] = useState(false);
 
   const toggleShowComplete = (e) => {
     e.stopPropagation();
@@ -137,7 +115,7 @@ function TaskOverview() {
     let currentDate = new Date(today);
     for (let i = 0; i < 7; i++) {
       const newDate = new Date(currentDate.setDate(currentDate.getDate() + startDateIndex + i));
-      const formattedDate = newDate.toISOString().slice(0, 10); 
+      const formattedDate = newDate.toISOString().slice(0, 10);
       newDates.push({
         date: newDate,
         ymdDate: formattedDate,
@@ -161,15 +139,18 @@ function TaskOverview() {
   };
 
   const handleTodayClick = () => {
+    showLoadingMask();
     setStartDateIndex(0);
   };
 
   const handleNextDayClick = () => {
+    showLoadingMask();
     const nextIndex = startDateIndex + 7;
     setStartDateIndex(nextIndex);
   };
 
   const handlePreviousDayClick = () => {
+    showLoadingMask();
     const previousIndex = startDateIndex - 7;
     setStartDateIndex(previousIndex);
   };
@@ -180,7 +161,7 @@ function TaskOverview() {
   };
 
   const handleCloseAddTaskModal = () => {
-    setShowAddTaskModal(false); 
+    setShowAddTaskModal(false);
   };
 
   const fetchProjects = async () => {
@@ -199,6 +180,7 @@ function TaskOverview() {
       if (response.ok) {
         const data = await response.json();
         setProjects(data);
+        setLoading(false);
       } else {
         console.error('Failed to fetch projects');
       }
@@ -271,15 +253,60 @@ function TaskOverview() {
   const handleCloseDeleteProjectDialog = () => {
     setSelectedProjectId(null);
     setDeleteProjectDialogOpen(false);
-  };  
+  };
 
+  const LoadingMask = () => {
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: 'white',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        zIndex: 10,
+        fontSize: '1.5rem',
+        fontWeight: '700'
+      }}>
+        Loading...
+      </div>
+    );
+  };
+
+  const showLoadingMask = () => {
+    setShowMask(true);
+    setTimeout(() => {
+      setShowMask(false);
+    }, 1000);
+  };
 
   return (
     <div>
       {loading ? (
-        <CircularProgressWithLabel value={progress}/>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh'
+        }}>
+          <svg width={0} height={0}>
+            <defs>
+              <linearGradient id="my_gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#ff9900" />
+                <stop offset="50%" stopColor="#0099cc" />
+                <stop offset="100%" stopColor="#009933" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <CircularProgress size={80} sx={{ 'svg circle': { stroke: 'url(#my_gradient)' } }} />
+        </div>
       ) : (
         <>
+          {showMask && <LoadingMask />}
           {dates.length > 0 && (
             <Navbar
               onTodayClick={handleTodayClick}
