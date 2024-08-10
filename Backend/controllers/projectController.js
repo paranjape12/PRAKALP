@@ -648,6 +648,156 @@ exports.totalHrs = (req, res) => {
   }
 };
 
+exports.YTSWIPhrs = (req, res) => {
+  const employeeId = req.query.employeeId;
+  const projectNames = req.query.projectNames?.split(','); // Expecting a comma-separated list of project names
+  const token = req.query.token;
+
+  if (!token) {
+    return res.status(400).send('Token is required');
+  }
+
+  let userRole;
+  try {
+    const decryptedToken = decryptToken(token);
+    userRole = decryptedToken?.Type; // Extract the user role from the decrypted token
+  } catch (error) {
+    console.error('Error decrypting token:', error);
+    return res.status(400).send('Invalid token');
+  }
+
+  if (!employeeId || !projectNames || !projectNames.length) {
+    return res.status(400).send('employeeId and projectNames are required');
+  }
+
+  if (userRole === 'Employee') {
+    const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
+
+    db.query(query1, (err, taskIdsResult) => {
+      if (err) {
+        console.error('Error executing query 1:', err.stack);
+        return res.status(500).send('Database query error');
+      }
+
+      const taskIds = taskIdsResult.map(row => row.taskid).join(',');
+
+      if (!taskIds.length) {
+        return res.status(200).json({
+          projects: {},
+          totalTaskCount: 0
+        });
+      }
+
+      const projectQueries = projectNames.map((projectName) => {
+        return new Promise((resolve, reject) => {
+          const YTSQuery = `
+            SELECT COUNT(*) as YTSnos, SUM(timetocomplete) as YTSplanned 
+            FROM Task 
+            WHERE projectName='${projectName}' AND id IN (${taskIds}) AND Status=1;
+          `;
+
+          const WIPQuery = `
+            SELECT COUNT(*) as WIPnos, SUM(timetocomplete) as WIPplanned 
+            FROM Task 
+            WHERE projectName='${projectName}' AND id IN (${taskIds}) AND Status=2;
+          `;
+
+          db.query(YTSQuery, (err, YTSResult) => {
+            if (err) {
+              console.error(`Error executing YTS query for project ${projectName}:`, err.stack);
+              return reject('Database query error');
+            }
+
+            const { YTSnos, YTSplanned } = YTSResult[0];
+
+            db.query(WIPQuery, (err, WIPResult) => {
+              if (err) {
+                console.error(`Error executing WIP query for project ${projectName}:`, err.stack);
+                return reject('Database query error');
+              }
+
+              const { WIPnos, WIPplanned } = WIPResult[0];
+
+              const WIPTaskIdsQuery = `
+                SELECT id 
+                FROM Task 
+                WHERE projectName='${projectName}' AND id IN (${taskIds}) AND Status=2;
+              `;
+
+              db.query(WIPTaskIdsQuery, (err, WIPTaskIdsResult) => {
+                if (err) {
+                  console.error(`Error executing WIP Task IDs query for project ${projectName}:`, err.stack);
+                  return reject('Database query error');
+                }
+
+                const WIPTaskIds = WIPTaskIdsResult.map(row => row.id).join(',');
+
+                if (!WIPTaskIds.length) {
+                  return resolve({
+                    projectName,
+                    taskCount: YTSnos + WIPnos,
+                    planned: YTSplanned + WIPplanned,
+                    actual: 0
+                  });
+                }
+
+                const WIPActualQuery = `
+                  SELECT SUM(actualtimetocomplete_emp) as WIPactual 
+                  FROM Taskemp 
+                  WHERE taskid IN (${WIPTaskIds});
+                `;
+
+                db.query(WIPActualQuery, (err, WIPActualResult) => {
+                  if (err) {
+                    console.error(`Error executing WIP Actual query for project ${projectName}:`, err.stack);
+                    return reject('Database query error');
+                  }
+
+                  const WIPactual = WIPActualResult[0]?.WIPactual || 0;
+
+                  resolve({
+                    projectName,
+                    YTSnos: YTSnos,
+                    YTSplanned: YTSplanned,
+                    WIPnos: WIPnos,
+                    WIPplanned: WIPplanned,
+                    WIPactual: WIPactual
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+
+      Promise.all(projectQueries)
+        .then(results => {
+          const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
+
+          const response = results.reduce((acc, result) => {
+            acc[result.projectName] = {
+              YTSnos: result.YTSnos,
+              YTSplanned: result.YTSplanned,
+              WIPnos: result.WIPnos,
+              WIPplanned: result.WIPplanned,
+              WIPactual: result.WIPactual
+            };
+            return acc;
+          }, {});
+
+          res.json({ projects: response, totalTaskCount });
+        })
+        .catch(error => {
+          console.error('Error in processing projects:', error);
+          res.status(500).send('Error processing projects');
+        });
+    });
+  } else {
+    res.status(403).send('Access forbidden: User role not authorized');
+  }
+};
+
+
 
 
 

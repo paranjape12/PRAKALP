@@ -35,6 +35,11 @@ const ProjectOverview = () => {
   const [totalTaskCount, setTotalTaskCount] = useState(0);
   const [totalPlannedSum, setTotalPlannedSum] = useState(0);
   const [totalActualSum, setTotalActualSum] = useState(0);
+  const [totalYTSNosSum, setTotalYTSNosSum] = useState(0);
+  const [totalYTSPlannedSum, setTotalYTSPlannedSum] = useState(0);
+  const [totalWIPNosSum, setTotalWIPNosSum] = useState(0);
+  const [totalWIPPlannedSum, setTotalWIPPlannedSum] = useState(0);
+  const [totalWIPActualSum, setTotalWIPActualSum] = useState(0);
 
   const navigate = useNavigate();
 
@@ -116,8 +121,8 @@ const ProjectOverview = () => {
       });
       setProjects(response.data.projects); // Set projects state with the response data
       setTotalProjects(response.data.totalProjects); // Set total projects count
+      fetchProjectDetails(response.data.projects);
       setLoading(false);
-      fetchProjectDetails(response.data.projects); // Fetch project details after getting projects
     } catch (err) {
       setError(err);
       setLoading(false);
@@ -154,6 +159,9 @@ const ProjectOverview = () => {
       console.error("Error fetching project details:", err);
     }
   };
+
+ 
+  
 
   useEffect(() => {
     console.log("Fetching projects...");
@@ -374,7 +382,7 @@ const ProjectOverview = () => {
                     const taskCount = projectDetail.task_count || 0;
                     const planned = projectDetail.planned || 0;
                     const actual = projectDetail.actual || 0;
-
+                   
                     return (
                       <tr key={index}>
                         <td
@@ -412,15 +420,16 @@ const ProjectOverview = () => {
                           {project.ProjectName}
                         </td>
 
-                        {taskCount > 0 ? (
+                        {taskCount !== 0 ? (
                           <>
                             <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#dda5e7'}}>{taskCount}</td>
                             <td style={{padding:'0', textAlign:'center',verticalAlign:'middle' ,background:'#858796'}}>{seconds2hrmin(planned)}</td>
                             <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#c6e6eb'}}>{seconds2hrmin(actual)}</td>
-                            <td
+                           
+                          <td
                               className="text-center addtask"
                               style={{ fontSize: "13.44px", verticalAlign: "middle" }}
-                              colSpan="22"
+                              colSpan="17"
                             >
                               test
                             </td>
