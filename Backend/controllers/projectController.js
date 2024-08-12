@@ -13,6 +13,87 @@ exports.addProject = (req, res) => {
     }
   });
 };
+// FAMT API Endpoint for deleting project and associated tasks
+exports.deleteProject = (req, res) => {
+  const projid = req.body.projid;
+
+  // Fetch project details
+  db.query(
+    'SELECT * FROM `projects` WHERE `id` = ?',
+    [projid],
+    (error, results) => {
+      if (error) {
+        console.error('Error fetching project: ' + error);
+        return res.status(500).json({ message: 'Error fetching project' });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+
+      const proname = results[0].ProjectName;
+
+      // Delete project and associated tasks
+      db.beginTransaction(error => {
+        if (error) {
+          console.error('Error starting transaction: ' + error);
+          return res.status(500).json({ message: 'Error starting transaction' });
+        }
+
+        db.query(
+          'DELETE FROM `projects` WHERE `id` = ?',
+          [projid],
+          error => {
+            if (error) {
+              return db.rollback(() => {
+                console.error('Error deleting project: ' + error);
+                res.status(500).json({ message: 'Error deleting project' });
+              });
+            }
+
+            db.query(
+              'DELETE FROM `Task` WHERE `projectName` = ?',
+              [proname],
+              error => {
+                if (error) {
+                  return db.rollback(() => {
+                    console.error('Error deleting tasks: ' + error);
+                    res.status(500).json({ message: 'Error deleting tasks' });
+                  });
+                }
+
+                db.query(
+                  'DELETE FROM `Taskemp` WHERE `taskid` IN (SELECT DISTINCT `id` FROM `Task` WHERE `projectName` = ?)',
+                  [proname],
+                  error => {
+                    if (error) {
+                      return db.rollback(() => {
+                        console.error('Error deleting task employees: ' + error);
+                        res.status(500).json({ message: 'Error deleting task employees' });
+                      });
+                    }
+
+                    db.commit(error => {
+                      if (error) {
+                        return db.rollback(() => {
+                          console.error('Error committing transaction: ' + error);
+                          res.status(500).json({ message: 'Error committing transaction' });
+                        });
+                      }
+
+                      res.status(200).send({ message: 'Success' });
+                    });
+                  }
+                );
+              }
+            );
+          }
+        );
+      });
+    }
+  );
+};
+
 
 exports.getProjectNames = (req, res ) => {
   const sql = 'SELECT projectName FROM projects ORDER BY `projectName` ASC'; 

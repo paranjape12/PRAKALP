@@ -3,6 +3,7 @@ const router = express.Router();
 const projectController = require('../controllers/projectController');
 
 router.post('/addProject', projectController.addProject);
+router.post('/deleteProject',projectController.deleteProject);
 router.post('/updateProject', projectController.updateProject);
 router.get('/getProjectNames', projectController.getProjectNames);
 router.post('/empOverviewPrjIndividual', projectController.empOverviewPrjIndividual);
