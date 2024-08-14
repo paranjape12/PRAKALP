@@ -1,6 +1,36 @@
 const db = require('../config/db');
 const decryptToken = require('../middleware/decryptToken');
 
+
+exports.register = (req, res) => {
+  const { email, fname, lname, slectedval, passwd } = req.body;
+  console.log("req.body : ", req);
+  const password = Buffer.from(passwd).toString('base64'); // Encrypting password
+
+  const selectQuery = 'SELECT * FROM Logincrd WHERE Email=? OR Password=?';
+  db.query(selectQuery, [email, password], (error, results) => {
+    if (error) {
+      res.status(500).json({ message: 'Error occurred while executing query' });
+      return;
+    }
+
+    if (results.length > 0) {
+      res.status(400).json({ message: 'User already exists' });
+      return;
+    }
+
+    const insertQuery = 'INSERT INTO Logincrd (Name, Nickname, Email, Password, Type, Location) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(insertQuery, [fname, lname, email, password, 'Employee', slectedval], (error, results) => {
+      if (error) {
+        res.status(500).json({ message: 'Error occurred while inserting data' });
+        return;
+      }
+
+      res.status(200).json({ message: 'Success' });
+    });
+  });
+};
+
 exports.getLogin = (req, res) => {
   const { email, pass, rememberMe } = req.body;
 
