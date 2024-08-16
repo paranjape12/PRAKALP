@@ -6,6 +6,7 @@ import googleIcon from "../../assets/images/google.svg";
 import axios from "axios";
 import { Buffer } from "buffer";
 import "./Login.css";
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
 function Login() {
   const [password, setPassword] = useState("");
@@ -13,6 +14,7 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,7 +52,6 @@ function Login() {
 
       const emailRegex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
       const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
-
       if (!emailRegex.test(email)) {
         setErrorMessage('Email format mismatch. Please enter a valid email address');
         return;
@@ -96,6 +97,29 @@ function Login() {
     setPasswordVisible(!passwordVisible);
   };
 
+  const handleGoogleLoginSuccess = async (credentialResponse) => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/googlelogin', {
+        params: {
+          token: credentialResponse.credential,
+        },
+      });
+      if (response.data.message === 'Success') {
+        navigate('/task', { state: { name: response.data.result[0].Name } });
+      } else {
+        setMessage('Google Login failed');
+      }
+    } catch (error) {
+      setMessage('Google Login failed: ' + error.response.data);
+    }
+  };
+
+  const handleGoogleLoginFailure = () => {
+    setMessage('Google Login failed');
+  };
+
+
+  
   return (
     <div id="login-body">
       <div className="container">
@@ -220,22 +244,27 @@ function Login() {
                           )}
                         </div>
                         <hr />
-                        <a
-                          className="btn btn-danger btn-user"
-                          // onClick={handleGoogleLogin}
-                          href="#!" // Use href="#!" to prevent anchor link behavior
+                        <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
                         >
-                          <img
+                        
+                        <GoogleLogin
+                          onSuccess={handleGoogleLoginSuccess}
+                          onFailure={handleGoogleLoginFailure}
+                          className="google-login-button" 
+                        >
+                          {/* <img
                             src={googleIcon}
                             alt="Google Icon"
                             style={{ width: "1.5rem", marginRight: "1rem" }}
                             className="googleIcon"
                           />
                           <i className="fab fa-google fa-fw"></i>{" "}
-                          <strong>Login with Protovec Account.</strong>
-                        </a>
+                          <strong>Login with Protovec Account.</strong> */}
+                        </GoogleLogin>
+                        </GoogleOAuthProvider>
                       </form>
-                      <hr />
+                      {message && <p style={{color:'red'}}>{message}</p>}
+                      <hr/>
                       <div className="text-center">
                         <Link to="/register" className="small">
                           <h6>Create an Account!</h6>

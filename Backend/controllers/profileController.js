@@ -1,6 +1,48 @@
 const db = require('../config/db');
 const decryptToken = require('../middleware/decryptToken');
+const { OAuth2Client } = require('google-auth-library');
 
+
+
+// Use environment variable
+const client = new OAuth2Client(process.env.NODE_APP_GOOGLE_CLIENT_ID);
+
+// Google OAuth2 Callback Route
+exports.googlelogin = async (req, res) => {
+  const { token } = req.query;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.NODE_APP_GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email } = payload;
+
+    // Check if user exists in database
+    const selectlogin = `SELECT * FROM Logincrd WHERE Email=?`;
+
+    db.query(selectlogin, [email], (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error');
+        return;
+      }
+
+      if (result.length === 0) {
+        // You may want to create a new user here if they don't exist
+        return res.status(401).send('Error: User not found');
+      }
+
+      // Set cookies or other session logic
+      res.cookie('username', email, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
+      res.send({ message: 'Success', result: result });
+    });
+  } catch (error) {
+    res.status(401).send('Error: Invalid Google token');
+  }
+};
 
 exports.register = (req, res) => {
   const { email, fname, lname, slectedval, passwd } = req.body;

@@ -3,6 +3,7 @@ const router = express.Router();
 const profileController = require('../controllers/profileController');
 
 router.post('/register', profileController.register);
+router.get('/googlelogin', profileController.googlelogin);
 router.post('/getProfile', profileController.getProfile);
 router.post('/getLogin', profileController.getLogin);
 router.post('/empDropdown', profileController.empDropdown);
