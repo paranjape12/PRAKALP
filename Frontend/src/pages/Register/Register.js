@@ -25,7 +25,9 @@ function Register() {
         const { value: selectedVal } = document.getElementById('dropLocation');
 
         const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const PassRegex = /^(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        //const PassRegex = /^(?=.*[A-Z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        //const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/; login page
+        const PassRegex = /^(?=.*[A-Z])(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/; //(add dot .)
         const emailDomain = email.split('@')[1];
 
         if (fname === "" || lname === "" || email === "" || passwd === "" || cpass === "") {
