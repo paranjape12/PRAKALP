@@ -898,3 +898,46 @@ exports.empOverviewIndIndPATimes = (req, res) => {
     });
   });
 };
+
+exports.deleteTask = (req, res) => {
+  const { taskId } = req.body;
+
+  if (!taskId) {
+    return res.status(400).send('Task ID is required');
+  }
+
+  const deleteTaskQuery = 'DELETE FROM `Task` WHERE id = ?';
+  const deleteTaskEmpQuery = 'DELETE FROM `Taskemp` WHERE taskid = ?';
+
+  db.beginTransaction((err) => {
+    if (err) {
+      return res.status(500).send('Error starting delete operation.');
+    }
+
+    db.query(deleteTaskQuery, [taskId], (err, result) => {
+      if (
+        err) {
+        return db.rollback(() => {
+          res.status(500).send('Error deleting from Task table.');
+        });
+      }
+
+      db.query(deleteTaskEmpQuery, [taskId], (err, result) => {
+        if (err) {
+          return db.rollback(() => {
+            res.status(500).send('Error deleting from Taskemp table.');
+          });
+        }
+
+        db.commit((err) => {
+          if (err) {
+            return db.rollback(() => {
+              res.status(500).send('Error committing transaction');
+            });
+          }
+          res.send('Success');
+        });
+      });
+    });
+  });
+};
