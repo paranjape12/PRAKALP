@@ -82,6 +82,28 @@ function TaskOverview() {
   const [projectTimeDetails, setProjectTimeDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [showMask, setShowMask] = useState(false);
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    
+    fetchProjects();
+    
+    const timer = setInterval(() => {
+      setProgress((prevProgress) => {
+        const nextProgress = prevProgress + 10;
+        return nextProgress > 100 ? 100 : nextProgress;
+      });
+    }, 600);
+
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      clearInterval(timer);
+    }, 7000);
+
+    return () => {
+      clearInterval(timer); // Clean up the timer when component unmounts or when changing state
+      clearTimeout(timeout); // Clean up the timeout to prevent memory leaks
+    };
+  }, []);
 
   const toggleShowComplete = (e) => {
     e.stopPropagation();
@@ -193,6 +215,16 @@ function TaskOverview() {
     fetchProjects();
   }, [showComplete]);
 
+
+  // Fetch projects every 4 second to update colors
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchProjects();
+    }, 4000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+  
   function getTaskStatusColor(requiredTime, takenTime) {
     if (requiredTime < takenTime) {
       return 'bg-danger border border-danger';
