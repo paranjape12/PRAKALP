@@ -941,3 +941,59 @@ exports.deleteTask = (req, res) => {
     });
   });
 };
+
+exports.saveEditTask = (req, res) => {
+  const {
+    projectName,
+    taskName,
+    originalTaskName,
+    lastTask,
+    taskActualTime,
+    taskDetails,
+    approvalStatus = 0 // Set default value for approvalStatus
+  } = req.body;
+
+  const isLast = lastTask ? 1 : 0;
+
+  // Fetch the task ID before performing updates
+  const getTaskIdQuery = `SELECT id FROM Task WHERE projectName = ? AND TaskName = ?`;
+  db.query(getTaskIdQuery, [projectName, originalTaskName], (err, results) => {
+    if (err) {
+      console.error('Error fetching task ID:', err);
+      return res.status(500).send('Error fetching task ID');
+    }
+
+    if (results.length > 0) {
+      const taskId = results[0].id;
+
+      if (isLast === 1) {
+        const isLastTaskExistQuery = `SELECT ProjectName FROM projects WHERE ProjectName = ? AND lasttask = '1'`;
+        db.query(isLastTaskExistQuery, [projectName], (err, result) => {
+          if (err) {
+            console.error('Error checking last task existence:', err);
+            return res.status(500).send('Error checking last task existence');
+          }
+
+          if (result.length > 0) {
+            console.log('Last task already exists for project:', projectName);
+            res.send('Last Task exists');
+          } else {
+            updateProjectAndTask(projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res);
+          }
+        });
+      } else {
+        const updateProjectQuery = `UPDATE projects SET lasttask = '0' WHERE ProjectName = ?`;
+        db.query(updateProjectQuery, [projectName], (err) => {
+          if (err) {
+            console.error('Error updating project:', err);
+            return res.status(500).send('Error updating project');
+          }
+          updateTask(projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res);
+        });
+      }
+    } else {
+      console.log('Task not found for project:', projectName, 'and original task name:', originalTaskName);
+      return res.status(404).send('Task not found');
+    }
+  });
+};
