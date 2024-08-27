@@ -997,3 +997,46 @@ exports.saveEditTask = (req, res) => {
     }
   });
 };
+
+const updateProjectAndTask = (projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res) => {
+  // Update the project to set the last task flag
+  const updateProjectQuery = `UPDATE projects SET lasttask = '1' WHERE ProjectName = ?`;
+  db.query(updateProjectQuery, [projectName], (err) => {
+    if (err) {
+      console.error('Error updating project:', err);
+      return res.status(500).send('Error updating project');
+    }
+
+    // Proceed to update the task
+    updateTask(projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res);
+  });
+};
+
+const updateTask = (projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res) => {
+  // Update the task with the new details
+  const updateTaskQuery = `
+    UPDATE Task
+    SET projectName = ?, TaskName = ?, taskDetails = ?, timetocomplete = ?, aproved = ?
+    WHERE id = ?`;
+
+  db.query(updateTaskQuery, [projectName, taskName, taskDetails, taskActualTime, approvalStatus, taskId], (err) => {
+    if (err) {
+      console.error('Error updating task:', err);
+      return res.status(500).send('Error updating task');
+    }
+
+    // Proceed to update related task employees (assuming this function exists)
+    updateTaskEmp(taskId, taskDetails, taskActualTime, res);
+  });
+};
+const updateTaskEmp = (taskId, taskDetails, taskActualTime, res) => {
+  const updateTaskEmpQuery = `UPDATE Taskemp SET taskDetails_emp = ?, timetocomplete_emp = ? WHERE taskid = ?`;
+  db.query(updateTaskEmpQuery, [taskDetails, taskActualTime, taskId], (err) => {
+    if (err) {
+      console.error('Error updating Taskemp:', err);
+      return res.status(500).send('Error updating Taskemp');
+    }
+    res.send('Success');
+  });
+};
+
