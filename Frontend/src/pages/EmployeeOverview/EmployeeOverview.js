@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer';
+import Disableemp from "../../assets/images/icons/letter-d.png";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import AggregateTableCellsView from '../../components/EmployeeOverview/AggregateTableCellsView';
 import IndividualTableCellsView from '../../components/EmployeeOverview/IndividualTableCellsView';
 import axios from 'axios';
-import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus, faCircleInfo,faD } from '@fortawesome/free-solid-svg-icons';
 
 import '../../pages/TaskOverview/TaskOverview.css';
 import { MenuItem } from '@material-ui/core';
@@ -138,7 +139,7 @@ function EmployeeOverview() {
   useEffect(() => {
     // Fetch employees
     axios
-      .post("http://localhost:3001/api/empDropdown", {
+      .post("http://localhost:3001/api/allEmployeeOverview", {
         token: localStorage.getItem("token"),
       })
       .then((response) => {
@@ -253,7 +254,7 @@ function EmployeeOverview() {
    // Define the callback function to handle successful deletion
    const handleEmployeeDeleted = () => {
     // Fetch updated employees list
-    axios.post("http://localhost:3001/api/empDropdown", {
+    axios.post("http://localhost:3001/api/allEmployeeOverview", {
       token: localStorage.getItem("token"),
     })
     .then(response => {
@@ -342,12 +343,26 @@ function EmployeeOverview() {
                     style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.3rem' }}
                     onClick={() => handleExpandTasks(employee.id)}
                   />
-                  <FontAwesomeIcon
-                    icon={faTrashAlt}
-                    className="text-danger"
-                    style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }}
-                    onClick={() => handleOpenDeleteEmployeeDialog(employee.id)}
-                  />
+                  {employee.disableemp === 1 ? (
+                        
+                        <img
+                        className="font-weight-bold"
+                         src={Disableemp}
+                         style={{ float: 'right', cursor: 'pointer', width:'18px', marginRight:'0.4rem' }}
+                       />
+                      //  <FontAwesomeIcon
+                      //     icon={faD} 
+                      //     className="font-weight-bold" 
+                      //     style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem',color: "#cc1e1e" }}
+                      //   />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faTrashAlt}
+                          className="text-danger"
+                          style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }}
+                          onClick={() => handleOpenDeleteEmployeeDialog(employee.id)}
+                        />
+                      )}
                   <FontAwesomeIcon
                     icon={faPencilAlt}
                     className="text-primary"
