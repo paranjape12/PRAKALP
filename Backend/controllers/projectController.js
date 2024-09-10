@@ -107,8 +107,7 @@ exports.getProjectNames = (req, res ) => {
   });
 };
 
-//employee overview page api AggregateTableCellsView 
-exports.empOverviewPrjIndividual = (req, res ) => {
+exports.empOverviewPrjIndividual = (req, res) => {
   const { employeeid } = req.body;
   if (!employeeid) {
     return res.status(400).send('employeeid is required');
@@ -125,14 +124,34 @@ exports.empOverviewPrjIndividual = (req, res ) => {
       return res.status(200).send('No tasks found for this employee');
     }
 
-    const placeholders = taskIds.map(() => '?').join(',');
-    const query2 = `SELECT DISTINCT projectName FROM \`Task\` WHERE id IN (${placeholders})`;
-    const query3 = `SELECT * FROM \`Task\` WHERE id IN (${placeholders})`;
-    const query4 = `SELECT * FROM \`Task\` WHERE id IN (${placeholders}) AND aproved = '1'`;
+    const placeholders = taskIds.map(() => '?').join(',');  // Create the correct number of placeholders
 
+    // Corrected query2 with dynamically generated placeholders
+    const query2 = `
+      SELECT DISTINCT p.ProjectName 
+      FROM \`Task\` t
+      JOIN \`Projects\` p ON t.projectName = p.ProjectName
+      WHERE t.id IN (${placeholders}) 
+      AND p.Status IN (1, 2, 3, 4)
+    `;
+
+    // console.log("Generated Query2: ", query2);  // Log the query to check it's formed correctly
+
+    // Use taskIds for placeholders
     db.query(query2, taskIds, (err, projects) => {
-      if (err) return res.status(500).send(err);
-      const projectsCount= projects.length;
+      if (err) {
+        console.error("Error in Query2: ", err);
+        return res.status(500).send(err);
+      }
+      const projectsCount = projects.length;
+
+      const query3 = `  SELECT t.*, p.ProjectName, p.Status 
+        FROM \`Task\` t
+        JOIN \`Projects\` p ON t.projectName = p.ProjectName
+        WHERE t.id IN (${placeholders}) 
+        AND p.Status IN (1, 2, 3, 4)
+      `;
+      const query4 = `SELECT * FROM \`Task\` WHERE id IN (${placeholders}) AND aproved = '1'`;
 
       db.query(query3, taskIds, (err, allTasks) => {
         if (err) return res.status(500).send(err);
@@ -154,6 +173,9 @@ exports.empOverviewPrjIndividual = (req, res ) => {
     });
   });
 };
+
+
+
 function query(sql, params) {
   return new Promise((resolve, reject) => {
     db.query(sql, params, (error, results) => {
@@ -164,65 +186,6 @@ function query(sql, params) {
     });
   });
 }
-
-// exports.empOverviewPrjIndividual = (req, res) => {
-//   const { employeeid } = req.body;
-//   if (!employeeid) {
-//     return res.status(400).send('employeeid is required');
-//   }
-
-//   const query1 = 'SELECT DISTINCT taskid FROM `Taskemp` WHERE AssignedTo_emp = ?';
-
-//   db.query(query1, [employeeid], (err, result) => {
-//     if (err) return res.status(500).send(err);
-
-//     const taskIds = result.map(row => row.taskid);
-
-//     if (taskIds.length === 0) {
-//       return res.status(200).send('No tasks found for this employee');
-//     }
-
-//     const placeholders = taskIds.map(() => '?').join(',');
-//     // Update query2 to include status filtering
-//     const query2 = `SELECT DISTINCT projectName FROM \`Task\` WHERE id IN (${placeholders}) AND status IN (1, 2, 3, 4)`;
-//     const query3 = `SELECT * FROM \`Task\` WHERE id IN (${placeholders})`;
-//     const query4 = `SELECT * FROM \`Task\` WHERE id IN (${placeholders}) AND aproved = '1'`;
-
-//     db.query(query2, taskIds, (err, projects) => {
-//       if (err) return res.status(500).send(err);
-//       const projectsCount = projects.length;
-
-//       db.query(query3, taskIds, (err, allTasks) => {
-//         if (err) return res.status(500).send(err);
-
-//         const totalTasks = allTasks.length;
-
-//         db.query(query4, taskIds, (err, approvedTasks) => {
-//           if (err) return res.status(500).send(err);
-
-//           const approvedTaskCount = approvedTasks.length;
-
-//           res.json({
-//             projectsCount,
-//             totalTasks,
-//             approvedTaskCount
-//           });
-//         });
-//       });
-//     });
-//   });
-// };
-
-// function query(sql, params) {
-//   return new Promise((resolve, reject) => {
-//     db.query(sql, params, (error, results) => {
-//       if (error) {
-//         return reject(error);
-//       }
-//       resolve(results);
-//     });
-//   });
-// }
 
 
 //original api 
