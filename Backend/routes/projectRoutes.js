@@ -12,6 +12,8 @@ router.post('/createCopyProject', projectController.createCopyProject);
 router.post('/updateProjectSorting',projectController.updateProjectSorting);
 router.get('/projectOverview',projectController.projectOverview);
 router.get('/totalHrs',projectController.totalHrs);
-router.get('/YTSWIPhrs',projectController.YTSWIPhrs);
+//router.get('/YTSWIPhrs',projectController.YTSWIPhrs);
+router.get('/CMP',projectController.CMP);
+
 
 module.exports = router;

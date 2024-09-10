@@ -94,7 +94,6 @@ exports.deleteProject = (req, res) => {
   );
 };
 
-
 exports.getProjectNames = (req, res ) => {
   const sql = 'SELECT projectName FROM projects ORDER BY `projectName` ASC'; 
   db.query(sql, (err, results) => {
@@ -108,8 +107,7 @@ exports.getProjectNames = (req, res ) => {
   });
 };
 
-
-
+//employee overview page api AggregateTableCellsView 
 exports.empOverviewPrjIndividual = (req, res ) => {
   const { employeeid } = req.body;
   if (!employeeid) {
@@ -167,7 +165,176 @@ function query(sql, params) {
   });
 }
 
-exports.EmpOverviewPlusMinus = async(req, res ) => {
+// exports.empOverviewPrjIndividual = (req, res) => {
+//   const { employeeid } = req.body;
+//   if (!employeeid) {
+//     return res.status(400).send('employeeid is required');
+//   }
+
+//   const query1 = 'SELECT DISTINCT taskid FROM `Taskemp` WHERE AssignedTo_emp = ?';
+
+//   db.query(query1, [employeeid], (err, result) => {
+//     if (err) return res.status(500).send(err);
+
+//     const taskIds = result.map(row => row.taskid);
+
+//     if (taskIds.length === 0) {
+//       return res.status(200).send('No tasks found for this employee');
+//     }
+
+//     const placeholders = taskIds.map(() => '?').join(',');
+//     // Update query2 to include status filtering
+//     const query2 = `SELECT DISTINCT projectName FROM \`Task\` WHERE id IN (${placeholders}) AND status IN (1, 2, 3, 4)`;
+//     const query3 = `SELECT * FROM \`Task\` WHERE id IN (${placeholders})`;
+//     const query4 = `SELECT * FROM \`Task\` WHERE id IN (${placeholders}) AND aproved = '1'`;
+
+//     db.query(query2, taskIds, (err, projects) => {
+//       if (err) return res.status(500).send(err);
+//       const projectsCount = projects.length;
+
+//       db.query(query3, taskIds, (err, allTasks) => {
+//         if (err) return res.status(500).send(err);
+
+//         const totalTasks = allTasks.length;
+
+//         db.query(query4, taskIds, (err, approvedTasks) => {
+//           if (err) return res.status(500).send(err);
+
+//           const approvedTaskCount = approvedTasks.length;
+
+//           res.json({
+//             projectsCount,
+//             totalTasks,
+//             approvedTaskCount
+//           });
+//         });
+//       });
+//     });
+//   });
+// };
+
+// function query(sql, params) {
+//   return new Promise((resolve, reject) => {
+//     db.query(sql, params, (error, results) => {
+//       if (error) {
+//         return reject(error);
+//       }
+//       resolve(results);
+//     });
+//   });
+// }
+
+
+//original api 
+// exports.EmpOverviewPlusMinus = async(req, res ) => {
+//   const { empid, U_type } = req.query;
+
+//   if (!empid) {
+//     return res.status(400).send('Employee ID is required');
+//   }
+
+//   try {
+//     // Get the distinct task IDs
+//     const taskIdsResult = await query(`SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`, [empid]);
+
+//     if (!Array.isArray(taskIdsResult) || taskIdsResult.length === 0) {
+//       return res.status(200).send({ projectNames: [], salesOrders: [] });
+//     }
+
+//     const taskIds = taskIdsResult.map(row => row.taskid);
+
+//     // Get the distinct project names
+//     const projectNamesResult = await query(`SELECT DISTINCT projectName FROM Task WHERE id IN (?)`, [taskIds]);
+
+//     if (!Array.isArray(projectNamesResult) || projectNamesResult.length === 0) {
+//       return res.status(200).send({ projectNames: [], salesOrders: [] });
+//     }
+
+//     const projectNames = projectNamesResult.map(row => row.projectName);
+
+//     // Fetch project details for each project name
+//     const projectDetailsQuery = `SELECT * FROM projects WHERE ProjectName IN (?)`;
+//     const projectDetailsResult = await query(projectDetailsQuery, [projectNames]);
+
+//     if (projectDetailsResult.length === 0) {
+//       return res.status(200).send({ projectNames: [], salesOrders: [] });
+//     }
+
+//     let response = [];
+//     let count = 0;
+//     projectDetailsResult.forEach(project => {
+//       const projectId = project.id;
+//       const projectName = project.ProjectName;
+//       const projectSalesOrder = project.sales_order;
+//       const proj_status = project.Status;
+//       const projectLastTask = project.lasttask;
+
+//       let selcttask;
+//       if (U_type !== 'Admin' && U_type !== 'Team Leader') {
+//         selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
+//       } else {
+//         selcttask = `SELECT * FROM Task WHERE projectName = ?`;
+//       }
+
+//       db.query(selcttask, [empid, projectName], (err, taskResults) => {
+//         if (err) {
+//           console.error('Error executing task query:', err.stack);
+//           return res.status(500).send('Database query error');
+//         }
+
+//         let assigntaskpresent = taskResults.length > 0;
+//         let noofassigntasks = taskResults.length;
+//         // Prepare task details for each task
+//         const tasks = taskResults.map(task => ({
+//           taskId: task.taskid,
+//           taskempId: task.id,
+//           taskName: task.TaskName,
+//           taskGivenTime: task.timetocomplete_emp,
+//           taskRequiredTime: task.timetocomplete,
+//           taskActualTime: task.total_actual_time,
+//           taskDetails: task.taskDetails,
+//           taskStatus: task.Status,
+//           taskAproved: task.aproved
+//         }));
+
+//         const timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
+//         db.query(timeQuery, [empid, projectName], (err, timeResults) => {
+//           if (err) {
+//             console.error('Error executing time query:', err.stack);
+//             return res.status(500).send('Database query error');
+//           }
+
+//           const requiredTime = timeResults[0].required || 0;
+//           const takenTime = timeResults[0].taken || 0;
+
+//           response.push({
+//             projectId,
+//             projectName,
+//             projectSalesOrder,
+//             assigntaskpresent,
+//             noofassigntasks,
+//             proj_status,
+//             projectLastTask,
+//             requiredTime,
+//             takenTime,
+//             tasks
+//           });
+
+//           count++;
+//           if (count === projectDetailsResult.length) {
+//             res.json(response);
+//           }
+//         });
+//       });
+//     });
+//   } catch (error) {
+//     console.error('Error fetching tasks:', error);
+//     res.status(500).send('Internal server error');
+//   }
+// };
+
+//New project not use future 
+exports.EmpOverviewPlusMinus = async (req, res) => {
   const { empid, U_type } = req.query;
 
   if (!empid) {
@@ -184,8 +351,11 @@ exports.EmpOverviewPlusMinus = async(req, res ) => {
 
     const taskIds = taskIdsResult.map(row => row.taskid);
 
-    // Get the distinct project names
-    const projectNamesResult = await query(`SELECT DISTINCT projectName FROM Task WHERE id IN (?)`, [taskIds]);
+    // Get the distinct project names with the required statuses
+    const projectNamesResult = await query(
+      `SELECT DISTINCT projectName FROM Task WHERE id IN (?) AND Status IN (1, 2, 3, 4)`, 
+      [taskIds]
+    );
 
     if (!Array.isArray(projectNamesResult) || projectNamesResult.length === 0) {
       return res.status(200).send({ projectNames: [], salesOrders: [] });
@@ -193,8 +363,8 @@ exports.EmpOverviewPlusMinus = async(req, res ) => {
 
     const projectNames = projectNamesResult.map(row => row.projectName);
 
-    // Fetch project details for each project name
-    const projectDetailsQuery = `SELECT * FROM projects WHERE ProjectName IN (?)`;
+    // Fetch project details for each project name with the required statuses
+    const projectDetailsQuery = `SELECT * FROM projects WHERE ProjectName IN (?) AND Status IN (1, 2, 3, 4)`;
     const projectDetailsResult = await query(projectDetailsQuery, [projectNames]);
 
     if (projectDetailsResult.length === 0) {
@@ -212,7 +382,12 @@ exports.EmpOverviewPlusMinus = async(req, res ) => {
 
       let selcttask;
       if (U_type !== 'Admin' && U_type !== 'Team Leader') {
-        selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
+        selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved 
+                     FROM Taskemp te 
+                     JOIN Task p ON te.taskid = p.id 
+                     WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? 
+                     GROUP BY te.taskid, p.TaskName 
+                     ORDER BY te.taskid;`;
       } else {
         selcttask = `SELECT * FROM Task WHERE projectName = ?`;
       }
@@ -238,7 +413,10 @@ exports.EmpOverviewPlusMinus = async(req, res ) => {
           taskAproved: task.aproved
         }));
 
-        const timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
+        const timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken 
+                           FROM Taskemp te 
+                           JOIN Task p ON te.taskid = p.id 
+                           WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
         db.query(timeQuery, [empid, projectName], (err, timeResults) => {
           if (err) {
             console.error('Error executing time query:', err.stack);
@@ -273,6 +451,140 @@ exports.EmpOverviewPlusMinus = async(req, res ) => {
     res.status(500).send('Internal server error');
   }
 };
+
+//filter add getProjSortingAndProjects
+// exports.EmpOverviewPlusMinus = async(req, res ) => {
+//   const { empid, U_type } = req.query;
+
+//   if (!empid) {
+//     return res.status(400).send('Employee ID is required');
+//   }
+
+//   try {
+//     // Get the distinct task IDs
+//     const taskIdsResult = await query(`SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`, [empid]);
+
+//     if (!Array.isArray(taskIdsResult) || taskIdsResult.length === 0) {
+//       return res.status(200).send({ projectNames: [], salesOrders: [] });
+//     }
+
+//     const taskIds = taskIdsResult.map(row => row.taskid);
+
+//     // Get the distinct project names
+//     const projectNamesResult = await query(`SELECT DISTINCT projectName FROM Task WHERE id IN (?)`, [taskIds]);
+
+//     if (!Array.isArray(projectNamesResult) || projectNamesResult.length === 0) {
+//       return res.status(200).send({ projectNames: [], salesOrders: [] });
+//     }
+
+//     const projectNames = projectNamesResult.map(row => row.projectName);
+
+//     // Fetch project details for each project name
+//     const projectDetailsQuery = `SELECT * FROM projects WHERE ProjectName IN (?)`;
+//     const projectDetailsResult = await query(projectDetailsQuery, [projectNames]);
+
+//     if (projectDetailsResult.length === 0) {
+//       return res.status(200).send({ projectNames: [], salesOrders: [] });
+//     }
+
+//     let response = [];
+//     let count = 0;
+
+//     // Call the getProjSortingAndProjects function
+//     getProjSortingAndProjects(empid, projectDetailsResult, async(sortedProjects) => {
+//       for (const project of sortedProjects) {
+//         const projectId = project.id;
+//         const projectName = project.ProjectName;
+//         const projectSalesOrder = project.sales_order;
+//         const proj_status = project.Status;
+//         const projectLastTask = project.lasttask;
+
+//         let selcttask;
+//         if (U_type !== 'Admin' && U_type !== 'Team Leader') {
+//           selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
+//         } else {
+//           selcttask = `SELECT * FROM Task WHERE projectName = ?`;
+//         }
+
+//         const taskResults = await query(selcttask, [empid, projectName]);
+
+//         let assigntaskpresent = taskResults.length > 0;
+//         let noofassigntasks = taskResults.length;
+//         // Prepare task details for each task
+//         const tasks = taskResults.map(task => ({
+//           taskId: task.taskid,
+//           taskempId: task.id,
+//           taskName: task.TaskName,
+//           taskGivenTime: task.timetocomplete_emp,
+//           taskRequiredTime: task.timetocomplete,
+//           taskActualTime: task.total_actual_time,
+//           taskDetails: task.taskDetails,
+//           taskStatus: task.Status,
+//           taskAproved: task.aproved
+//         }));
+
+//         const timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
+//         const timeResults = await query(timeQuery, [empid, projectName]);
+
+//         const requiredTime = timeResults[0].required || 0;
+//         const takenTime = timeResults[0].taken || 0;
+
+//         response.push({
+//           projectId,
+//           projectName,
+//           projectSalesOrder,
+//           assigntaskpresent,
+//           noofassigntasks,
+//           proj_status,
+//           projectLastTask,
+//           requiredTime,
+//           takenTime,
+//           tasks
+//         });
+
+//         count++;
+//         if (count === sortedProjects.length) {
+//           res.json(response);
+//         }
+//       }
+//     });
+
+//     function getProjSortingAndProjects(empid, projectDetails, callback) {
+//       const loginQuerySort = `SELECT projsorting_pv FROM Logincrd WHERE id = ?`;
+//       db.query(loginQuerySort, [empid], (err, loginResults) => {
+//         if (err) {
+//           console.error('Error executing login query:', err.stack);
+//           return res.status(500).send('Database query error');
+//         }
+
+//         const proj_sort_str = loginResults.length > 0 ? loginResults[0].projsorting_pv : '';
+//         const proj_sort = proj_sort_str ? proj_sort_str.split(' ') : [];
+
+//         let sortedProjectQuery;
+//         if (proj_sort_str === '') {
+//           sortedProjectQuery = `SELECT * FROM projects WHERE ProjectName IN (?)`;
+//         } else {
+//           const sort_Status = proj_sort.map(status => `'${status}'`).join(',');
+//           sortedProjectQuery = `SELECT * FROM projects WHERE ProjectName IN (?) AND Status IN (${sort_Status})`;
+//         }
+
+//         db.query(sortedProjectQuery, [projectDetails.map(proj => proj.ProjectName)], (err, sortedProjects) => {
+//           if (err) {
+//             console.error('Error executing sorted project query:', err.stack);
+//             return res.status(500).send('Database query error');
+//           }
+
+//           callback(sortedProjects);
+//         });
+//       });
+//     }
+
+//   } catch (error) {
+//     console.error('Error fetching tasks:', error);
+//     res.status(500).send('Internal server error');
+//   }
+// };
+
 //navbar
 exports.createCopyProject = async(req, res ) => {
   const { projectName, salesOrder, taskNames, taskValues } = req.body;
@@ -365,7 +677,148 @@ exports.updateProjectSorting = (req, res ) => {
   }
 };
 
-//projectoverview Project fectching api 
+//projectoverview Project fectching api original
+// exports.projectOverview = (req, res) => {
+//   const token = req.query.token; // Use query parameter for GET request
+
+//   if (!token) {
+//     return res.status(400).send('Token is required');
+//   }
+
+//   const userData = decryptToken(token);
+//   const AssignBy = userData.Type;
+
+//   let selectProjectQuery;
+
+//   if (AssignBy === 'Employee') {
+//     selectProjectQuery = `
+//       SELECT id, ProjectName, sales_order, Status 
+//       FROM projects 
+//       WHERE complete_status = 0 AND Status IN (1, 2, 3, 4)`;
+//   } else if (AssignBy === 'Team Leader' || AssignBy === 'Admin') {
+//     selectProjectQuery = `SELECT id, ProjectName, sales_order, Status FROM projects`;
+//   } else {
+//     return res.status(403).send('Unauthorized user type');
+//   }
+
+//   db.query(selectProjectQuery, (err, projectResults) => {
+//     if (err) {
+//       console.error('Error executing project query:', err.stack);
+//       return res.status(500).send('Database query error');
+//     }
+
+//     const projectCountQuery = `SELECT COUNT(*) as totalProjects FROM projects`;
+
+//     db.query(projectCountQuery, (err, countResult) => {
+//       if (err) {
+//         console.error('Error executing count query:', err.stack);
+//         return res.status(500).send('Database query error');
+//       }
+
+//       const totalProjects = countResult[0].totalProjects;
+
+//       const response = {
+//         projects: projectResults.map(project => ({
+//           ProjectName: project.ProjectName,
+//           sales_order: project.sales_order,
+//           Status: project.Status,
+//           projectId: project.id
+//         })),
+//         totalProjects
+//       };
+
+//       res.json(response);
+//     });
+//   });
+// };
+
+//add filtering project colour waves and setting popup mdun 
+// exports.projectOverview = (req, res) => {
+//   const token = req.query.token; // Use query parameter for GET request
+
+//   if (!token) {
+//     return res.status(400).send('Token is required');
+//   }
+
+//   const userData = decryptToken(token);
+//   const AssignBy = userData.Type;
+//   const u_id = userData.id;
+
+//   let selectProjectQuery;
+
+//   if (AssignBy === 'Employee') {
+//     selectProjectQuery = `
+//       SELECT id, ProjectName, sales_order, Status 
+//       FROM projects 
+//       WHERE complete_status = 0 AND Status IN (1, 2, 3, 4)`;
+//   } else if (AssignBy === 'Team Leader' || AssignBy === 'Admin') {
+//     selectProjectQuery = `SELECT id, ProjectName, sales_order, Status FROM projects`;
+//   } else {
+//     return res.status(403).send('Unauthorized user type');
+//   }
+
+//   db.query(selectProjectQuery, (err, projectResults) => {
+//     if (err) {
+//       console.error('Error executing project query:', err.stack);
+//       return res.status(500).send('Database query error');
+//     }
+
+//     getProjSortingAndProjects();
+
+//     function getProjSortingAndProjects() {
+//       const loginQuerySort = `SELECT projsorting FROM Logincrd WHERE id = ?`;
+//       db.query(loginQuerySort, [u_id], (err, loginResults) => {
+//         if (err) {
+//           console.error('Error executing login query:', err.stack);
+//           return res.status(500).send('Database query error');
+//         }
+
+//         const proj_sort_str = loginResults.length > 0 ? loginResults[0].projsorting : '';
+//         const proj_sort = proj_sort_str ? proj_sort_str.split(' ') : [];
+
+//         let sortedProjectQuery;
+//         if (proj_sort_str === '') {
+//           sortedProjectQuery = `SELECT * FROM projects`;
+//         } else {
+//           const sort_Status = proj_sort.map(status => `'${status}'`).join(',');
+//           sortedProjectQuery = `SELECT * FROM projects WHERE Status IN (${sort_Status})`;
+//         }
+
+//         db.query(sortedProjectQuery, (err, sortedProjects) => {
+//           if (err) {
+//             console.error('Error executing sorted project query:', err.stack);
+//             return res.status(500).send('Database query error');
+//           }
+
+//           const projectCountQuery = `SELECT COUNT(*) as totalProjects FROM projects`;
+
+//           db.query(projectCountQuery, (err, countResult) => {
+//             if (err) {
+//               console.error('Error executing count query:', err.stack);
+//               return res.status(500).send('Database query error');
+//             }
+
+//             const totalProjects = countResult[0].totalProjects;
+
+//             const response = {
+//               projects: sortedProjects.map(project => ({
+//                 ProjectName: project.ProjectName,
+//                 sales_order: project.sales_order,
+//                 Status: project.Status,
+//                 projectId: project.id
+//               })),
+//               totalProjects
+//             };
+
+//             res.json(response);
+//           });
+//         });
+//       });
+//     }
+//   });
+// };
+
+// this propre working but all project fetch this problem
 exports.projectOverview = (req, res) => {
   const token = req.query.token; // Use query parameter for GET request
 
@@ -375,6 +828,7 @@ exports.projectOverview = (req, res) => {
 
   const userData = decryptToken(token);
   const AssignBy = userData.Type;
+  const u_id = userData.id;
 
   let selectProjectQuery;
 
@@ -395,28 +849,58 @@ exports.projectOverview = (req, res) => {
       return res.status(500).send('Database query error');
     }
 
-    const projectCountQuery = `SELECT COUNT(*) as totalProjects FROM projects`;
+    getProjSortingAndProjects();
 
-    db.query(projectCountQuery, (err, countResult) => {
-      if (err) {
-        console.error('Error executing count query:', err.stack);
-        return res.status(500).send('Database query error');
-      }
+    function getProjSortingAndProjects() {
+      const loginQuerySort = `SELECT projsorting2 FROM Logincrd WHERE id = ?`;
+      db.query(loginQuerySort, [u_id], (err, loginResults) => {
+        if (err) {
+          console.error('Error executing login query:', err.stack);
+          return res.status(500).send('Database query error');
+        }
 
-      const totalProjects = countResult[0].totalProjects;
+        const proj_sort_str = loginResults.length > 0 ? loginResults[0].projsorting2 : '';
+        const proj_sort = proj_sort_str ? proj_sort_str.split(' ') : [];
 
-      const response = {
-        projects: projectResults.map(project => ({
-          ProjectName: project.ProjectName,
-          sales_order: project.sales_order,
-          Status: project.Status,
-          projectId: project.id
-        })),
-        totalProjects
-      };
+        let sortedProjectQuery;
+        if (proj_sort_str === '') {
+          sortedProjectQuery = `SELECT * FROM projects`;
+        } else {
+          const sort_Status = proj_sort.map(status => `'${status}'`).join(',');
+          sortedProjectQuery = `SELECT * FROM projects WHERE Status IN (${sort_Status})`;
+        }
 
-      res.json(response);
-    });
+        db.query(sortedProjectQuery, (err, sortedProjects) => {
+          if (err) {
+            console.error('Error executing sorted project query:', err.stack);
+            return res.status(500).send('Database query error');
+          }
+
+          const projectCountQuery = `SELECT COUNT(*) as totalProjects FROM projects`;
+
+          db.query(projectCountQuery, (err, countResult) => {
+            if (err) {
+              console.error('Error executing count query:', err.stack);
+              return res.status(500).send('Database query error');
+            }
+
+            const totalProjects = countResult[0].totalProjects;
+
+            const response = {
+              projects: sortedProjects.map(project => ({
+                ProjectName: project.ProjectName,
+                sales_order: project.sales_order,
+                Status: project.Status,
+                projectId: project.id
+              })),
+              totalProjects
+            };
+
+            res.json(response);
+          });
+        });
+      });
+    }
   });
 };
 
@@ -493,11 +977,723 @@ exports.updateProject = async(req, res ) => {
   });
 };
 
+// exports.totalHrs = (req, res) => {
+//   const employeeId = req.query.employeeId;
+//   const projectNames = req.query.projectNames; 
+//   const token = req.query.token; 
 
+//   if (!token) {
+//     return res.status(400).send('Token is required');
+//   }
+
+//   let userRole;
+//   try {
+//     const decryptedToken = decryptToken(token);
+//     userRole = decryptedToken?.Type; // Extract the user role from the decrypted token
+//   } catch (error) {
+//     console.error('Error decrypting token:', error);
+//     return res.status(400).send('Invalid token');
+//   }
+
+//   if (!employeeId || !projectNames || !Array.isArray(projectNames)) {
+//     return res.status(400).send('employeeId and projectNames are required, and projectNames should be an array');
+//   }
+
+//   // If the user role is "Employee", proceed with the original logic
+//   if (userRole === 'Employee') {
+//     const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
+
+//     db.query(query1, (err, taskIdsResult) => {
+//       if (err) {
+//         console.error('Error executing query 1:', err.stack);
+//         return res.status(500).send('Database query error');
+//       }
+
+//       const taskIds = taskIdsResult.map(row => row.taskid).join(',');
+
+//       if (!taskIds.length) {
+//         return res.status(200).json({
+//           projects: projectNames.reduce((acc, projectName) => {
+//             acc[projectName] = { planned: 0, task_count: 0, actual: 0 };
+//             return acc;
+//           }, {}),
+//           totalTaskCount: 0 // Return 0 if no tasks are found
+//         });
+//       }
+
+//       const projectQueries = projectNames.map(projectName => {
+//         return new Promise((resolve, reject) => {
+//           const taskIdsQuery = `
+//             SELECT id 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${taskIds});
+//           `;
+
+//           db.query(taskIdsQuery, (err, taskIdResults) => {
+//             if (err) {
+//               console.error(`Error executing task IDs query for project ${projectName}:`, err.stack);
+//               return reject('Database query error');
+//             }
+
+//             const projectTaskIds = taskIdResults.map(row => row.id).join(',');
+
+//             if (!projectTaskIds.length) {
+//               resolve({
+//                 projectName,
+//                 planned: 0,
+//                 taskCount: 0,
+//                 actual: 0
+//               });
+//               return;
+//             }
+
+//             const plannedQuery = `
+//               SELECT SUM(timetocomplete) as planned 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
+//             `;
+
+//             const taskCountQuery = `
+//               SELECT COUNT(*) as task_count 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
+//             `;
+
+//             const actualQuery = `
+//               SELECT SUM(actualtimetocomplete_emp) as actual 
+//               FROM Taskemp 
+//               WHERE taskid IN (${projectTaskIds});
+//             `;
+
+//             db.query(plannedQuery, (err, plannedResult) => {
+//               if (err) {
+//                 console.error(`Error executing planned query for project ${projectName}:`, err.stack);
+//                 return reject('Database query error');
+//               }
+
+//               const planned = plannedResult[0]?.planned || 0;
+
+//               db.query(taskCountQuery, (err, taskCountResult) => {
+//                 if (err) {
+//                   console.error(`Error executing task count query for project ${projectName}:`, err.stack);
+//                   return reject('Database query error');
+//                 }
+
+//                 const taskCount = taskCountResult[0]?.task_count || 0;
+
+//                 db.query(actualQuery, (err, actualResult) => {
+//                   if (err) {
+//                     console.error(`Error executing actual query for project ${projectName}:`, err.stack);
+//                     return reject('Database query error');
+//                   }
+
+//                   const actual = actualResult[0]?.actual || 0;
+
+//                   resolve({
+//                     projectName,
+//                     planned,
+//                     taskCount,
+//                     actual
+//                   });
+//                 });
+//               });
+//             });
+//           });
+//         });
+//       });
+
+//       Promise.all(projectQueries)
+//         .then(results => {
+//           const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
+
+//           const response = results.reduce((acc, result) => {
+//             acc[result.projectName] = {
+//               planned: result.planned,
+//               task_count: result.taskCount,
+//               actual: result.actual
+//             };
+//             return acc;
+//           }, {});
+
+//           res.json({ projects: response, totalTaskCount }); // Include totalTaskCount in the response
+//         })
+//         .catch(error => {
+//           console.error('Error processing project queries:', error);
+//           res.status(500).send(error);
+//         });
+//     });
+
+//   } else { // If the user role is not "Employee"
+//     const projectQueries = projectNames.map(projectName => {
+//       return new Promise((resolve, reject) => {
+//         const taskIdsQuery = `
+//           SELECT id 
+//           FROM Task 
+//           WHERE projectName='${projectName}';
+//         `;
+
+//         db.query(taskIdsQuery, (err, taskIdResults) => {
+//           if (err) {
+//             console.error(`Error executing task IDs query for project ${projectName}:`, err.stack);
+//             return reject('Database query error');
+//           }
+
+//           const projectTaskIds = taskIdResults.map(row => row.id).join(',');
+//           const taskCount = taskIdResults.length;
+
+//           if (!projectTaskIds.length) {
+//             resolve({
+//               projectName,
+//               planned: 0,
+//               taskCount: 0,
+//               actual: 0
+//             });
+//             return;
+//           }
+
+//           const actualQuery = `
+//             SELECT SUM(actualtimetocomplete_emp) as TLTotalActual 
+//             FROM Taskemp 
+//             WHERE taskid IN (${projectTaskIds});
+//           `;
+
+//           const plannedQuery = `
+//             SELECT SUM(timetocomplete) as TLTotalPlanned 
+//             FROM Task 
+//             WHERE projectName='${projectName}';
+//           `;
+
+//           db.query(actualQuery, (err, actualResult) => {
+//             if (err) {
+//               console.error(`Error executing actual query for project ${projectName}:`, err.stack);
+//               return reject('Database query error');
+//             }
+
+//             const actual = actualResult[0]?.TLTotalActual || 0;
+
+//             db.query(plannedQuery, (err, plannedResult) => {
+//               if (err) {
+//                 console.error(`Error executing planned query for project ${projectName}:`, err.stack);
+//                 return reject('Database query error');
+//               }
+
+//               const planned = plannedResult[0]?.TLTotalPlanned || 0;
+
+//               resolve({
+//                 projectName,
+//                 planned,
+//                 actual,
+//                 taskCount,
+//               });
+//             });
+//           });
+//         });
+//       });
+//     });
+
+//     Promise.all(projectQueries)
+//       .then(results => {
+//         const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
+//         const response = results.reduce((acc, result) => {
+//           acc[result.projectName] = {
+//             planned: result.planned,
+//             actual: result.actual,
+//             task_count: result.taskCount,
+//           };
+//           return acc;
+//         }, {});
+
+//         res.json({ projects: response, totalTaskCount });
+//       })
+//       .catch(error => {
+//         console.error('Error processing project queries:', error);
+//         res.status(500).send(error);
+//       });
+//   }
+// };
+
+
+//   exports.YTSWIPhrs = (req, res) => {
+//   const employeeId = req.query.employeeId;
+//   const projectNames = req.query.projectNames?.split(','); // Expecting a comma-separated list of project names
+//   const token = req.query.token;
+
+//   if (!token) {
+//     return res.status(400).send('Token is required');
+//   }
+
+//   let userRole;
+//   try {
+//     const decryptedToken = decryptToken(token);
+//     userRole = decryptedToken?.Type; // Extract the user role from the decrypted token
+//   } catch (error) {
+//     console.error('Error decrypting token:', error);
+//     return res.status(400).send('Invalid token');
+//   }
+
+//   if (!employeeId || !projectNames || !projectNames.length) {
+//     return res.status(400).send('employeeId and projectNames are required');
+//   }
+
+//   if (userRole === 'Employee') {
+//     const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
+
+//     db.query(query1, (err, taskIdsResult) => {
+//       if (err) {
+//         console.error('Error executing query 1:', err.stack);
+//         return res.status(500).send('Database query error');
+//       }
+
+//       const taskIds = taskIdsResult.map(row => row.taskid).join(',');
+//       if (!taskIds.length) {
+//         return res.status(200).json({
+//           projects: projectNames.reduce((acc, projectName) => {
+//             acc[projectName] = { YTSnos:0, YTSplanned:0,WIPnos:0, WIPplanned:0, WIPactual:0};
+//             return acc;
+//           }, {}),
+//           totalTaskCount: 0
+//         });
+//       }
+
+//       const projectQueries = projectNames.map((projectName) => {
+//         return new Promise((resolve, reject) => {
+//           const YTSQuery = `
+//             SELECT COUNT(*) as YTSnos, SUM(timetocomplete) as YTSplanned 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${taskIds}) AND Status=1;
+//           `;
+
+//           const WIPQuery = `
+//             SELECT COUNT(*) as WIPnos, SUM(timetocomplete) as WIPplanned 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${taskIds}) AND Status=2;
+//           `;
+
+//           db.query(YTSQuery, (err, YTSResult) => {
+//             if (err) {
+//               console.error(`Error executing YTS query for project ${projectName}:`, err.stack);
+//               return reject('Database query error');
+//             }
+
+//             const { YTSnos = 0, YTSplanned = 0 } = YTSResult[0] || {};
+
+//             db.query(WIPQuery, (err, WIPResult) => {
+//               if (err) {
+//                 console.error(`Error executing WIP query for project ${projectName}:`, err.stack);
+//                 return reject('Database query error');
+//               }
+
+//               const { WIPnos = 0, WIPplanned = 0 } = WIPResult[0] || {};
+
+//               const WIPTaskIdsQuery = `
+//                 SELECT id 
+//                 FROM Task 
+//                 WHERE projectName='${projectName}' AND id IN (${taskIds}) AND Status=2;
+//               `;
+
+//               db.query(WIPTaskIdsQuery, (err, WIPTaskIdsResult) => {
+//                 if (err) {
+//                   console.error(`Error executing WIP Task IDs query for project ${projectName}:`, err.stack);
+//                   return reject('Database query error');
+//                 }
+
+//                 const WIPTaskIds = WIPTaskIdsResult.map(row => row.id).join(',');
+
+//                 if (!WIPTaskIds.length) {
+//                   return resolve({
+//                     projectName,
+//                     YTSnos,
+//                     YTSplanned,
+//                     WIPnos,
+//                     WIPplanned,
+//                     WIPactual: 0
+//                   });
+//                 }
+
+//                 const WIPActualQuery = `
+//                   SELECT SUM(actualtimetocomplete_emp) as WIPactual 
+//                   FROM Taskemp 
+//                   WHERE taskid IN (${WIPTaskIds});
+//                 `;
+
+//                 db.query(WIPActualQuery, (err, WIPActualResult) => {
+//                   if (err) {
+//                     console.error(`Error executing WIP Actual query for project ${projectName}:`, err.stack);
+//                     return reject('Database query error');
+//                   }
+
+//                   const WIPactual = WIPActualResult[0]?.WIPactual || 0;
+
+//                   resolve({
+//                     projectName,
+//                     YTSnos,
+//                     YTSplanned,
+//                     WIPnos,
+//                     WIPplanned,
+//                     WIPactual
+//                   });
+//                 });
+//               });
+//             });
+//           });
+//         });
+//       });
+
+//       Promise.all(projectQueries)
+//         .then(results => {
+//           const totalTaskCount = results.reduce((acc, result) => acc + (result.YTSnos || 0) + (result.WIPnos || 0), 0);
+
+//           const response = results.reduce((acc, result) => {
+//             acc[result.projectName] = {
+//               YTSnos: result.YTSnos ,
+//               YTSplanned: result.YTSplanned,
+//               WIPnos: result.WIPnos ,
+//               WIPplanned: result.WIPplanned ,
+//               WIPactual: result.WIPactual
+//             };
+//             return acc;
+//           }, {});
+
+//           res.json({ projects: response, totalTaskCount });
+//         })
+//         .catch(error => {
+//           console.error('Error in processing projects:', error);
+//           res.status(500).send('Error processing projects');
+//         });
+//     });
+//   } else {
+//     res.status(403).send('Access forbidden: User role not authorized');
+//   }
+// };
+
+
+// exports.totalHrs = (req, res) => {
+//   const employeeId = req.query.employeeId;
+//   const projectNames = req.query.projectNames;
+//   const token = req.query.token;
+
+//   if (!token) {
+//     return res.status(400).send('Token is required');
+//   }
+
+//   let userRole;
+//   try {
+//     const decryptedToken = decryptToken(token);
+//     userRole = decryptedToken?.Type; // Extract the user role from the decrypted token
+//   } catch (error) {
+//     console.error('Error decrypting token:', error);
+//     return res.status(400).send('Invalid token');
+//   }
+
+//   if (!employeeId || !projectNames || !Array.isArray(projectNames)) {
+//     return res.status(400).send('employeeId and projectNames are required, and projectNames should be an array');
+//   }
+
+//   if (userRole === 'Employee') {
+//     const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
+
+//     db.query(query1, (err, taskIdsResult) => {
+//       if (err) {
+//         console.error('Error executing query 1:', err.stack);
+//         return res.status(500).send('Database query error');
+//       }
+
+//       const taskIds = taskIdsResult.map(row => row.taskid).join(',');
+
+//       if (!taskIds.length) {
+//         return res.status(200).json({
+//           projects: projectNames.reduce((acc, projectName) => {
+//             acc[projectName] = { planned: 0, task_count: 0, actual: 0, YTSnos: 0, YTSplanned: 0, WIPnos: 0, WIPplanned: 0 };
+//             return acc;
+//           }, {}),
+//           totalTaskCount: 0 // Return 0 if no tasks are found
+//         });
+//       }
+
+//       const projectQueries = projectNames.map(projectName => {
+//         return new Promise((resolve, reject) => {
+//           const taskIdsQuery = `
+//             SELECT id 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${taskIds});
+//           `;
+
+//           db.query(taskIdsQuery, (err, taskIdResults) => {
+//             if (err) {
+//               console.error(`Error executing task IDs query for project ${projectName}:`, err.stack);
+//               return reject('Database query error');
+//             }
+
+//             const projectTaskIds = taskIdResults.map(row => row.id).join(',');
+
+//             if (!projectTaskIds.length) {
+//               resolve({
+//                 projectName,
+//                 planned: 0,
+//                 taskCount: 0,
+//                 actual: 0,
+//                 YTSnos: 0,
+//                 YTSplanned: 0,
+//                 WIPnos: 0,
+//                 WIPplanned: 0
+//               });
+//               return;
+//             }
+
+//             const plannedQuery = `
+//               SELECT SUM(timetocomplete) as planned 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
+//             `;
+
+//             const taskCountQuery = `
+//               SELECT COUNT(*) as task_count 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
+//             `;
+
+//             const actualQuery = `
+//               SELECT SUM(actualtimetocomplete_emp) as actual 
+//               FROM Taskemp 
+//               WHERE taskid IN (${projectTaskIds});
+//             `;
+
+//             const YTSQuery = `
+//               SELECT COUNT(*) as YTSnos, SUM(timetocomplete) as YTSplanned 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=1;
+//             `;
+
+//             const WIPQuery = `
+//               SELECT COUNT(*) as WIPnos, SUM(timetocomplete) as WIPplanned 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=2;
+//             `;
+
+//             db.query(plannedQuery, (err, plannedResult) => {
+//               if (err) {
+//                 console.error(`Error executing planned query for project ${projectName}:`, err.stack);
+//                 return reject('Database query error');
+//               }
+
+//               const planned = plannedResult[0]?.planned || 0;
+
+//               db.query(taskCountQuery, (err, taskCountResult) => {
+//                 if (err) {
+//                   console.error(`Error executing task count query for project ${projectName}:`, err.stack);
+//                   return reject('Database query error');
+//                 }
+
+//                 const taskCount = taskCountResult[0]?.task_count || 0;
+
+//                 db.query(actualQuery, (err, actualResult) => {
+//                   if (err) {
+//                     console.error(`Error executing actual query for project ${projectName}:`, err.stack);
+//                     return reject('Database query error');
+//                   }
+
+//                   const actual = actualResult[0]?.actual || 0;
+
+//                   db.query(YTSQuery, (err, YTSResult) => {
+//                     if (err) {
+//                       console.error(`Error executing YTS query for project ${projectName}:`, err.stack);
+//                       return reject('Database query error');
+//                     }
+
+//                     const YTSnos = YTSResult[0]?.YTSnos || 0;
+//                     const YTSplanned = YTSResult[0]?.YTSplanned || 0;
+
+//                     db.query(WIPQuery, (err, WIPResult) => {
+//                       if (err) {
+//                         console.error(`Error executing WIP query for project ${projectName}:`, err.stack);
+//                         return reject('Database query error');
+//                       }
+
+//                       const WIPnos = WIPResult[0]?.WIPnos || 0;
+//                       const WIPplanned = WIPResult[0]?.WIPplanned || 0;
+
+//                       resolve({
+//                         projectName,
+//                         planned,
+//                         taskCount,
+//                         actual,
+//                         YTSnos,
+//                         YTSplanned,
+//                         WIPnos,
+//                         WIPplanned
+//                       });
+//                     });
+//                   });
+//                 });
+//               });
+//             });
+//           });
+//         });
+//       });
+
+//       Promise.all(projectQueries)
+//         .then(results => {
+//           const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
+
+//           const response = results.reduce((acc, result) => {
+//             acc[result.projectName] = {
+//               planned: result.planned,
+//               task_count: result.taskCount,
+//               actual: result.actual,
+//               YTSnos: result.YTSnos,
+//               YTSplanned: result.YTSplanned,
+//               WIPnos: result.WIPnos,
+//               WIPplanned: result.WIPplanned
+//             };
+//             return acc;
+//           }, {});
+
+//           res.json({ projects: response, totalTaskCount }); // Include totalTaskCount in the response
+//         })
+//         .catch(error => {
+//           console.error('Error processing project queries:', error);
+//           res.status(500).send(error);
+//         });
+//     });
+
+//   } else { // If the user role is not "Employee"
+//     const projectQueries = projectNames.map(projectName => {
+//       return new Promise((resolve, reject) => {
+//         const taskIdsQuery = `
+//           SELECT id 
+//           FROM Task 
+//           WHERE projectName='${projectName}';
+//         `;
+
+//         db.query(taskIdsQuery, (err, taskIdResults) => {
+//           if (err) {
+//             console.error(`Error executing task IDs query for project ${projectName}:`, err.stack);
+//             return reject('Database query error');
+//           }
+
+//           const projectTaskIds = taskIdResults.map(row => row.id).join(',');
+//           const taskCount = taskIdResults.length;
+
+//           if (!projectTaskIds.length) {
+//             resolve({
+//               projectName,
+//               planned: 0,
+//               taskCount: 0,
+//               actual: 0,
+//               YTSnos: 0,
+//               YTSplanned: 0,
+//               WIPnos: 0,
+//               WIPplanned: 0
+//             });
+//             return;
+//           }
+
+//           const actualQuery = `
+//             SELECT SUM(actualtimetocomplete_emp) as TLTotalActual 
+//             FROM Taskemp 
+//             WHERE taskid IN (${projectTaskIds});
+//           `;
+
+//           const plannedQuery = `
+//             SELECT SUM(timetocomplete) as TLTotalPlanned 
+//             FROM Task 
+//             WHERE projectName='${projectName}';
+//           `;
+
+//           const YTSQuery = `
+//             SELECT COUNT(*) as YTSnos, SUM(timetocomplete) as YTSplanned 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=1;
+//           `;
+
+//           const WIPQuery = `
+//             SELECT COUNT(*) as WIPnos, SUM(timetocomplete) as WIPplanned 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=2;
+//           `;
+
+//           db.query(actualQuery, (err, actualResult) => {
+//             if (err) {
+//               console.error(`Error executing actual query for project ${projectName}:`, err.stack);
+//               return reject('Database query error');
+//             }
+
+//             const actual = actualResult[0]?.TLTotalActual || 0;
+
+//             db.query(plannedQuery, (err, plannedResult) => {
+//               if (err) {
+//                 console.error(`Error executing planned query for project ${projectName}:`, err.stack);
+//                 return reject('Database query error');
+//               }
+
+//               const planned = plannedResult[0]?.TLTotalPlanned || 0;
+
+//               db.query(YTSQuery, (err, YTSResult) => {
+//                 if (err) {
+//                   console.error(`Error executing YTS query for project ${projectName}:`, err.stack);
+//                   return reject('Database query error');
+//                 }
+
+//                 const YTSnos = YTSResult[0]?.YTSnos || 0;
+//                 const YTSplanned = YTSResult[0]?.YTSplanned || 0;
+
+//                 db.query(WIPQuery, (err, WIPResult) => {
+//                   if (err) {
+//                     console.error(`Error executing WIP query for project ${projectName}:`, err.stack);
+//                     return reject('Database query error');
+//                   }
+
+//                   const WIPnos = WIPResult[0]?.WIPnos || 0;
+//                   const WIPplanned = WIPResult[0]?.WIPplanned || 0;
+
+//                   resolve({
+//                     projectName,
+//                     planned,
+//                     actual,
+//                     taskCount,
+//                     YTSnos,
+//                     YTSplanned,
+//                     WIPnos,
+//                     WIPplanned
+//                   });
+//                 });
+//               });
+//             });
+//           });
+//         });
+//       });
+//     });
+
+//     Promise.all(projectQueries)
+//       .then(results => {
+//         const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
+//         const response = results.reduce((acc, result) => {
+//           acc[result.projectName] = {
+//             planned: result.planned,
+//             actual: result.actual,
+//             task_count: result.taskCount,
+//             YTSnos: result.YTSnos,
+//             YTSplanned: result.YTSplanned,
+//             WIPnos: result.WIPnos,
+//             WIPplanned: result.WIPplanned
+//           };
+//           return acc;
+//         }, {});
+
+//         res.json({ projects: response, totalTaskCount });
+//       })
+//       .catch(error => {
+//         console.error('Error processing project queries:', error);
+//         res.status(500).send(error);
+//       });
+//   }
+// };
+
+//original
 exports.totalHrs = (req, res) => {
   const employeeId = req.query.employeeId;
-  const projectNames = req.query.projectNames; 
-  const token = req.query.token; 
+  const projectNames = req.query.projectNames;
+  const token = req.query.token;
 
   if (!token) {
     return res.status(400).send('Token is required');
@@ -516,7 +1712,6 @@ exports.totalHrs = (req, res) => {
     return res.status(400).send('employeeId and projectNames are required, and projectNames should be an array');
   }
 
-  // If the user role is "Employee", proceed with the original logic
   if (userRole === 'Employee') {
     const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
 
@@ -531,7 +1726,7 @@ exports.totalHrs = (req, res) => {
       if (!taskIds.length) {
         return res.status(200).json({
           projects: projectNames.reduce((acc, projectName) => {
-            acc[projectName] = { planned: 0, task_count: 0, actual: 0 };
+            acc[projectName] = { planned: 0, task_count: 0, actual: 0, YTSnos: 0, YTSplanned: 0, WIPnos: 0, WIPplanned: 0, WIPactual: 0 };
             return acc;
           }, {}),
           totalTaskCount: 0 // Return 0 if no tasks are found
@@ -559,7 +1754,12 @@ exports.totalHrs = (req, res) => {
                 projectName,
                 planned: 0,
                 taskCount: 0,
-                actual: 0
+                actual: 0,
+                YTSnos: 0,
+                YTSplanned: 0,
+                WIPnos: 0,
+                WIPplanned: 0,
+                WIPactual: 0
               });
               return;
             }
@@ -580,6 +1780,27 @@ exports.totalHrs = (req, res) => {
               SELECT SUM(actualtimetocomplete_emp) as actual 
               FROM Taskemp 
               WHERE taskid IN (${projectTaskIds});
+            `;
+
+            const YTSQuery = `
+              SELECT COUNT(*) as YTSnos, SUM(timetocomplete) as YTSplanned 
+              FROM Task 
+              WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=1;
+            `;
+
+            const WIPQuery = `
+              SELECT COUNT(*) as WIPnos, SUM(timetocomplete) as WIPplanned 
+              FROM Task 
+              WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=2;
+            `;
+
+            // New WIPactual query
+            const WIPActualQuery = `
+              SELECT SUM(actualtimetocomplete_emp) as WIPactual 
+              FROM Taskemp 
+              WHERE taskid IN (${projectTaskIds}) AND taskid IN (
+                SELECT id FROM Task WHERE Status=2 AND projectName='${projectName}'
+              );
             `;
 
             db.query(plannedQuery, (err, plannedResult) => {
@@ -606,11 +1827,45 @@ exports.totalHrs = (req, res) => {
 
                   const actual = actualResult[0]?.actual || 0;
 
-                  resolve({
-                    projectName,
-                    planned,
-                    taskCount,
-                    actual
+                  db.query(YTSQuery, (err, YTSResult) => {
+                    if (err) {
+                      console.error(`Error executing YTS query for project ${projectName}:`, err.stack);
+                      return reject('Database query error');
+                    }
+
+                    const YTSnos = YTSResult[0]?.YTSnos || 0;
+                    const YTSplanned = YTSResult[0]?.YTSplanned || 0;
+
+                    db.query(WIPQuery, (err, WIPResult) => {
+                      if (err) {
+                        console.error(`Error executing WIP query for project ${projectName}:`, err.stack);
+                        return reject('Database query error');
+                      }
+
+                      const WIPnos = WIPResult[0]?.WIPnos || 0;
+                      const WIPplanned = WIPResult[0]?.WIPplanned || 0;
+
+                      db.query(WIPActualQuery, (err, WIPActualResult) => {
+                        if (err) {
+                          console.error(`Error executing WIPActual query for project ${projectName}:`, err.stack);
+                          return reject('Database query error');
+                        }
+
+                        const WIPactual = WIPActualResult[0]?.WIPactual || 0;
+
+                        resolve({
+                          projectName,
+                          planned,
+                          taskCount,
+                          actual,
+                          YTSnos,
+                          YTSplanned,
+                          WIPnos,
+                          WIPplanned,
+                          WIPactual
+                        });
+                      });
+                    });
                   });
                 });
               });
@@ -627,7 +1882,12 @@ exports.totalHrs = (req, res) => {
             acc[result.projectName] = {
               planned: result.planned,
               task_count: result.taskCount,
-              actual: result.actual
+              actual: result.actual,
+              YTSnos: result.YTSnos,
+              YTSplanned: result.YTSplanned,
+              WIPnos: result.WIPnos,
+              WIPplanned: result.WIPplanned,
+              WIPactual: result.WIPactual
             };
             return acc;
           }, {});
@@ -663,7 +1923,12 @@ exports.totalHrs = (req, res) => {
               projectName,
               planned: 0,
               taskCount: 0,
-              actual: 0
+              actual: 0,
+              YTSnos: 0,
+              YTSplanned: 0,
+              WIPnos: 0,
+              WIPplanned: 0,
+              WIPactual: 0
             });
             return;
           }
@@ -678,6 +1943,27 @@ exports.totalHrs = (req, res) => {
             SELECT SUM(timetocomplete) as TLTotalPlanned 
             FROM Task 
             WHERE projectName='${projectName}';
+          `;
+
+          const YTSQuery = `
+            SELECT COUNT(*) as YTSnos, SUM(timetocomplete) as YTSplanned 
+            FROM Task 
+            WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=1;
+          `;
+
+          const WIPQuery = `
+            SELECT COUNT(*) as WIPnos, SUM(timetocomplete) as WIPplanned 
+            FROM Task 
+            WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=2;
+          `;
+
+          // New WIPactual query
+          const WIPActualQuery = `
+            SELECT SUM(actualtimetocomplete_emp) as WIPactual 
+            FROM Taskemp 
+            WHERE taskid IN (${projectTaskIds}) AND taskid IN (
+              SELECT id FROM Task WHERE Status=2 AND projectName='${projectName}'
+            );
           `;
 
           db.query(actualQuery, (err, actualResult) => {
@@ -696,11 +1982,45 @@ exports.totalHrs = (req, res) => {
 
               const planned = plannedResult[0]?.TLTotalPlanned || 0;
 
-              resolve({
-                projectName,
-                planned,
-                actual,
-                taskCount,
+              db.query(YTSQuery, (err, YTSResult) => {
+                if (err) {
+                  console.error(`Error executing YTS query for project ${projectName}:`, err.stack);
+                  return reject('Database query error');
+                }
+
+                const YTSnos = YTSResult[0]?.YTSnos || 0;
+                const YTSplanned = YTSResult[0]?.YTSplanned || 0;
+
+                db.query(WIPQuery, (err, WIPResult) => {
+                  if (err) {
+                    console.error(`Error executing WIP query for project ${projectName}:`, err.stack);
+                    return reject('Database query error');
+                  }
+
+                  const WIPnos = WIPResult[0]?.WIPnos || 0;
+                  const WIPplanned = WIPResult[0]?.WIPplanned || 0;
+
+                  db.query(WIPActualQuery, (err, WIPActualResult) => {
+                    if (err) {
+                      console.error(`Error executing WIPActual query for project ${projectName}:`, err.stack);
+                      return reject('Database query error');
+                    }
+
+                    const WIPactual = WIPActualResult[0]?.WIPactual || 0;
+
+                    resolve({
+                      projectName,
+                      planned,
+                      actual,
+                      taskCount,
+                      YTSnos,
+                      YTSplanned,
+                      WIPnos,
+                      WIPplanned,
+                      WIPactual
+                    });
+                  });
+                });
               });
             });
           });
@@ -716,6 +2036,11 @@ exports.totalHrs = (req, res) => {
             planned: result.planned,
             actual: result.actual,
             task_count: result.taskCount,
+            YTSnos: result.YTSnos,
+            YTSplanned: result.YTSplanned,
+            WIPnos: result.WIPnos,
+            WIPplanned: result.WIPplanned,
+            WIPactual: result.WIPactual
           };
           return acc;
         }, {});
@@ -729,12 +2054,600 @@ exports.totalHrs = (req, res) => {
   }
 };
 
-exports.YTSWIPhrs = (req, res) => {
+//nos and planned
+// exports.CMP = (req, res) => {
+//   const employeeId = req.query.employeeId;
+//   const projectNames = req.query.projectNames?.split(','); // Expecting a comma-separated list of project names
+//   const token = req.query.token;
+
+//   console.log('Received Request:', { employeeId, projectNames, token });
+
+//   if (!token) {
+//     console.log('Token is missing');
+//     return res.status(400).send('Token is required');
+//   }
+
+//   let userRole;
+//   try {
+//     const decryptedToken = decryptToken(token);
+//     userRole = decryptedToken?.Type; // Extract the user role from the decrypted token
+//     console.log('Decrypted Token:', decryptedToken);
+//   } catch (error) {
+//     console.error('Error decrypting token:', error);
+//     return res.status(400).send('Invalid token');
+//   }
+
+//   if (!employeeId || !projectNames || !projectNames.length) {
+//     console.log('Missing employeeId or projectNames');
+//     return res.status(400).send('employeeId and projectNames are required');
+//   }
+
+//   if (userRole === 'Employee') {
+//     console.log('User is authorized as Employee');
+
+//     // Step 1: Get the task IDs assigned to the employee
+//     const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
+//     console.log('Executing Query 1:', query1);
+
+//     db.query(query1, (err, taskIdsResult) => {
+//       if (err) {
+//         console.error('Error executing query 1:', err.stack);
+//         return res.status(500).send('Database query error');
+//       }
+
+//       const taskIds = taskIdsResult.map(row => row.taskid);
+//       console.log('Task IDs Retrieved:', taskIds);
+
+//       if (!taskIds.length) {
+//         console.log('No task IDs found for the given employee');
+//         return res.status(200).json({
+//           projects: projectNames.reduce((acc, projectName) => {
+//             acc[projectName] = { CMPnos: 0, CMPplanned: 0 };
+//             return acc;
+//           }, {}),
+//           totalTaskCount: 0
+//         });
+//       }
+
+//       const projectQueries = projectNames.map((projectName) => {
+//         return new Promise((resolve, reject) => {
+//           // Get CMP Planned Hours
+//           const getSortingPVQuery = `SELECT projsorting_pv FROM Logincrd WHERE id='${employeeId}'`;
+//           console.log(`Executing Get Sorting PV Query for ${projectName}:`, getSortingPVQuery);
+
+//           db.query(getSortingPVQuery, (err, sortingPVResult) => {
+//             if (err) {
+//               console.error(`Error executing sorting PV query for project ${projectName}:`, err.stack);
+//               return reject('Database query error');
+//             }
+
+//             const sortingPV = sortingPVResult[0]?.projsorting_pv || 0;
+//             console.log(`Sorting PV for ${projectName}:`, sortingPV);
+
+//             const CMPplannedQuery = `
+//               SELECT SUM(timetocomplete) as CMPplanned 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${taskIds.join(',')}) AND aproved=1
+//             `;
+//             console.log(`Executing CMP Planned Query for ${projectName}:`, CMPplannedQuery);
+
+//             db.query(CMPplannedQuery, (err, CMPplannedResult) => {
+//               if (err) {
+//                 console.error(`Error executing CMP planned query for project ${projectName}:`, err.stack);
+//                 return reject('Database query error');
+//               }
+
+//               const CMPplanned = CMPplannedResult[0]?.CMPplanned || 0;
+//               console.log(`CMP Planned for ${projectName}:`, CMPplanned);
+
+//               // Get CMP Nos
+//               const CMPnosQuery = `
+//                 SELECT COUNT(*) as CMPnos 
+//                 FROM Task 
+//                 WHERE projectName='${projectName}' AND id IN (${taskIds.join(',')}) AND aproved=1
+//               `;
+//               console.log(`Executing CMP Nos Query for ${projectName}:`, CMPnosQuery);
+
+//               db.query(CMPnosQuery, (err, CMPnosResult) => {
+//                 if (err) {
+//                   console.error(`Error executing CMP nos query for project ${projectName}:`, err.stack);
+//                   return reject('Database query error');
+//                 }
+
+//                 const CMPnos = CMPnosResult[0]?.CMPnos || 0;
+//                 console.log(`CMP Nos for ${projectName}:`, CMPnos);
+
+//                 resolve({
+//                   projectName,
+//                   CMPnos,
+//                   CMPplanned
+//                 });
+//               });
+//             });
+//           });
+//         });
+//       });
+
+//       Promise.all(projectQueries)
+//         .then(results => {
+//           const totalTaskCount = results.reduce((acc, result) => acc + (result.CMPnos || 0), 0);
+//           console.log('Total Task Count:', totalTaskCount);
+
+//           const response = results.reduce((acc, result) => {
+//             acc[result.projectName] = {
+//               CMPnos: result.CMPnos,
+//               CMPplanned: result.CMPplanned
+//             };
+//             return acc;
+//           }, {});
+
+//           console.log('Final Response:', { projects: response, totalTaskCount });
+//           res.json({ projects: response, totalTaskCount });
+//         })
+//         .catch(error => {
+//           console.error('Error in processing projects:', error);
+//           res.status(500).send('Error processing projects');
+//         });
+//     });
+//   } else {
+//     console.log('Access forbidden: User role not authorized');
+//     res.status(403).send('Access forbidden: User role not authorized');
+//   }
+// };
+
+
+
+//CMP add 
+// exports.totalHrs = (req, res) => {
+//   const employeeId = req.query.employeeId;
+//   const projectNames = req.query.projectNames;
+//   const token = req.query.token;
+
+//   if (!token) {
+//     return res.status(400).send('Token is required');
+//   }
+
+//   let userRole;
+//   try {
+//     const decryptedToken = decryptToken(token);
+//     userRole = decryptedToken?.Type; // Extract the user role from the decrypted token
+//   } catch (error) {
+//     console.error('Error decrypting token:', error);
+//     return res.status(400).send('Invalid token');
+//   }
+
+//   if (!employeeId || !projectNames || !Array.isArray(projectNames)) {
+//     return res.status(400).send('employeeId and projectNames are required, and projectNames should be an array');
+//   }
+
+//   // Query to get the sorting PV
+//   const getSortingPVQuery = `SELECT projsorting_pv FROM Logincrd WHERE id='${employeeId}'`;
+
+//   if (userRole === 'Employee') {
+//     const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
+
+//     db.query(query1, (err, taskIdsResult) => {
+//       if (err) {
+//         console.error('Error executing query 1:', err.stack);
+//         return res.status(500).send('Database query error');
+//       }
+
+//       const taskIds = taskIdsResult.map(row => row.taskid).join(',');
+
+//       if (!taskIds.length) {
+//         return res.status(200).json({
+//           projects: projectNames.reduce((acc, projectName) => {
+//             acc[projectName] = { planned: 0, task_count: 0, actual: 0, YTSnos: 0, YTSplanned: 0, WIPnos: 0, WIPplanned: 0, WIPactual: 0, CMPnos: 0, CMPplanned: 0 };
+//             return acc;
+//           }, {}),
+//           totalTaskCount: 0
+//         });
+//       }
+
+//       const projectQueries = projectNames.map(projectName => {
+//         return new Promise((resolve, reject) => {
+//           const taskIdsQuery = `
+//             SELECT id 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${taskIds});
+//           `;
+
+//           db.query(taskIdsQuery, (err, taskIdResults) => {
+//             if (err) {
+//               console.error(`Error executing task IDs query for project ${projectName}:`, err.stack);
+//               return reject('Database query error');
+//             }
+
+//             const projectTaskIds = taskIdResults.map(row => row.id).join(',');
+
+//             if (!projectTaskIds.length) {
+//               resolve({
+//                 projectName,
+//                 planned: 0,
+//                 taskCount: 0,
+//                 actual: 0,
+//                 YTSnos: 0,
+//                 YTSplanned: 0,
+//                 WIPnos: 0,
+//                 WIPplanned: 0,
+//                 WIPactual: 0,
+//                 CMPnos: 0,
+//                 CMPplanned: 0
+//               });
+//               return;
+//             }
+
+//             const plannedQuery = `
+//               SELECT SUM(timetocomplete) as planned 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
+//             `;
+
+//             const taskCountQuery = `
+//               SELECT COUNT(*) as task_count 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds});
+//             `;
+
+//             const actualQuery = `
+//               SELECT SUM(actualtimetocomplete_emp) as actual 
+//               FROM Taskemp 
+//               WHERE taskid IN (${projectTaskIds});
+//             `;
+
+//             const YTSQuery = `
+//               SELECT COUNT(*) as YTSnos, SUM(timetocomplete) as YTSplanned 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=1;
+//             `;
+
+//             const WIPQuery = `
+//               SELECT COUNT(*) as WIPnos, SUM(timetocomplete) as WIPplanned 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=2;
+//             `;
+
+//             const WIPActualQuery = `
+//               SELECT SUM(actualtimetocomplete_emp) as WIPactual 
+//               FROM Taskemp 
+//               WHERE taskid IN (${projectTaskIds}) AND taskid IN (
+//                 SELECT id FROM Task WHERE Status=2 AND projectName='${projectName}'
+//               );
+//             `;
+
+//             // New CMPplanned query
+//             const CMPplannedQuery = `
+//               SELECT SUM(timetocomplete) as CMPplanned 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND aproved=1;
+//             `;
+
+//             // New CMPnos query
+//             const CMPnosQuery = `
+//               SELECT COUNT(*) as CMPnos 
+//               FROM Task 
+//               WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND aproved=1;
+//             `;
+
+//             db.query(plannedQuery, (err, plannedResult) => {
+//               if (err) {
+//                 console.error(`Error executing planned query for project ${projectName}:`, err.stack);
+//                 return reject('Database query error');
+//               }
+
+//               const planned = plannedResult[0]?.planned || 0;
+
+//               db.query(taskCountQuery, (err, taskCountResult) => {
+//                 if (err) {
+//                   console.error(`Error executing task count query for project ${projectName}:`, err.stack);
+//                   return reject('Database query error');
+//                 }
+
+//                 const taskCount = taskCountResult[0]?.task_count || 0;
+
+//                 db.query(actualQuery, (err, actualResult) => {
+//                   if (err) {
+//                     console.error(`Error executing actual query for project ${projectName}:`, err.stack);
+//                     return reject('Database query error');
+//                   }
+
+//                   const actual = actualResult[0]?.actual || 0;
+
+//                   db.query(YTSQuery, (err, YTSResult) => {
+//                     if (err) {
+//                       console.error(`Error executing YTS query for project ${projectName}:`, err.stack);
+//                       return reject('Database query error');
+//                     }
+
+//                     const YTSnos = YTSResult[0]?.YTSnos || 0;
+//                     const YTSplanned = YTSResult[0]?.YTSplanned || 0;
+
+//                     db.query(WIPQuery, (err, WIPResult) => {
+//                       if (err) {
+//                         console.error(`Error executing WIP query for project ${projectName}:`, err.stack);
+//                         return reject('Database query error');
+//                       }
+
+//                       const WIPnos = WIPResult[0]?.WIPnos || 0;
+//                       const WIPplanned = WIPResult[0]?.WIPplanned || 0;
+
+//                       db.query(WIPActualQuery, (err, WIPActualResult) => {
+//                         if (err) {
+//                           console.error(`Error executing WIPActual query for project ${projectName}:`, err.stack);
+//                           return reject('Database query error');
+//                         }
+
+//                         const WIPactual = WIPActualResult[0]?.WIPactual || 0;
+
+//                         db.query(CMPplannedQuery, (err, CMPplannedResult) => {
+//                           if (err) {
+//                             console.error(`Error executing CMPplanned query for project ${projectName}:`, err.stack);
+//                             return reject('Database query error');
+//                           }
+
+//                           const CMPplanned = CMPplannedResult[0]?.CMPplanned || 0;
+
+//                           db.query(CMPnosQuery, (err, CMPnosResult) => {
+//                             if (err) {
+//                               console.error(`Error executing CMPnos query for project ${projectName}:`, err.stack);
+//                               return reject('Database query error');
+//                             }
+
+//                             const CMPnos = CMPnosResult[0]?.CMPnos || 0;
+
+//                             resolve({
+//                               projectName,
+//                               planned,
+//                               taskCount,
+//                               actual,
+//                               YTSnos,
+//                               YTSplanned,
+//                               WIPnos,
+//                               WIPplanned,
+//                               WIPactual,
+//                               CMPnos,
+//                               CMPplanned
+//                             });
+//                           });
+//                         });
+//                       });
+//                     });
+//                   });
+//                 });
+//               });
+//             });
+//           });
+//         });
+//       });
+
+//       Promise.all(projectQueries)
+//         .then(results => {
+//           const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
+
+//           const response = results.reduce((acc, result) => {
+//             acc[result.projectName] = {
+//               planned: result.planned,
+//               task_count: result.taskCount,
+//               actual: result.actual,
+//               YTSnos: result.YTSnos,
+//               YTSplanned: result.YTSplanned,
+//               WIPnos: result.WIPnos,
+//               WIPplanned: result.WIPplanned,
+//               WIPactual: result.WIPactual,
+//               CMPnos: result.CMPnos,
+//               CMPplanned: result.CMPplanned
+//             };
+//             return acc;
+//           }, {});
+
+//           res.json({ projects: response, totalTaskCount });
+//         })
+//         .catch(error => {
+//           console.error('Error processing project queries:', error);
+//           res.status(500).send(error);
+//         });
+//     });
+
+//   } else { // If the user role is not "Employee"
+//     const projectQueries = projectNames.map(projectName => {
+//       return new Promise((resolve, reject) => {
+//         const taskIdsQuery = `
+//           SELECT id 
+//           FROM Task 
+//           WHERE projectName='${projectName}';
+//         `;
+
+//         db.query(taskIdsQuery, (err, taskIdResults) => {
+//           if (err) {
+//             console.error(`Error executing task IDs query for project ${projectName}:`, err.stack);
+//             return reject('Database query error');
+//           }
+
+//           const projectTaskIds = taskIdResults.map(row => row.id).join(',');
+//           const taskCount = taskIdResults.length;
+
+//           if (!projectTaskIds.length) {
+//             resolve({
+//               projectName,
+//               planned: 0,
+//               taskCount: 0,
+//               actual: 0,
+//               YTSnos: 0,
+//               YTSplanned: 0,
+//               WIPnos: 0,
+//               WIPplanned: 0,
+//               WIPactual: 0,
+//               CMPnos: 0,
+//               CMPplanned: 0
+//             });
+//             return;
+//           }
+
+//           const actualQuery = `
+//             SELECT SUM(actualtimetocomplete_emp) as TLTotalActual 
+//             FROM Taskemp 
+//             WHERE taskid IN (${projectTaskIds});
+//           `;
+
+//           const plannedQuery = `
+//             SELECT SUM(timetocomplete) as TLTotalPlanned 
+//             FROM Task 
+//             WHERE projectName='${projectName}';
+//           `;
+
+//           const YTSQuery = `
+//             SELECT COUNT(*) as YTSnos, SUM(timetocomplete) as YTSplanned 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=1;
+//           `;
+
+//           const WIPQuery = `
+//             SELECT COUNT(*) as WIPnos, SUM(timetocomplete) as WIPplanned 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND Status=2;
+//           `;
+
+//           const WIPActualQuery = `
+//             SELECT SUM(actualtimetocomplete_emp) as WIPactual 
+//             FROM Taskemp 
+//             WHERE taskid IN (${projectTaskIds}) AND taskid IN (
+//               SELECT id FROM Task WHERE Status=2 AND projectName='${projectName}'
+//             );
+//           `;
+
+//           // New CMPplanned query
+//           const CMPplannedQuery = `
+//             SELECT SUM(timetocomplete) as CMPplanned 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND aproved=1;
+//           `;
+
+//           // New CMPnos query
+//           const CMPnosQuery = `
+//             SELECT COUNT(*) as CMPnos 
+//             FROM Task 
+//             WHERE projectName='${projectName}' AND id IN (${projectTaskIds}) AND aproved=1;
+//           `;
+
+//           db.query(actualQuery, (err, actualResult) => {
+//             if (err) {
+//               console.error(`Error executing actual query for project ${projectName}:`, err.stack);
+//               return reject('Database query error');
+//             }
+
+//             const actual = actualResult[0]?.TLTotalActual || 0;
+
+//             db.query(plannedQuery, (err, plannedResult) => {
+//               if (err) {
+//                 console.error(`Error executing planned query for project ${projectName}:`, err.stack);
+//                 return reject('Database query error');
+//               }
+
+//               const planned = plannedResult[0]?.TLTotalPlanned || 0;
+
+//               db.query(YTSQuery, (err, YTSResult) => {
+//                 if (err) {
+//                   console.error(`Error executing YTS query for project ${projectName}:`, err.stack);
+//                   return reject('Database query error');
+//                 }
+
+//                 const YTSnos = YTSResult[0]?.YTSnos || 0;
+//                 const YTSplanned = YTSResult[0]?.YTSplanned || 0;
+
+//                 db.query(WIPQuery, (err, WIPResult) => {
+//                   if (err) {
+//                     console.error(`Error executing WIP query for project ${projectName}:`, err.stack);
+//                     return reject('Database query error');
+//                   }
+
+//                   const WIPnos = WIPResult[0]?.WIPnos || 0;
+//                   const WIPplanned = WIPResult[0]?.WIPplanned || 0;
+
+//                   db.query(WIPActualQuery, (err, WIPActualResult) => {
+//                     if (err) {
+//                       console.error(`Error executing WIPActual query for project ${projectName}:`, err.stack);
+//                       return reject('Database query error');
+//                     }
+
+//                     const WIPactual = WIPActualResult[0]?.WIPactual || 0;
+
+//                     db.query(CMPplannedQuery, (err, CMPplannedResult) => {
+//                       if (err) {
+//                         console.error(`Error executing CMPplanned query for project ${projectName}:`, err.stack);
+//                         return reject('Database query error');
+//                       }
+
+//                       const CMPplanned = CMPplannedResult[0]?.CMPplanned || 0;
+
+//                       db.query(CMPnosQuery, (err, CMPnosResult) => {
+//                         if (err) {
+//                           console.error(`Error executing CMPnos query for project ${projectName}:`, err.stack);
+//                           return reject('Database query error');
+//                         }
+
+//                         const CMPnos = CMPnosResult[0]?.CMPnos || 0;
+
+//                         resolve({
+//                           projectName,
+//                           planned,
+//                           actual,
+//                           taskCount,
+//                           YTSnos,
+//                           YTSplanned,
+//                           WIPnos,
+//                           WIPplanned,
+//                           WIPactual,
+//                           CMPnos,
+//                           CMPplanned
+//                         });
+//                       });
+//                     });
+//                   });
+//                 });
+//               });
+//             });
+//           });
+//         });
+//       });
+//     });
+
+//     Promise.all(projectQueries)
+//       .then(results => {
+//         const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
+//         const response = results.reduce((acc, result) => {
+//           acc[result.projectName] = {
+//             planned: result.planned,
+//             actual: result.actual,
+//             task_count: result.taskCount,
+//             YTSnos: result.YTSnos,
+//             YTSplanned: result.YTSplanned,
+//             WIPnos: result.WIPnos,
+//             WIPplanned: result.WIPplanned,
+//             WIPactual: result.WIPactual,
+//             CMPnos: result.CMPnos,
+//             CMPplanned: result.CMPplanned
+//           };
+//           return acc;
+//         }, {});
+
+//         res.json({ projects: response, totalTaskCount });
+//       })
+//       .catch(error => {
+//         console.error('Error processing project queries:', error);
+//         res.status(500).send(error);
+//       });
+//   }
+// };
+
+exports.CMP = (req, res) => {
   const employeeId = req.query.employeeId;
   const projectNames = req.query.projectNames?.split(','); // Expecting a comma-separated list of project names
   const token = req.query.token;
 
+  console.log('Received Request:', { employeeId, projectNames, token });
+
   if (!token) {
+    console.log('Token is missing');
     return res.status(400).send('Token is required');
   }
 
@@ -742,17 +2655,23 @@ exports.YTSWIPhrs = (req, res) => {
   try {
     const decryptedToken = decryptToken(token);
     userRole = decryptedToken?.Type; // Extract the user role from the decrypted token
+    console.log('Decrypted Token:', decryptedToken);
   } catch (error) {
     console.error('Error decrypting token:', error);
     return res.status(400).send('Invalid token');
   }
 
   if (!employeeId || !projectNames || !projectNames.length) {
+    console.log('Missing employeeId or projectNames');
     return res.status(400).send('employeeId and projectNames are required');
   }
 
   if (userRole === 'Employee') {
+    console.log('User is authorized as Employee');
+
+    // Step 1: Get the task IDs assigned to the employee
     const query1 = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp=${employeeId}`;
+    console.log('Executing Query 1:', query1);
 
     db.query(query1, (err, taskIdsResult) => {
       if (err) {
@@ -760,91 +2679,103 @@ exports.YTSWIPhrs = (req, res) => {
         return res.status(500).send('Database query error');
       }
 
-      const taskIds = taskIdsResult.map(row => row.taskid).join(',');
+      const taskIds = taskIdsResult.map(row => row.taskid);
+      console.log('Task IDs Retrieved:', taskIds);
 
       if (!taskIds.length) {
+        console.log('No task IDs found for the given employee');
         return res.status(200).json({
-          projects: {},
+          projects: projectNames.reduce((acc, projectName) => {
+            acc[projectName] = { CMPnos: 0, CMPplanned: 0, CMPactual: 0 };
+            return acc;
+          }, {}),
           totalTaskCount: 0
         });
       }
 
       const projectQueries = projectNames.map((projectName) => {
         return new Promise((resolve, reject) => {
-          const YTSQuery = `
-            SELECT COUNT(*) as YTSnos, SUM(timetocomplete) as YTSplanned 
-            FROM Task 
-            WHERE projectName='${projectName}' AND id IN (${taskIds}) AND Status=1;
-          `;
+          // Get CMP Planned Hours
+          const getSortingPVQuery = `SELECT projsorting_pv FROM indiscpx_taskdb_2.Logincrd WHERE id='${employeeId}'`;
+          console.log(`Executing Get Sorting PV Query for ${projectName}:`, getSortingPVQuery);
 
-          const WIPQuery = `
-            SELECT COUNT(*) as WIPnos, SUM(timetocomplete) as WIPplanned 
-            FROM Task 
-            WHERE projectName='${projectName}' AND id IN (${taskIds}) AND Status=2;
-          `;
-
-          db.query(YTSQuery, (err, YTSResult) => {
+          db.query(getSortingPVQuery, (err, sortingPVResult) => {
             if (err) {
-              console.error(`Error executing YTS query for project ${projectName}:`, err.stack);
+              console.error(`Error executing sorting PV query for project ${projectName}:`, err.stack);
               return reject('Database query error');
             }
 
-            const { YTSnos, YTSplanned } = YTSResult[0];
+            const sortingPV = sortingPVResult[0]?.projsorting_pv || 0;
+            console.log(`Sorting PV for ${projectName}:`, sortingPV);
 
-            db.query(WIPQuery, (err, WIPResult) => {
+            const CMPplannedQuery = `
+              SELECT SUM(timetocomplete) as CMPplanned 
+              FROM Task 
+              WHERE projectName='${projectName}' AND id IN (${taskIds.join(',')}) AND aproved=1
+            `;
+            console.log(`Executing CMP Planned Query for ${projectName}:`, CMPplannedQuery);
+
+            db.query(CMPplannedQuery, (err, CMPplannedResult) => {
               if (err) {
-                console.error(`Error executing WIP query for project ${projectName}:`, err.stack);
+                console.error(`Error executing CMP planned query for project ${projectName}:`, err.stack);
                 return reject('Database query error');
               }
 
-              const { WIPnos, WIPplanned } = WIPResult[0];
+              const CMPplanned = CMPplannedResult[0]?.CMPplanned || 0;
+              console.log(`CMP Planned for ${projectName}:`, CMPplanned);
 
-              const WIPTaskIdsQuery = `
+              // Get CMP Nos and store approved task IDs
+              const CMPnosQuery = `
                 SELECT id 
                 FROM Task 
-                WHERE projectName='${projectName}' AND id IN (${taskIds}) AND Status=2;
+                WHERE projectName='${projectName}' AND id IN (${taskIds.join(',')}) AND aproved=1
               `;
+              console.log(`Executing CMP Nos Query for ${projectName}:`, CMPnosQuery);
 
-              db.query(WIPTaskIdsQuery, (err, WIPTaskIdsResult) => {
+              db.query(CMPnosQuery, (err, CMPnosResult) => {
                 if (err) {
-                  console.error(`Error executing WIP Task IDs query for project ${projectName}:`, err.stack);
+                  console.error(`Error executing CMP nos query for project ${projectName}:`, err.stack);
                   return reject('Database query error');
                 }
 
-                const WIPTaskIds = WIPTaskIdsResult.map(row => row.id).join(',');
+                const approvedTaskIds = CMPnosResult.map(row => row.id);
+                const CMPnos = approvedTaskIds.length;
+                console.log(`Approved Task IDs for ${projectName}:`, approvedTaskIds);
 
-                if (!WIPTaskIds.length) {
-                  return resolve({
-                    projectName,
-                    taskCount: YTSnos + WIPnos,
-                    planned: YTSplanned + WIPplanned,
-                    actual: 0
-                  });
-                }
-
-                const WIPActualQuery = `
-                  SELECT SUM(actualtimetocomplete_emp) as WIPactual 
-                  FROM Taskemp 
-                  WHERE taskid IN (${WIPTaskIds});
-                `;
-
-                db.query(WIPActualQuery, (err, WIPActualResult) => {
-                  if (err) {
-                    console.error(`Error executing WIP Actual query for project ${projectName}:`, err.stack);
-                    return reject('Database query error');
-                  }
-
-                  const WIPactual = WIPActualResult[0]?.WIPactual || 0;
-
+                if (approvedTaskIds.length === 0) {
+                  console.log(`No approved tasks for ${projectName}, skipping CMPactualQuery`);
                   resolve({
                     projectName,
-                    YTSnos: YTSnos,
-                    YTSplanned: YTSplanned,
-                    WIPnos: WIPnos,
-                    WIPplanned: WIPplanned,
-                    WIPactual: WIPactual
+                    CMPnos,
+                    CMPplanned,
+                    CMPactual: 0 // No actual hours since there are no approved tasks
                   });
-                });
+                } else {
+                  // Get CMP Actual Hours using approved task IDs
+                  const CMPactualQuery = `
+                    SELECT SUM(actualtimetocomplete_emp) as CMPactual 
+                    FROM Taskemp 
+                    WHERE taskid IN (${approvedTaskIds.join(',')})
+                  `;
+                  console.log(`Executing CMP Actual Query for ${projectName}:`, CMPactualQuery);
+
+                  db.query(CMPactualQuery, (err, CMPactualResult) => {
+                    if (err) {
+                      console.error(`Error executing CMP actual query for project ${projectName}:`, err.stack);
+                      return reject('Database query error');
+                    }
+
+                    const CMPactual = CMPactualResult[0]?.CMPactual || 0;
+                    console.log(`CMP Actual for ${projectName}:`, CMPactual);
+
+                    resolve({
+                      projectName,
+                      CMPnos,
+                      CMPplanned,
+                      CMPactual
+                    });
+                  });
+                }
               });
             });
           });
@@ -853,19 +2784,19 @@ exports.YTSWIPhrs = (req, res) => {
 
       Promise.all(projectQueries)
         .then(results => {
-          const totalTaskCount = results.reduce((acc, result) => acc + result.taskCount, 0);
+          const totalTaskCount = results.reduce((acc, result) => acc + (result.CMPnos || 0), 0);
+          console.log('Total Task Count:', totalTaskCount);
 
           const response = results.reduce((acc, result) => {
             acc[result.projectName] = {
-              YTSnos: result.YTSnos,
-              YTSplanned: result.YTSplanned,
-              WIPnos: result.WIPnos,
-              WIPplanned: result.WIPplanned,
-              WIPactual: result.WIPactual
+              CMPnos: result.CMPnos,
+              CMPplanned: result.CMPplanned,
+              CMPactual: result.CMPactual
             };
             return acc;
           }, {});
 
+          console.log('Final Response:', { projects: response, totalTaskCount });
           res.json({ projects: response, totalTaskCount });
         })
         .catch(error => {
@@ -874,13 +2805,7 @@ exports.YTSWIPhrs = (req, res) => {
         });
     });
   } else {
+    console.log('Access forbidden: User role not authorized');
     res.status(403).send('Access forbidden: User role not authorized');
   }
 };
-
-
-
-
-
-
-
