@@ -713,7 +713,7 @@ exports.empOverviewTaskDtlsIndAggView = (req, res) => {
 exports.empOverviewIndAggPATimes = (req, res) => {
   const { projectName, userId, startDate, userRole,userNickname  } = req.query;
 
-  console.log(`Received request with params: projectName=${projectName}, startDate=${startDate}, userRole=${userRole}, employeeId=${userId} , userNickname=${userNickname}`);
+  // console.log(`Received request with params: projectName=${projectName}, startDate=${startDate}, userRole=${userRole}, employeeId=${userId} , userNickname=${userNickname}`);
 
   const taskIdQuery = `
     SELECT id 
