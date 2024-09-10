@@ -181,6 +181,33 @@ exports.empDropdown = (req, res ) => {
   }
 };
 
+//Employee Overview Employee Fetching 
+exports.allEmployeeOverview = (req, res ) => {
+  const { token } = req.body;
+  const userData = decryptToken(token);
+  if (userData.Type !== 'Admin' && userData.Type !== 'Team Leader') {
+    const query = `SELECT * FROM Logincrd WHERE id='${userData.id}'`;
+    db.query(query, (err, result) => {
+      if (err) {
+        console.error('Error executing query:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        res.json(result);
+      }
+    });
+  } else {
+    const query = `SELECT * FROM Logincrd ORDER BY Name ASC`;
+    db.query(query, (err, result) => {
+      if (err) {
+        console.error('Error executing query:', err);
+        res.status(500).send('Internal Server Error');
+      } else {
+        res.json(result);
+      }
+    });
+  }
+};
+
 exports.addemployee = async (req, res ) => {
   const { Name, fname, lname, Nickname, Email, Password, Type, Location, loginusinggmail, pagename, pagevalue } = req.body;
 

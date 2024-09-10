@@ -12,5 +12,7 @@ router.post('/addemployee',profileController.addemployee);
 router.get('/editEmpAccessData',profileController.editEmpAccessData);
 router.put('/updateemployee',profileController.updateemployee);
 router.post('/deleteEmployee',profileController.deleteEmployee);
+router.post('/allEmployeeOverview', profileController.allEmployeeOverview);
+
 
 module.exports = router;
