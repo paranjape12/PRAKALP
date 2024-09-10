@@ -11,6 +11,13 @@ const SettingsDialog = ({ open, onClose }) => {
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
 
+    useEffect(() => {
+        if (open) {
+            const savedFilter = JSON.parse(localStorage.getItem('filterState')) || { pv: [0, 1, 2, 3, 4] };
+            setCheckedValues(savedFilter[activeLink] || []);
+        }
+    }, [open, activeLink]);
+
     const handleClose = () => {
         onClose();
     };
@@ -18,7 +25,6 @@ const SettingsDialog = ({ open, onClose }) => {
     const handleClick = (id) => {
         setActiveLink(id);
     };
-
     const handleCheckboxChange = (value) => {
         const index = checkedValues.indexOf(value);
         if (index === -1) {
@@ -27,7 +33,7 @@ const SettingsDialog = ({ open, onClose }) => {
             setCheckedValues(checkedValues.filter((val) => val !== value)); // Remove from checkedValues if already present
         }
     };
-
+    
     const handleSave = () => {
         setSuccessMessage('');
         setErrorMessage('');
@@ -35,13 +41,16 @@ const SettingsDialog = ({ open, onClose }) => {
         const data = {
             token: token,
             projshowval: activeLink === 'pv' ? checkedValues : null,
-            projshowval2: activeLink === 'pv2' ? checkedValues : null,
+            projshowval2: activeLink === 'pv2' ? checkedValues.filter(v => v !== 0) : null,
             projshowval_pv: activeLink === 'ev' ? checkedValues : null
         };
-
         axios.post('http://localhost:3001/api/updateProjectSorting', data)
             .then(response => {
                 if (response.data.message === 'Success') {
+                     // Save the filter state locally
+                     const filterState = JSON.parse(localStorage.getItem('filterState')) || {};
+                     filterState[activeLink] = checkedValues;
+                     localStorage.setItem('filterState', JSON.stringify(filterState));
                     setTimeout(() => setSuccessMessage('Projects sorted successfully !'), 1700);
                     setTimeout(onClose, 2500);
                 }
@@ -61,9 +70,7 @@ const SettingsDialog = ({ open, onClose }) => {
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
             <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>Setting
-
                 <FontAwesomeIcon onClick={handleClose} icon={faXmark} style={{ color: 'red', marginLeft: '64rem' }} />
-
             </DialogTitle>
             <DialogContent>
                 <div className="modal-body">
@@ -126,7 +133,6 @@ const SettingsDialog = ({ open, onClose }) => {
                                         <div className="card-body"></div>
                                     </div>
                                 </div>
-
                                 {/* Content for Overview - Project */}
                                 <div id="pv2" className={`col-lg-12 pc p-1 ${activeLink === 'pv2' ? '' : 'd-none'}`} style={{ maxHeight: '30rem', overflow: 'auto' }}>
                                     <div className='card border border-warning mb-1'>
@@ -166,7 +172,6 @@ const SettingsDialog = ({ open, onClose }) => {
                                         <div className="card-body"></div>
                                     </div>
                                 </div>
-
                                 <div id="ev" className={`col-lg-12 pc p-1 ${activeLink === 'ev' ? '' : 'd-none'}`} style={{ maxHeight: '30rem', overflow: 'auto' }}>
                                     <div className='card border border-warning mb-1'>
                                         <div className="card-header p-2">
