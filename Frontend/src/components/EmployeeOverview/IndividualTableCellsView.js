@@ -55,26 +55,30 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
     const empId = employee.id;
     const empType = employee.Type;
 
-    useEffect(() => {
-        const fetchProjects = async () => {
-            if (cachedProjects[empId]) {
-                setProjects(cachedProjects[empId]);
-            } else {
-                try {
-                    const response = await axios.get('http://localhost:3001/api/EmpOverviewPlusMinus', {
-                        params: { empid: empId, U_type: empType }
-                    });
-                    setProjects(response.data);
-                    setLoading(false);
-                    setCachedProjects(prevState => ({ ...prevState, [empId]: response.data }));
-                } catch (error) {
-                    console.error('Error fetching project data:', error);
-                }
+    const fetchProjects = async () => {
+        if (cachedProjects[empId]) {
+            setProjects(cachedProjects[empId]);
+        } else {
+            try {
+                const response = await axios.get('http://localhost:3001/api/EmpOverviewPlusMinus', {
+                    params: { empid: empId, U_type: empType }
+                });
+                setProjects(response.data);
+                setLoading(false);
+                setCachedProjects(prevState => ({ ...prevState, [empId]: response.data }));
+            } catch (error) {
+                console.error('Error fetching project data:', error);
             }
-        };
+        }
+    };
 
+    useEffect(() => {
         fetchProjects();
-    }, [empId, cachedProjects]);
+        const intervalId = setInterval(fetchProjects, 4000);
+
+        // Cleanup on component unmount
+        return () => clearInterval(intervalId);
+    }, [empId, cachedProjects, empType]);
 
     const handleExpandTasks = (projectId) => {
         setExpandedProjects((prevState) => ({
@@ -166,7 +170,7 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
     return (
         <>
             {loading ? (
-                    <GradientCircularProgress />
+                <GradientCircularProgress />
             ) : (
                 projects.length > 0 ? (
                     projects.map((project) => (
