@@ -30,10 +30,10 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     return `${formattedH} : ${formattedM}`;
   };
 
-  const fetchProjectTimeDetails = async (projectName, userId, startDate) => {
+  const fetchProjectTimeDetails = async (projectName, userId, startDate,userRole,userNickname) => {
     try {
       const response = await axios.get('http://localhost:3001/api/empOverviewIndAggPATimes', {
-        params: { projectName, userId, startDate }
+        params: { projectName, userId, startDate,userRole,userNickname }
       });
 
       const updatedProjectTimeDetails = { planned: {}, actual: {} };
@@ -60,9 +60,11 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     const assignBy = decrypToken.id;
     const projectName = project.projectName;
     const startDate = dates[0]?.ymdDate;
+    const userRole = decrypToken.Type
+    const userNickname = decrypToken.Nickname
 
     setLoading(true); 
-    fetchProjectTimeDetails(projectName, assignBy, startDate);
+    fetchProjectTimeDetails(projectName, assignBy, startDate,userRole, userNickname);
 
     const timer = setTimeout(() => {
       setLoading(false);
@@ -120,8 +122,8 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
           <div className="card-body text-left" style={{ padding: '0.37rem' }}>
             {localShowTimeDetails && (
               <>
-                <h6 title="Required" className="text-left m-0 Required" style={{ fontSize: '11px' }}>R : {seconds2dayhrmin(project.requiredTime)}</h6>
-                <h6 title="Taken" className="text-left m-0 Taken" style={{ fontSize: '11px' }}>T : {seconds2dayhrmin(project.takenTime)}</h6>
+                <h6 title="Required" className="text-left m-0 Required" style={{ fontSize: '11px' }}>R : {seconds2dayhrmin(project.requiredTime)|| '00 : 00 : 00'}</h6>
+                <h6 title="Taken" className="text-left m-0 Taken" style={{ fontSize: '11px' }}>T : {seconds2dayhrmin(project.takenTime)|| '00 : 00 : 00'}</h6>
               </>
             )}
           </div>

@@ -382,7 +382,6 @@ function EmployeeOverview() {
         />
       )}
             </>
-
           ))}
           
         </tbody>
@@ -405,7 +404,7 @@ function EmployeeOverview() {
         />
       )}
 
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }
