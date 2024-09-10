@@ -279,8 +279,13 @@ exports.indViewPATimes = (req, res) => {
 
     const taskIds = taskResults.map(result => result.id);
 
+    if (taskIds.length === 0) {
+      res.status(404).json({ error: 'No tasks found for the given project' });
+      return;
+    }
+
     const sqlGetSums = `
-      SELECT taskid, timetocomplete_emp AS planned,
+      SELECT taskid, AssignedTo_emp as empid, timetocomplete_emp AS planned,
              actualtimetocomplete_emp AS actual
       FROM Taskemp
       WHERE DATE(tasktimeemp) IN (?)
@@ -294,10 +299,47 @@ exports.indViewPATimes = (req, res) => {
         return;
       }
 
-      res.json(sumResults);
+      // Extract employee ids (empid) from sumResults
+      const empIds = sumResults.map(result => result.empid);
+
+      if (empIds.length === 0) {
+        res.json(sumResults); // No employee IDs to query for nicknames, return the results
+        return;
+      }
+
+      // Get nicknames for each empid
+      const sqlGetNicknames = `
+        SELECT id, Nickname
+        FROM logincrd
+        WHERE id IN (?)
+      `;
+
+      db.query(sqlGetNicknames, [empIds], (err, nicknameResults) => {
+        if (err) {
+          console.log('Error executing nickname query:', err);
+          res.status(500).json({ error: 'Error executing Nickname query' });
+          return;
+        }
+
+        // Create a mapping of empid to nickname
+        const nicknameMap = {};
+        nicknameResults.forEach(row => {
+          nicknameMap[row.id] = row.Nickname;
+        });
+
+        // Add nicknames to the sumResults
+        const finalResults = sumResults.map(result => ({
+          ...result,
+          nickname: nicknameMap[result.empid] || null
+        }));
+
+        res.json(finalResults);
+      });
     });
   });
 };
+
+
 //new chatgpt
 // exports.indViewPATimes = (req, res) => {
 //   const projectName = req.body.projectName;
@@ -711,7 +753,7 @@ exports.empOverviewTaskDtlsIndAggView = (req, res) => {
 
 // add admin and employee side completed and nickname is inprocess
 exports.empOverviewIndAggPATimes = (req, res) => {
-  const { projectName, userId, startDate, userRole,userNickname  } = req.query;
+  const { projectName, userId, startDate, userRole, userNickname } = req.query;
 
   // console.log(`Received request with params: projectName=${projectName}, startDate=${startDate}, userRole=${userRole}, employeeId=${userId} , userNickname=${userNickname}`);
 
@@ -795,16 +837,16 @@ exports.empOverviewIndAggPATimes = (req, res) => {
 
         return userId
           ? {
-              taskDate: formattedDate,
-              planned: row.planned,
-              actual: row.actual
-            }
+            taskDate: formattedDate,
+            planned: row.planned,
+            actual: row.actual
+          }
           : {
-              employeeId: row.employeeId,
-              taskDate: formattedDate,
-              planned: row.planned,
-              actual: row.actual
-            };
+            employeeId: row.employeeId,
+            taskDate: formattedDate,
+            planned: row.planned,
+            actual: row.actual
+          };
       });
 
       res.status(200).json({ message: 'Success', data: formattedData });

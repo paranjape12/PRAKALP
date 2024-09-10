@@ -212,7 +212,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
                 <td key={i} style={{ minWidth: '8.5rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
                   {loading ? '' : (
                     taskTimings[i]?.map(timing => (
-                      timing.taskid === task.taskId ? `${nickname} : ${seconds2hrmin(timing.planned)}` : ''
+                      timing.taskid === task.taskId ? `${timing.nickname} : ${seconds2hrmin(timing.planned)}` : ''
                     ))
                   )}
                 </td>
@@ -226,7 +226,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
                     taskTimings[i]?.map(timing => (
                       timing.taskid === task.taskId ? (
                         <>
-                          <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual)} style={{ color: seconds2hrmin(timing.actual) ? '#1cc88a' : 'inherit', cursor: 'pointer' }}>{nickname} </span> : {seconds2hrmin(timing.actual)}
+                          <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual)} style={{ color: seconds2hrmin(timing.actual) ? '#1cc88a' : 'inherit', cursor: 'pointer' }}>{timing.nickname} </span> : {seconds2hrmin(timing.actual)}
                         </>
                       ) : ''
                     ))
