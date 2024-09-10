@@ -112,7 +112,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
                     <td style={{ fontSize: '13.5px', padding:'0.2rem' }}>
                         <div>Total Projects Assigned: {projectsCount}</div>
                         <div>Completed Tasks: {completedTasks}</div>
-                        <div>Average Completed Tasks: {averageCompletedTasks.toFixed(2)} %</div>
+                        <div>Average Completed Tasks: {averageCompletedTasks.toFixed(0)} %</div>
                     </td>
                     <td style={{ display: 'flex', padding: '0', borderStyle: 'none' }}>
                         <div className="card">
