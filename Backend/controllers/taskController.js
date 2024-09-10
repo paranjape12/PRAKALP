@@ -76,7 +76,6 @@ exports.createTask = (req, res) => {
     });
   }
 };
-
 exports.taskOverview = (req, res) => {
   const token = req.body.token;
   const is_complete = req.body.is_complete;
@@ -86,7 +85,7 @@ exports.taskOverview = (req, res) => {
   }
 
   const userData = decryptToken(token);
-  const U_type = userData.Type;
+  const U_type = userData.Type; // Assuming U_type can determine the role
   const u_id = userData.id;
   let arrselectemptask = [];
 
@@ -137,10 +136,20 @@ exports.taskOverview = (req, res) => {
           const projectLastTask = project.lasttask;
 
           let selcttask;
-          selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time,p.taskDetails,p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
+          let queryParams;
 
+          // Determine the logic based on role (Admin/Team Leader vs. Employee)
+          if ( U_type === 'Admin' || U_type === 'Team Leader') {
+            // Admin/Team Leader logic
+            selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
+            queryParams = [projectName]; // Only project name is needed for Admin/Team Leader
+          } else {
+            // Employee logic
+            selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
+            queryParams = [u_id, projectName]; // Both user ID and project name are needed for Employees
+          }
 
-          db.query(selcttask, [u_id, projectName], (err, taskResults) => {
+          db.query(selcttask, queryParams, (err, taskResults) => {
             if (err) {
               console.error('Error executing task query:', err.stack);
               return res.status(500).send('Database query error');
@@ -161,8 +170,21 @@ exports.taskOverview = (req, res) => {
               taskAproved: task.aproved
             }));
 
-            const timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
-            db.query(timeQuery, [u_id, projectName], (err, timeResults) => {
+            // Adjust timeQuery based on role
+            let timeQuery;
+            let timeQueryParams;
+
+            if ( U_type === 'Admin' || U_type === 'Team Leader') {
+              // Admin/Team Leader logic
+              timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE p.ProjectName = ?`;
+              timeQueryParams = [projectName]; // Only project name is needed for Admin/Team Leader
+            } else {
+              // Employee logic
+              timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
+              timeQueryParams = [u_id, projectName]; // Both user ID and project name are needed for Employees
+            }
+
+            db.query(timeQuery, timeQueryParams, (err, timeResults) => {
               if (err) {
                 console.error('Error executing time query:', err.stack);
                 return res.status(500).send('Database query error');
@@ -195,7 +217,6 @@ exports.taskOverview = (req, res) => {
     });
   }
 };
-
 exports.aggViewPATimes = (req, res) => {
   const projectName = req.body.projectName;
   const dates = req.body.dates;
@@ -238,6 +259,7 @@ exports.aggViewPATimes = (req, res) => {
   });
 };
 
+//original api
 exports.indViewPATimes = (req, res) => {
   const projectName = req.body.projectName;
   const dates = req.body.dates;
@@ -276,6 +298,46 @@ exports.indViewPATimes = (req, res) => {
     });
   });
 };
+//new chatgpt
+// exports.indViewPATimes = (req, res) => {
+//   const projectName = req.body.projectName;
+//   const dates = req.body.dates;
+
+//   const sqlGetTaskIds = `
+//     SELECT id
+//     FROM Task
+//     WHERE projectName = ?
+//   `;
+
+//   db.query(sqlGetTaskIds, projectName, (err, taskResults) => {
+//     if (err) {
+//       console.log('Error executing task ID query:', err);
+//       res.status(500).json({ error: 'Error executing task ID query' });
+//       return;
+//     }
+
+//     const taskIds = taskResults.map(result => result.id);
+
+//     const sqlGetSums = `
+//       SELECT t.taskid, t.timetocomplete_emp AS planned,
+//              t.actualtimetocomplete_emp AS actual, e.nickname AS planned_nickname
+//       FROM Taskemp t
+//       JOIN Employees e ON t.employee_id = e.id
+//       WHERE DATE(t.tasktimeemp) IN (?)
+//         AND t.taskid IN (?)
+//     `;
+
+//     db.query(sqlGetSums, [dates, taskIds], (err, sumResults) => {
+//       if (err) {
+//         console.log('Error executing ind query:', err);
+//         res.status(500).json({ error: 'Error executing SUM query' });
+//         return;
+//       }
+
+//       res.json(sumResults);
+//     });
+//   });
+// };
 
 exports.taskInfoDialog = (req, res) => {
   const { token, taskId } = req.body;
@@ -358,6 +420,9 @@ exports.completeTask = (req, res) => {
   });
 };
 
+
+//original api 
+
 exports.EmpOverviewtaskDtlsAggView = async (req, res) => {
   const { empid, iscomplete } = req.body;
 
@@ -408,7 +473,6 @@ function query(sql, params) {
     });
   });
 }
-
 exports.emptaskDtlsAggTimes = async (req, res) => {
   const { empid, iscomplete } = req.body;
 
@@ -476,7 +540,6 @@ exports.emptaskDtlsAggTimes = async (req, res) => {
     res.status(500).send('Internal server error');
   }
 };
-
 exports.empAggtasktimes = (req, res) => {
   const { startDate, endDate, assignedToEmp } = req.query;
 
@@ -506,7 +569,6 @@ exports.empAggtasktimes = (req, res) => {
     }
   });
 };
-
 exports.empOverviewTaskDtlsIndAggView = (req, res) => {
   const assignBy = req.query.assignBy;
   const projectName = req.query.projectName;
@@ -567,8 +629,91 @@ exports.empOverviewTaskDtlsIndAggView = (req, res) => {
   });
 };
 
+
+
+
+//original api 
+// exports.empOverviewIndAggPATimes = (req, res) => {
+//   const { projectName, userId, startDate ,userRole} = req.query;
+//  // console.log(`Received request with params: projectName=${projectName}, startDate=${startDate},u_type=${userRole}, employeeId=${userId}`);
+
+//   const taskIdQuery = `
+//     SELECT id 
+//     FROM Task 
+//     WHERE projectName = ?
+//   `;
+
+//   db.query(taskIdQuery, [projectName], (err, taskIds) => {
+//     if (err) {
+//       console.error('Error executing task ID query:', err);
+//       return res.status(500).json({ message: 'Internal server error', error: err.message });
+//     }
+
+//     const taskIdList = taskIds.map(task => task.id);
+
+//     if (taskIdList.length === 0) {
+//       return res.status(200).json({ message: 'No tasks found for the given criteria', data: [] });
+//     }
+
+//     // Convert taskIdList to a comma-separated string
+//     const taskIdString = taskIdList.join(', ');
+
+//     // Generate the array of dates within the range
+//     const startDateObj = new Date(startDate);
+//     const dateArray = [];
+//     for (let i = 0; i < 7; i++) {
+//       const date = new Date(startDateObj);
+//       date.setDate(date.getDate() + i);
+//       dateArray.push(date.toISOString().split('T')[0]);
+//     }
+
+//     // Convert dateArray to a comma-separated string for the SQL query
+//     const dateArrayString = dateArray.map(date => `'${date}'`).join(', ');
+
+//     // Step 2: Get planned and actual time data within the date range
+//     const taskDataQuery = `
+//       SELECT 
+//         DATE(tasktimeemp) AS date, 
+//         SUM(timetocomplete_emp) AS planned, 
+//         SUM(actualtimetocomplete_emp) AS actual 
+//       FROM Taskemp 
+//       WHERE taskid IN (${taskIdString}) 
+//       AND AssignedTo_emp = ? 
+//       AND DATE(tasktimeemp) IN (${dateArrayString}) 
+//       GROUP BY DATE(tasktimeemp)
+//     `;
+
+//     db.query(taskDataQuery, [userId], (err, taskData) => {
+//       if (err) {
+//         console.error('Error executing task data query:', err);
+//         return res.status(500).json({ message: 'Internal server error', error: err.message });
+//       }
+
+//       // Format the dates to local date format
+//         const formattedData = taskData.map(row => {
+//         const taskDate = new Date(row.date);
+//         // Adjust the date for the desired output format (DD-MM-YYYY)
+//         const adjustedDate = new Date(taskDate.getTime() - taskDate.getTimezoneOffset() * 60000); // Adjust for timezone offset
+//         const day = String(adjustedDate.getDate()).padStart(2, '0');
+//         const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+//         const year = adjustedDate.getFullYear();
+//         return {
+//           taskDate: `${year}-${month}-${day}`,
+//           planned: row.planned,
+//           actual: row.actual
+//         };
+//       });
+
+//       res.status(200).json({ message: 'Success', data: formattedData });
+//     });
+//   });
+// };
+
+// add admin and employee side completed and nickname is inprocess
 exports.empOverviewIndAggPATimes = (req, res) => {
-  const { projectName, userId, startDate } = req.query;
+  const { projectName, userId, startDate, userRole,userNickname  } = req.query;
+
+  console.log(`Received request with params: projectName=${projectName}, startDate=${startDate}, userRole=${userRole}, employeeId=${userId} , userNickname=${userNickname}`);
 
   const taskIdQuery = `
     SELECT id 
@@ -588,11 +733,12 @@ exports.empOverviewIndAggPATimes = (req, res) => {
       return res.status(200).json({ message: 'No tasks found for the given criteria', data: [] });
     }
 
-    // Convert taskIdList to a comma-separated string
-    const taskIdString = taskIdList.join(', ');
-
     // Generate the array of dates within the range
     const startDateObj = new Date(startDate);
+    if (isNaN(startDateObj)) {
+      return res.status(400).json({ message: 'Invalid start date' });
+    }
+
     const dateArray = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDateObj);
@@ -600,23 +746,42 @@ exports.empOverviewIndAggPATimes = (req, res) => {
       dateArray.push(date.toISOString().split('T')[0]);
     }
 
-    // Convert dateArray to a comma-separated string for the SQL query
-    const dateArrayString = dateArray.map(date => `'${date}'`).join(', ');
+    // Determine whether to query data for an individual employee or all employees
+    let taskDataQuery;
+    let queryParams = [];
 
-    // Step 2: Get planned and actual time data within the date range
-    const taskDataQuery = `
-      SELECT 
-        DATE(tasktimeemp) AS date, 
-        SUM(timetocomplete_emp) AS planned, 
-        SUM(actualtimetocomplete_emp) AS actual 
-      FROM Taskemp 
-      WHERE taskid IN (${taskIdString}) 
-      AND AssignedTo_emp = ? 
-      AND DATE(tasktimeemp) IN (${dateArrayString}) 
-      GROUP BY DATE(tasktimeemp)
-    `;
+    if (userId && userId.trim() == "Employee") {
+      // Employee-specific query
+      taskDataQuery = `
+        SELECT 
+          DATE(tasktimeemp) AS date, 
+          SUM(timetocomplete_emp) AS planned, 
+          SUM(actualtimetocomplete_emp) AS actual 
+        FROM Taskemp 
+        WHERE taskid IN (?) 
+        AND AssignedTo_emp = ? 
+        AND DATE(tasktimeemp) IN (?) 
+        GROUP BY DATE(tasktimeemp)
+      `;
+      queryParams = [taskIdList, userId, dateArray];
+    } else {
+      // Admin query for all employees
+      taskDataQuery = `
+        SELECT 
+          AssignedTo_emp AS employeeId,
+          DATE(tasktimeemp) AS date, 
+          SUM(timetocomplete_emp) AS planned, 
+          SUM(actualtimetocomplete_emp) AS actual 
+        FROM Taskemp 
+        WHERE taskid IN (?) 
+        AND DATE(tasktimeemp) IN (?) 
+        GROUP BY AssignedTo_emp, DATE(tasktimeemp)
+      `;
+      queryParams = [taskIdList, dateArray];
+    }
 
-    db.query(taskDataQuery, [userId], (err, taskData) => {
+    // Execute the query with the appropriate parameters
+    db.query(taskDataQuery, queryParams, (err, taskData) => {
       if (err) {
         console.error('Error executing task data query:', err);
         return res.status(500).json({ message: 'Internal server error', error: err.message });
@@ -625,16 +790,21 @@ exports.empOverviewIndAggPATimes = (req, res) => {
       // Format the dates to local date format
       const formattedData = taskData.map(row => {
         const taskDate = new Date(row.date);
-        // Adjust the date for the desired output format (DD-MM-YYYY)
         const adjustedDate = new Date(taskDate.getTime() - taskDate.getTimezoneOffset() * 60000); // Adjust for timezone offset
-        const day = String(adjustedDate.getDate()).padStart(2, '0');
-        const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-        const year = adjustedDate.getFullYear();
-        return {
-          taskDate: `${year}-${month}-${day}`,
-          planned: row.planned,
-          actual: row.actual
-        };
+        const formattedDate = adjustedDate.toISOString().split('T')[0];
+
+        return userId
+          ? {
+              taskDate: formattedDate,
+              planned: row.planned,
+              actual: row.actual
+            }
+          : {
+              employeeId: row.employeeId,
+              taskDate: formattedDate,
+              planned: row.planned,
+              actual: row.actual
+            };
       });
 
       res.status(200).json({ message: 'Success', data: formattedData });
@@ -642,6 +812,189 @@ exports.empOverviewIndAggPATimes = (req, res) => {
   });
 };
 
+// testing new query add 
+// exports.empOverviewIndAggPATimes = (req, res) => {
+//   const { projectName, startDate } = req.query;
+
+//   const taskIdQuery = `
+//     SELECT id 
+//     FROM Task 
+//     WHERE projectName = ?
+//   `;
+
+//   db.query(taskIdQuery, [projectName], (err, taskIds) => {
+//     if (err) {
+//       console.error('Error executing task ID query:', err);
+//       return res.status(500).json({ message: 'Internal server error', error: err.message });
+//     }
+
+//     const taskIdList = taskIds.map(task => task.id);
+
+//     if (taskIdList.length === 0) {
+//       return res.status(200).json({ message: 'No tasks found for the given criteria', data: [] });
+//     }
+
+//     // Convert taskIdList to a comma-separated string
+//     const taskIdString = taskIdList.join(', ');
+
+//     // Generate the array of dates within the range
+//     const startDateObj = new Date(startDate);
+//     const dateArray = [];
+//     for (let i = 0; i < 7; i++) {
+//       const date = new Date(startDateObj);
+//       date.setDate(date.getDate() + i);
+//       dateArray.push(date.toISOString().split('T')[0]);
+//     }
+
+//     // Convert dateArray to a comma-separated string for the SQL query
+//     const dateArrayString = dateArray.map(date => `'${date}'`).join(', ');
+
+//     // Step 2: Get planned and actual time data within the date range for all employees
+//     const taskDataQuery = `
+//       SELECT 
+//         AssignedTo_emp AS employeeId,
+//         DATE(tasktimeemp) AS date, 
+//         SUM(timetocomplete_emp) AS planned, 
+//         SUM(actualtimetocomplete_emp) AS actual 
+//       FROM Taskemp 
+//       WHERE taskid IN (${taskIdString}) 
+//       AND DATE(tasktimeemp) IN (${dateArrayString}) 
+//       GROUP BY AssignedTo_emp, DATE(tasktimeemp)
+//     `;
+
+//     db.query(taskDataQuery, (err, taskData) => {
+//       if (err) {
+//         console.error('Error executing task data query:', err);
+//         return res.status(500).json({ message: 'Internal server error', error: err.message });
+//       }
+
+//       // Format the dates to local date format
+//       const formattedData = taskData.map(row => {
+//         const taskDate = new Date(row.date);
+//         // Adjust the date for the desired output format (DD-MM-YYYY)
+//         const adjustedDate = new Date(taskDate.getTime() - taskDate.getTimezoneOffset() * 60000); // Adjust for timezone offset
+//         const day = String(adjustedDate.getDate()).padStart(2, '0');
+//         const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+//         const year = adjustedDate.getFullYear();
+//         return {
+//           employeeId: row.employeeId,
+//           taskDate: `${year}-${month}-${day}`,
+//           planned: row.planned,
+//           actual: row.actual
+//         };
+//       });
+
+//       res.status(200).json({ message: 'Success', data: formattedData });
+//     });
+//   });
+// };
+
+//role ways query
+
+// exports.empOverviewIndAggPATimes = (req, res) => {
+//   const { projectName, userId, startDate, userRole } = req.query;
+
+//   console.log(`Received request with params: projectName=${projectName}, startDate=${startDate}, userRole=${userRole}, employeeId=${userId}`);
+
+//   const taskIdQuery = `
+//     SELECT id 
+//     FROM Task 
+//     WHERE projectName = ?
+//   `;
+
+//   db.query(taskIdQuery, [projectName], (err, taskIds) => {
+//     if (err) {
+//       console.error('Error executing task ID query:', err);
+//       return res.status(500).json({ message: 'Internal server error', error: err.message });
+//     }
+
+//     const taskIdList = taskIds.map(task => task.id);
+
+//     if (taskIdList.length === 0) {
+//       return res.status(200).json({ message: 'No tasks found for the given criteria', data: [] });
+//     }
+
+//     // Convert taskIdList to a comma-separated string
+//     const taskIdString = taskIdList.join(', ');
+
+//     // Generate the array of dates within the range
+//     const startDateObj = new Date(startDate);
+//     const dateArray = [];
+//     for (let i = 0; i < 7; i++) {
+//       const date = new Date(startDateObj);
+//       date.setDate(date.getDate() + i);
+//       dateArray.push(date.toISOString().split('T')[0]);
+//     }
+
+//     // Convert dateArray to a comma-separated string for the SQL query
+//     const dateArrayString = dateArray.map(date => `'${date}'`).join(', ');
+
+//     // Determine whether to query data for an individual employee or all employees
+//     let taskDataQuery;
+
+//     if (userId) {
+//       // Employee-specific query
+//       taskDataQuery = `
+//         SELECT 
+//           DATE(tasktimeemp) AS date, 
+//           SUM(timetocomplete_emp) AS planned, 
+//           SUM(actualtimetocomplete_emp) AS actual 
+//         FROM Taskemp 
+//         WHERE taskid IN (${taskIdString}) 
+//         AND AssignedTo_emp = ? 
+//         AND DATE(tasktimeemp) IN (${dateArrayString}) 
+//         GROUP BY DATE(tasktimeemp)
+//       `;
+//     } else {
+//       // Admin query for all employees
+//       taskDataQuery = `
+//         SELECT 
+//           AssignedTo_emp AS employeeId,
+//           DATE(tasktimeemp) AS date, 
+//           SUM(timetocomplete_emp) AS planned, 
+//           SUM(actualtimetocomplete_emp) AS actual 
+//         FROM Taskemp 
+//         WHERE taskid IN (${taskIdString}) 
+//         AND DATE(tasktimeemp) IN (${dateArrayString}) 
+//         GROUP BY AssignedTo_emp, DATE(tasktimeemp)
+//       `;
+//     }
+
+//     // Execute the query with the appropriate parameters
+//     db.query(taskDataQuery, userId ? [userId] : [], (err, taskData) => {
+//       if (err) {
+//         console.error('Error executing task data query:', err);
+//         return res.status(500).json({ message: 'Internal server error', error: err.message });
+//       }
+
+//       // Format the dates to local date format
+//       const formattedData = taskData.map(row => {
+//         const taskDate = new Date(row.date);
+//         // Adjust the date for the desired output format (DD-MM-YYYY)
+//         const adjustedDate = new Date(taskDate.getTime() - taskDate.getTimezoneOffset() * 60000); // Adjust for timezone offset
+//         const day = String(adjustedDate.getDate()).padStart(2, '0');
+//         const month = String(adjustedDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+//         const year = adjustedDate.getFullYear();
+//         const formattedDate = `${year}-${month}-${day}`;
+
+//         return userId
+//           ? {
+//               taskDate: formattedDate,
+//               planned: row.planned,
+//               actual: row.actual
+//             }
+//           : {
+//               employeeId: row.employeeId,
+//               taskDate: formattedDate,
+//               planned: row.planned,
+//               actual: row.actual
+//             };
+//       });
+
+//       res.status(200).json({ message: 'Success', data: formattedData });
+//     });
+//   });
+// };
 exports.task = (req, res) => {
   const projectName = req.query.projectName;
 
@@ -659,7 +1012,6 @@ exports.task = (req, res) => {
     res.json(results);
   });
 };
-
 exports.assignTask = (req, res) => {
   const {
     valuetask,
@@ -713,7 +1065,6 @@ exports.assignTask = (req, res) => {
     }
   });
 };
-
 exports.employeeLogs = async (req, res) => {
   const { employeeId, fromDate, toDate } = req.body;
 
@@ -766,7 +1117,6 @@ exports.employeeLogs = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 exports.empOverviewTaskDtlsIndIndView = async (req, res) => {
   const { assignBy, projectName } = req.query;
 
@@ -822,7 +1172,6 @@ exports.empOverviewTaskDtlsIndIndView = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 exports.empOverviewIndIndPATimes = (req, res) => {
   const { projectName, assignedTo, taskDates } = req.query;
 
@@ -898,7 +1247,6 @@ exports.empOverviewIndIndPATimes = (req, res) => {
     });
   });
 };
-
 exports.deleteTask = (req, res) => {
   const { taskId } = req.body;
 
@@ -941,7 +1289,6 @@ exports.deleteTask = (req, res) => {
     });
   });
 };
-
 exports.saveEditTask = (req, res) => {
   const {
     projectName,
@@ -997,7 +1344,6 @@ exports.saveEditTask = (req, res) => {
     }
   });
 };
-
 const updateProjectAndTask = (projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res) => {
   // Update the project to set the last task flag
   const updateProjectQuery = `UPDATE projects SET lasttask = '1' WHERE ProjectName = ?`;
@@ -1011,7 +1357,6 @@ const updateProjectAndTask = (projectName, taskId, taskName, taskDetails, taskAc
     updateTask(projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res);
   });
 };
-
 const updateTask = (projectName, taskId, taskName, taskDetails, taskActualTime, approvalStatus, res) => {
   // Update the task with the new details
   const updateTaskQuery = `
@@ -1039,4 +1384,3 @@ const updateTaskEmp = (taskId, taskDetails, taskActualTime, res) => {
     res.send('Success');
   });
 };
-
