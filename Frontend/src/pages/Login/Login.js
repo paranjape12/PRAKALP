@@ -75,21 +75,24 @@ function Login() {
         rememberMe: rememberMe.toString() // Convert rememberMe boolean to string
       });
 
-      if (response.data.message === 'Success') {
-        const userData = response.data.result;
-        generateToken(userData);
-        saveCredentials();
-        window.location = '/task';
-      } else {
-        setErrorMessage('Please enter a valid email or password');
-        setEmail('');
-        setPassword('');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setErrorMessage('An error occurred. Please try again.');
+      // Handle responses
+    if (response.data.message === 'Success') {
+      const userData = response.data.result;
+      generateToken(userData);
+      saveCredentials();
+      navigate('/task');  // Use navigate instead of window.location
+    } else if (response.data.message === 'This account is disabled') {
+      setErrorMessage('This account is disabled.');
+    } else {
+      setErrorMessage('Please enter a valid email or password');
+      setEmail('');
+      setPassword('');
     }
-  };
+  } catch (error) {
+    console.error('Login error:', error);
+    setErrorMessage('An error occurred. Please try again.');
+  }
+};
 
   const [passwordVisible, setPasswordVisible] = useState(false);
 
