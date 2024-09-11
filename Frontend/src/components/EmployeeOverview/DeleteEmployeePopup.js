@@ -51,7 +51,7 @@ function DeleteEmployeePopup({ open, handleClose,selectedEmployeeId, onEmployeeD
                       setTimeout(() => {
                           navigate("/"); // Redirect using React Router
                       }, 1000);
-                  } else if (userRole === 'Team Leader') {
+                  } else if (userRole === 'Team Leader' || userRole === 'Admin' ) {
                       setTimeout(() => {
                          onEmployeeDeleted(); // Notify parent about deletion
                           handleClose() // Redirect using React Router
