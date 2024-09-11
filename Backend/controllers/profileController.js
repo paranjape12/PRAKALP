@@ -73,6 +73,33 @@ exports.register = (req, res) => {
   });
 };
 
+// exports.getLogin = (req, res) => {
+//   const { email, pass, rememberMe } = req.body;
+
+//   const selectlogin = `SELECT * FROM Logincrd WHERE Email=? AND Password=?`;
+
+//   db.query(selectlogin, [email, pass], (err, result) => {
+//     if (err) {
+//       console.error(err);
+//       res.status(500).send('Error');
+//       return;
+//     }
+
+//     if (result.length === 0) {
+//       return res.status(401).send('Error: Invalid credentials');
+//     }
+
+//     if (rememberMe === 'true') {
+//       res.cookie('username', email, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
+//       res.cookie('password', pass, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
+//     } else {
+//       res.clearCookie('username');
+//       res.clearCookie('password');
+//     }
+//     res.send({ message: 'Success', result: result });
+//   });
+// };
+
 exports.getLogin = (req, res) => {
   const { email, pass, rememberMe } = req.body;
 
@@ -81,14 +108,19 @@ exports.getLogin = (req, res) => {
   db.query(selectlogin, [email, pass], (err, result) => {
     if (err) {
       console.error(err);
-      res.status(500).send('Error');
-      return;
+      return res.status(500).send('Error');
     }
 
     if (result.length === 0) {
       return res.status(401).send('Error: Invalid credentials');
     }
 
+    // Check if the employee is disabled
+    if (result[0].disableemp === 1) {
+      return  res.send({message:'This account is disabled'});
+    }
+
+    // Handle "remember me" functionality
     if (rememberMe === 'true') {
       res.cookie('username', email, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
       res.cookie('password', pass, { maxAge: 30 * 24 * 3600 * 1000, httpOnly: true });
@@ -96,9 +128,12 @@ exports.getLogin = (req, res) => {
       res.clearCookie('username');
       res.clearCookie('password');
     }
+
+    // Send success response with the result
     res.send({ message: 'Success', result: result });
   });
 };
+
 
 exports.updateUser = (req, res) => {
   const { id, name, Email, Password, location } = req.body;
@@ -370,7 +405,87 @@ exports.updateemployee = (req, res ) => {
   });
 };
 //navbar
-exports.deleteEmployee = (req, res ) => {
+// exports.deleteEmployee = (req, res ) => {
+//   const empid = req.body.empid;
+
+//   const query1 = 'SELECT DISTINCT taskid FROM `Taskemp` WHERE AssignedTo_emp = ?';
+
+//   db.query(query1, [empid], (err, result) => {
+//     if (err) return res.status(500).send(err);
+
+//     const taskIds = result.map(row => row.taskid);
+
+//     const placeholders = taskIds.map(() => '?').join(',');
+
+//     db.query('SELECT * FROM `logincrd` WHERE `id` = ?', [empid], (error, results) => {
+//       if (error) {
+//         console.error('Error fetching employee: ' + error);
+//         return res.status(500).json({ message: 'Error fetching employee' });
+//       }
+
+//       if (results.length === 0) {
+//         return res.status(404).json({ message: 'Employee not found' });
+//       }
+
+//       db.beginTransaction(error => {
+//         if (error) {
+//           console.error('Error starting transaction: ' + error);
+//           return res.status(500).json({ message: 'Error starting transaction' });
+//         }
+
+//         db.query('DELETE FROM `logincrd` WHERE `id` = ?', [empid], error => {
+//           if (error) {
+//             return db.rollback(() => {
+//               console.error('Error deleting employee: ' + error);
+//               res.status(500).json({ message: 'Error deleting employee' });
+//             });
+//           }
+
+//           // Only attempt to delete related tasks if there are task IDs
+//           if (taskIds.length > 0) {
+//             db.query(`DELETE FROM Taskemp WHERE taskid IN (${placeholders})`, taskIds, error => {
+//               if (error) {
+//                 console.error('Error deleting employee tasks: ' + error);
+//               }
+
+//               db.query(`DELETE FROM Task WHERE id IN (${placeholders})`, taskIds, error => {
+//                 if (error) {
+//                   console.error('Error deleting tasks: ' + error);
+//                 }
+
+//                 db.commit(error => {
+//                   if (error) {
+//                     return db.rollback(() => {
+//                       console.error('Error committing transaction: ' + error);
+//                       res.status(500).json({ message: 'Error committing transaction' });
+//                     });
+//                   }
+
+//                   res.status(200).json({ message: 'Success' });
+//                 });
+//               });
+//             });
+//           } else {
+//             // Commit the transaction if there are no tasks to delete
+//             db.commit(error => {
+//               if (error) {
+//                 return db.rollback(() => {
+//                   console.error('Error committing transaction: ' + error);
+//                   res.status(500).json({ message: 'Error committing transaction' });
+//                 });
+//               }
+
+//               res.status(200).json({ message: 'Success' });
+//             });
+//           }
+//         });
+//       });
+//     });
+//   });
+// };
+
+
+exports.deleteEmployee = (req, res) => {
   const empid = req.body.empid;
 
   const query1 = 'SELECT DISTINCT taskid FROM `Taskemp` WHERE AssignedTo_emp = ?';
@@ -379,8 +494,6 @@ exports.deleteEmployee = (req, res ) => {
     if (err) return res.status(500).send(err);
 
     const taskIds = result.map(row => row.taskid);
-
-    const placeholders = taskIds.map(() => '?').join(',');
 
     db.query('SELECT * FROM `logincrd` WHERE `id` = ?', [empid], (error, results) => {
       if (error) {
@@ -398,51 +511,26 @@ exports.deleteEmployee = (req, res ) => {
           return res.status(500).json({ message: 'Error starting transaction' });
         }
 
-        db.query('DELETE FROM `logincrd` WHERE `id` = ?', [empid], error => {
+        // Instead of deleting the employee, update the `disableemp` field to 1
+        db.query('UPDATE `logincrd` SET `disableemp` = 1 WHERE `id` = ?', [empid], error => {
           if (error) {
             return db.rollback(() => {
-              console.error('Error deleting employee: ' + error);
-              res.status(500).json({ message: 'Error deleting employee' });
+              console.error('Error disabling employee: ' + error);
+              res.status(500).json({ message: 'Error disabling employee' });
             });
           }
 
-          // Only attempt to delete related tasks if there are task IDs
-          if (taskIds.length > 0) {
-            db.query(`DELETE FROM Taskemp WHERE taskid IN (${placeholders})`, taskIds, error => {
-              if (error) {
-                console.error('Error deleting employee tasks: ' + error);
-              }
-
-              db.query(`DELETE FROM Task WHERE id IN (${placeholders})`, taskIds, error => {
-                if (error) {
-                  console.error('Error deleting tasks: ' + error);
-                }
-
-                db.commit(error => {
-                  if (error) {
-                    return db.rollback(() => {
-                      console.error('Error committing transaction: ' + error);
-                      res.status(500).json({ message: 'Error committing transaction' });
-                    });
-                  }
-
-                  res.status(200).json({ message: 'Success' });
-                });
+          // Commit the transaction after updating the employee's status
+          db.commit(error => {
+            if (error) {
+              return db.rollback(() => {
+                console.error('Error committing transaction: ' + error);
+                res.status(500).json({ message: 'Error committing transaction' });
               });
-            });
-          } else {
-            // Commit the transaction if there are no tasks to delete
-            db.commit(error => {
-              if (error) {
-                return db.rollback(() => {
-                  console.error('Error committing transaction: ' + error);
-                  res.status(500).json({ message: 'Error committing transaction' });
-                });
-              }
+            }
 
-              res.status(200).json({ message: 'Success' });
-            });
-          }
+            res.status(200).json({ message: 'Success, employee disabled' });
+          });
         });
       });
     });
