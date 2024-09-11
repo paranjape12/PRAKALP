@@ -18,8 +18,8 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     return details[project.projectId];
   });
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
-  const [projectTimeDetails, setProjectTimeDetails] = useState({ planned: {}, actual: {} });
-  const [loading, setLoading] = useState(true); // Loading state
+  const [projectTimeDetails, setProjectTimeDetails] = useState({}); // Store time details per project
+  const [loading, setLoading] = useState(false); // Loading state
 
   const seconds2hrmin = (ss) => {
     if (ss === 0) { return ``; }
@@ -30,21 +30,29 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     return `${formattedH} : ${formattedM}`;
   };
 
-  const fetchProjectTimeDetails = async (projectName, userId, startDate,userRole,userNickname) => {
+  const fetchProjectTimeDetails = async (projectName, userId, startDate, userRole, userNickname) => {
+    setLoading(true); // Start loading when fetching data
     try {
       const response = await axios.get('http://localhost:3001/api/empOverviewIndAggPATimes', {
-        params: { projectName, userId, startDate,userRole,userNickname }
+        params: { projectName, userId, startDate, userRole, userNickname }
       });
 
-      const updatedProjectTimeDetails = { planned: {}, actual: {} };
+      const updatedProjectTimeDetails = { planned: {}, actual: {}, projectName: response.data.data[0]?.projectName || '' };
+
       response.data.data.forEach(row => {
         updatedProjectTimeDetails.planned[row.taskDate] = row.planned || 0;
         updatedProjectTimeDetails.actual[row.taskDate] = row.actual || 0;
       });
 
-      setProjectTimeDetails(updatedProjectTimeDetails);
+      // Set project-specific time details
+      setProjectTimeDetails(prevState => ({
+        ...prevState,
+        [project.projectId]: updatedProjectTimeDetails,
+      }));
     } catch (error) {
       console.error('Error fetching project time details:', error);
+    } finally {
+      setLoading(false); // Stop loading after fetching data
     }
   };
 
@@ -60,18 +68,14 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     const assignBy = decrypToken.id;
     const projectName = project.projectName;
     const startDate = dates[0]?.ymdDate;
-    const userRole = decrypToken.Type
-    const userNickname = decrypToken.Nickname
+    const userRole = decrypToken.Type;
+    const userNickname = decrypToken.Nickname;
 
-    setLoading(true); 
-    fetchProjectTimeDetails(projectName, assignBy, startDate,userRole, userNickname);
-
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 700);
-
-    return () => clearTimeout(timer);
-  }, [project.projectName, dates]);
+    // Fetch project time details when project or dates change
+    if (project.projectId && dates.length > 0) {
+      fetchProjectTimeDetails(projectName, assignBy, startDate, userRole, userNickname);
+    }
+  }, [project.projectId, project.projectName, dates]);
 
   const handleToggleShowTimeComplete = (e) => {
     e.stopPropagation();
@@ -99,6 +103,8 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
 
   const filteredTasks = project.tasks.filter(task => showComplete || task.taskAproved !== 1);
   const noOfAssignedTasks = filteredTasks.length;
+
+  const projectTime = projectTimeDetails[project.projectId] || { planned: {}, actual: {}, projectName: '' };
 
   return (
     <>
@@ -134,22 +140,12 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
         </div>
       </td>
       {dates.map((date, i) => {
-        const plannedTime = projectTimeDetails.planned[date.ymdDate] || 0;
-        const actualTime = projectTimeDetails.actual[date.ymdDate] || 0;
-        const showSkeleton = loading && (plannedTime !== 0 || actualTime !== 0);
+        const plannedTime = projectTime.planned[date.ymdDate] || 0;
+        const actualTime = projectTime.actual[date.ymdDate] || 0;
+        const showSkeleton = loading && (plannedTime === 0 && actualTime === 0);
 
         return (
           <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden' }}>
-            {showSkeleton ? (
-              <>
-                <div style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}>
-                  <Skeleton variant="text" width={95} height={25} style={{ marginLeft: '1rem', backgroundColor: 'rgba(1,1,1,0.5)', }} />
-                </div>
-                <div style={{ paddingTop: '0.2rem', width: '8.55rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
-                  <Skeleton variant="text" width={95} height={25} style={{ marginLeft: '1rem', backgroundColor: 'rgba(0,0,0,0.2)' }} />
-                </div>
-              </>
-            ) : (
               <>
                 <div title='Create New Task' style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
                   onClick={handleOpenAddTaskDialog}>
@@ -159,7 +155,6 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
                   {seconds2hrmin(actualTime)}
                 </div>
               </>
-            )}
           </td>
         );
       })}

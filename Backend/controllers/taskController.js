@@ -755,8 +755,6 @@ exports.empOverviewTaskDtlsIndAggView = (req, res) => {
 exports.empOverviewIndAggPATimes = (req, res) => {
   const { projectName, userId, startDate, userRole, userNickname } = req.query;
 
-  // console.log(`Received request with params: projectName=${projectName}, startDate=${startDate}, userRole=${userRole}, employeeId=${userId} , userNickname=${userNickname}`);
-
   const taskIdQuery = `
     SELECT id 
     FROM Task 
@@ -775,7 +773,6 @@ exports.empOverviewIndAggPATimes = (req, res) => {
       return res.status(200).json({ message: 'No tasks found for the given criteria', data: [] });
     }
 
-    // Generate the array of dates within the range
     const startDateObj = new Date(startDate);
     if (isNaN(startDateObj)) {
       return res.status(400).json({ message: 'Invalid start date' });
@@ -788,36 +785,29 @@ exports.empOverviewIndAggPATimes = (req, res) => {
       dateArray.push(date.toISOString().split('T')[0]);
     }
 
-    // Determine whether to query data for an individual employee or all employees
     let taskDataQuery;
     let queryParams = [];
 
-    if (userId && userId.trim() == "Employee") {
-      // Employee-specific query
+    if (userRole && userRole.trim() == "Employee") {
+      // Updated Employee-specific query with projectName
       taskDataQuery = `
         SELECT 
-          DATE(tasktimeemp) AS date, 
-          SUM(timetocomplete_emp) AS planned, 
-          SUM(actualtimetocomplete_emp) AS actual 
-        FROM Taskemp 
-        WHERE taskid IN (?) 
-        AND AssignedTo_emp = ? 
-        AND DATE(tasktimeemp) IN (?) 
-        GROUP BY DATE(tasktimeemp)
+          DATE(te.tasktimeemp) AS date, 
+          t.projectName, 
+          SUM(te.timetocomplete_emp) AS planned, 
+          SUM(te.actualtimetocomplete_emp) AS actual 
+        FROM Taskemp te
+        INNER JOIN Task t ON te.taskid = t.id
+        WHERE te.taskid IN (?) 
+        AND te.AssignedTo_emp = ? 
+        AND DATE(te.tasktimeemp) IN (?)
+        GROUP BY DATE(te.tasktimeemp), t.projectName
       `;
       queryParams = [taskIdList, userId, dateArray];
     } else {
-      // Admin query for all employees
+      // Admin query for all employees remains unchanged
       taskDataQuery = `
-        SELECT 
-          AssignedTo_emp AS employeeId,
-          DATE(tasktimeemp) AS date, 
-          SUM(timetocomplete_emp) AS planned, 
-          SUM(actualtimetocomplete_emp) AS actual 
-        FROM Taskemp 
-        WHERE taskid IN (?) 
-        AND DATE(tasktimeemp) IN (?) 
-        GROUP BY AssignedTo_emp, DATE(tasktimeemp)
+        SELECT DATE(te.tasktimeemp) AS date, t.projectName, SUM(te.timetocomplete_emp) AS planned, SUM(te.actualtimetocomplete_emp) AS actual FROM Taskemp te INNER JOIN Task t ON te.taskid = t.id WHERE te.taskid IN (?) AND DATE(te.tasktimeemp) IN (?) GROUP BY DATE(te.tasktimeemp), t.projectName;
       `;
       queryParams = [taskIdList, dateArray];
     }
@@ -832,12 +822,13 @@ exports.empOverviewIndAggPATimes = (req, res) => {
       // Format the dates to local date format
       const formattedData = taskData.map(row => {
         const taskDate = new Date(row.date);
-        const adjustedDate = new Date(taskDate.getTime() - taskDate.getTimezoneOffset() * 60000); // Adjust for timezone offset
+        const adjustedDate = new Date(taskDate.getTime() - taskDate.getTimezoneOffset() * 60000);
         const formattedDate = adjustedDate.toISOString().split('T')[0];
 
         return userId
           ? {
             taskDate: formattedDate,
+            projectName: row.projectName,  // Added projectName to the response
             planned: row.planned,
             actual: row.actual
           }
@@ -853,6 +844,7 @@ exports.empOverviewIndAggPATimes = (req, res) => {
     });
   });
 };
+
 
 // testing new query add 
 // exports.empOverviewIndAggPATimes = (req, res) => {

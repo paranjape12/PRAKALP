@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Buffer } from 'buffer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask';
@@ -12,7 +13,7 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
     const [selectedProject, setSelectedProject] = useState(null);
     const [projectName, setProjectName] = useState(null);
     const [projects, setProjects] = useState(null);
-    const [projectTimeDetails, setProjectTimeDetails] = useState({ planned: {}, actual: {} });
+    const [projectTimeDetails, setProjectTimeDetails] = useState({});
     const [taskDetails, setTaskDetails] = useState({ tasks: 0, required: 0, taken: 0 });
 
     const fetchTaskDetails = async (assignBy, projectName) => {
@@ -26,26 +27,30 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
         }
     };
 
-    const fetchProjectTimeDetails = async (projectName, userId, startDate) => {
+    const fetchProjectTimeDetails = async (projectName, userId, startDate, userRole, userNickname) => {
         try {
             const response = await axios.get('http://localhost:3001/api/empOverviewIndAggPATimes', {
-                params: { projectName, userId, startDate }
+                params: { projectName, userId, startDate, userRole, userNickname }
             });
 
-            const updatedProjectTimeDetails = { planned: {}, actual: {} };
+            const updatedProjectTimeDetails = { planned: {}, actual: {}, projectName: response.data.data[0]?.projectName || '' };
             response.data.data.forEach(row => {
                 updatedProjectTimeDetails.planned[row.taskDate] = row.planned || 0;
                 updatedProjectTimeDetails.actual[row.taskDate] = row.actual || 0;
             });
 
-            setProjectTimeDetails(updatedProjectTimeDetails);
+            // Set project-specific time details
+            setProjectTimeDetails(prevState => ({
+                ...prevState,
+                [project.projectId]: updatedProjectTimeDetails,
+            }));
         } catch (error) {
             console.error('Error fetching project time details:', error);
         }
     };
 
     const seconds2hrmin = (ss) => {
-        if(ss==0){
+        if (ss == 0) {
             return ` `;
         }
         const h = Math.floor(ss / 3600); // Total hours
@@ -57,12 +62,22 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
         return `${formattedH} : ${formattedM}`;
     };
 
+    function decryptToken(token) {
+        const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+        const userData = JSON.parse(decodedToken)[0];
+        return userData;
+    }
+
+    const decrypToken = decryptToken(localStorage.getItem('token'));
+
     useEffect(() => {
-        const assignBy = employee.id;
+        const assignBy = decrypToken.id;
         const projectName = project.projectName;
         const startDate = dates[0]?.ymdDate;
+        const userRole = decrypToken.Type;
+        const userNickname = decrypToken.Nickname;
         fetchTaskDetails(assignBy, projectName);
-        fetchProjectTimeDetails(projectName, assignBy, startDate);
+        fetchProjectTimeDetails(projectName, assignBy, startDate, userRole, userNickname);
     }, [employee.id, project.projectName, dates]);
 
 
@@ -136,15 +151,15 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
 
     const handleOpenAddTaskDialog = () => {
         setAddTaskDialogOpen(true);
-      };
-    
-      const handleCloseAddTaskDialog = () => {
+    };
+
+    const handleCloseAddTaskDialog = () => {
         setAddTaskDialogOpen(false);
-      };
+    };
 
     return (
         <div style={{ width: '14rem' }}>
-            <td style={{ minWidth: '14rem', padding: '0', border:'none' }}>
+            <td style={{ minWidth: '14rem', padding: '0', border: 'none' }}>
                 <div className="card" style={{ overflow: 'hidden' }}>
                     <div className={`text-center ${getTaskStatusColor(project.requiredTime, project.takenTime)}`} style={{ paddingRight: '4rem', paddingLeft: '0.3rem' }}>
                         <div style={{ fontSize: '14px' }} className="m-0 font-weight-bold text-left text-light">
@@ -174,21 +189,47 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
             <td style={{ padding: '0', width: '7rem' }}>
                 <div style={{ verticalAlign: 'middle', height: 'auto', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <div title='Planned Timings' style={{ padding: '0.4rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none none none solid' }}>P</div>
-                    <div title='Actual Timings' style={{ padding: '0.4rem 0.5rem', fontSize: '13.44px', borderStyle: 'solid none none none', borderWidth:'thin' }}>A</div>
+                    <div title='Actual Timings' style={{ padding: '0.4rem 0.5rem', fontSize: '13.44px', borderStyle: 'solid none none none', borderWidth: 'thin' }}>A</div>
                 </div>
             </td>
             {dates.map((date, i) => (
                 <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden' }}>
-                    <div title='Create New Task' style={{ cursor:'pointer',paddingTop: '0.2rem', width: '7.68rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
-                    onClick={handleOpenAddTaskDialog}>
-                        {seconds2hrmin(projectTimeDetails.planned[date.ymdDate] || 0)}
+                    <div
+                        title='Create New Task'
+                        style={{
+                            cursor: 'pointer',
+                            paddingTop: '0.2rem',
+                            width: '7.68rem',
+                            display: 'block',
+                            backgroundColor: 'gray',
+                            color: 'white',
+                            border: 'none',
+                            textAlign: 'center',
+                            height: '2rem',
+                            verticalAlign: 'middle',
+                        }}
+                        onClick={handleOpenAddTaskDialog}
+                    >
+                        {seconds2hrmin(projectTimeDetails[project.projectId]?.planned[date.ymdDate] || 0)}
                     </div>
-                    <div style={{ paddingTop: '0.2rem', width: '7.68rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth:'thin' }}>
-                        {seconds2hrmin(projectTimeDetails.actual[date.ymdDate] || 0)}
+                    <div
+                        style={{
+                            paddingTop: '0.2rem',
+                            width: '7.68rem',
+                            display: 'block',
+                            borderStyle: 'solid none none none',
+                            textAlign: 'center',
+                            height: '2rem',
+                            verticalAlign: 'middle',
+                            borderWidth: 'thin',
+                        }}
+                    >
+                        {seconds2hrmin(projectTimeDetails[project.projectId]?.actual[date.ymdDate] || 0)}
                     </div>
                 </td>
             ))}
-      {<AddTaskModal projectName={project.projectName} open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />}
+
+            {<AddTaskModal projectName={project.projectName} open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />}
         </div>
     );
 }
