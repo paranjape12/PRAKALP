@@ -34,11 +34,12 @@ const TaskInfoDialog = ({ open, project, task, taskDetails, handleClose }) => {
 
 
   useEffect(() => {
-    if (taskDetails) {
-      setFilteredTaskDetails(taskDetails.results || []);
-      setUserName(taskDetails.userName || '');
-    }
-  }, [taskDetails]);
+  if (taskDetails && taskDetails.results && taskDetails.results.length > 0) {
+    // Set filtered task details dynamically
+    setFilteredTaskDetails(taskDetails.results);
+  }
+}, [taskDetails]);
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -89,6 +90,7 @@ const TaskInfoDialog = ({ open, project, task, taskDetails, handleClose }) => {
   const filteredTasks = sortedTaskDetails.filter((task) => {
     const searchLowerCase = searchQuery.toLowerCase();
     return (
+      task.Name.toLowerCase().includes(searchLowerCase) ||
       task.tasklog.toLowerCase().includes(searchLowerCase) ||
       task.Activity.toLowerCase().includes(searchLowerCase) ||
       formatDate(task.tasktimeemp).includes(searchLowerCase)
@@ -189,7 +191,7 @@ const TaskInfoDialog = ({ open, project, task, taskDetails, handleClose }) => {
               {filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow key={index}>
                     <TableCell align="center" sx={{ padding: '4px' }}>{formatDate(row.tasktimeemp)}</TableCell>
-                    <TableCell align="center" sx={{ padding: '4px' }}>{userName}</TableCell>
+                    <TableCell align="center" sx={{ padding: '4px' }}>{row.Name}</TableCell>
                     <TableCell align="center" sx={{ padding: '4px' }}>{seconds2hrmin(row.timetocomplete_emp)}</TableCell>
                     <TableCell align="center" sx={{ padding: '4px' }}>{seconds2hrmin(row.actualtimetocomplete_emp)}</TableCell>
                     <TableCell align="center" sx={{ padding: '4px' }}>{row.Activity}</TableCell>

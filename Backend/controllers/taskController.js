@@ -139,7 +139,7 @@ exports.taskOverview = (req, res) => {
           let queryParams;
 
           // Determine the logic based on role (Admin/Team Leader vs. Employee)
-          if ( U_type === 'Admin' || U_type === 'Team Leader') {
+          if (U_type === 'Admin' || U_type === 'Team Leader') {
             // Admin/Team Leader logic
             selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
             queryParams = [projectName]; // Only project name is needed for Admin/Team Leader
@@ -174,7 +174,7 @@ exports.taskOverview = (req, res) => {
             let timeQuery;
             let timeQueryParams;
 
-            if ( U_type === 'Admin' || U_type === 'Team Leader') {
+            if (U_type === 'Admin' || U_type === 'Team Leader') {
               // Admin/Team Leader logic
               timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE p.ProjectName = ?`;
               timeQueryParams = [projectName]; // Only project name is needed for Admin/Team Leader
@@ -392,21 +392,20 @@ exports.taskInfoDialog = (req, res) => {
     const userData = decryptToken(token);
     const userId = userData.id;
     const userType = userData.Type;
-    const userName = userData.Name;
 
     let query = '';
 
-    if (userType === 'Employee') {
-      query = `SELECT * FROM Taskemp WHERE AssignedTo_emp = '${userId}' AND taskid = '${taskId}'`;
+    if (userType == 'Employee') {
+      query = `SELECT Taskemp.*, logincrd.Name AS Name FROM Taskemp JOIN logincrd ON Taskemp.AssignedTo_emp = logincrd.id WHERE Taskemp.taskid =${taskId} AND AssignedTo_emp=${userId};`;
     } else {
-      query = `SELECT * FROM Taskemp WHERE taskid = '${taskId}'`;
+      query = `SELECT Taskemp.*, logincrd.Name AS Name FROM Taskemp JOIN logincrd ON Taskemp.AssignedTo_emp = logincrd.id WHERE Taskemp.taskid =${taskId}`;
     }
 
     db.query(query, (error, results) => {
       if (error) {
         return res.status(500).json({ error: 'Database query failed' });
       }
-      return res.status(200).json({ results, userName });
+      return res.status(200).json({ results });
     });
   } catch (err) {
     return res.status(400).json({ error: 'Invalid token' });
