@@ -22,7 +22,7 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
   const [loading, setLoading] = useState(false); // Loading state
 
   const seconds2hrmin = (ss) => {
-    if (ss === 0) { return ``; }
+    if (ss == null) { return ``; }
     const h = Math.floor(ss / 3600);
     const m = Math.floor((ss % 3600) / 60);
     const formattedH = h < 10 ? '0' + h : h;
@@ -128,8 +128,8 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
           <div className="card-body text-left" style={{ padding: '0.37rem' }}>
             {localShowTimeDetails && (
               <>
-                <h6 title="Required" className="text-left m-0 Required" style={{ fontSize: '11px' }}>R : {seconds2dayhrmin(project.requiredTime)|| '00 : 00 : 00'}</h6>
-                <h6 title="Taken" className="text-left m-0 Taken" style={{ fontSize: '11px' }}>T : {seconds2dayhrmin(project.takenTime)|| '00 : 00 : 00'}</h6>
+                <h6 title="Required" className="text-left m-0 Required" style={{ fontSize: '11px' }}>R : {seconds2dayhrmin(project.requiredTime) || '00 : 00 : 00'}</h6>
+                <h6 title="Taken" className="text-left m-0 Taken" style={{ fontSize: '11px' }}>T : {seconds2dayhrmin(project.takenTime) || '00 : 00 : 00'}</h6>
               </>
             )}
           </div>
@@ -140,21 +140,41 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
         </div>
       </td>
       {dates.map((date, i) => {
-        const plannedTime = projectTime.planned[date.ymdDate] || 0;
-        const actualTime = projectTime.actual[date.ymdDate] || 0;
-        const showSkeleton = loading && (plannedTime === 0 && actualTime === 0);
+        const plannedTime = projectTime.planned[date.ymdDate];
+        const actualTime = projectTime.actual[date.ymdDate];
+
+        // Only show the loading mask when loading is true
+        const showSkeleton = loading;
 
         return (
-          <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden' }}>
-              <>
-                <div title='Create New Task' style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
-                  onClick={handleOpenAddTaskDialog}>
-                  {seconds2hrmin(plannedTime)}
-                </div>
-                <div style={{ paddingTop: '0.2rem', width: '8.55rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
-                  {seconds2hrmin(actualTime)}
-                </div>
-              </>
+          <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden', position: 'relative' }}>
+            {showSkeleton && (
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                color: 'white',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 10,
+                fontSize: '20px',
+                fontWeight: '700'
+              }}>
+                Loading...
+              </div>
+            )}
+            <div title='Create New Task'
+              style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
+              onClick={handleOpenAddTaskDialog}>
+              {plannedTime !== null ? seconds2hrmin(plannedTime) : ''}
+            </div>
+            <div style={{ paddingTop: '0.2rem', width: '8.55rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
+              {actualTime !== null ? seconds2hrmin(actualTime) : ''}
+            </div>
           </td>
         );
       })}

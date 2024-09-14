@@ -209,8 +209,27 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
             <tr>
               <td title='Planned Timings' style={{ padding: '0.73rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
               {dates.map((date, i) => (
-                <td key={i} style={{ minWidth: '8.5rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
-                  {loading ? '' : (
+                <td key={i} style={{ minWidth: '8.5rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px', position: 'relative' }}>
+                  {loading && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                      color: 'white',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      zIndex: 10,
+                      fontSize: '16px',
+                      fontWeight: '600'
+                    }}>
+                      Loading...
+                    </div>
+                  )}
+                  {!loading && (
                     taskTimings[i]?.map(timing => (
                       timing.taskid === task.taskId ? `${timing.nickname} : ${seconds2hrmin(timing.planned)}` : ''
                     ))
@@ -221,13 +240,36 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
             <tr>
               <td title='Actual Timings' style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
               {dates.map((date, i) => (
-                <td key={i} style={{ minWidth: '8.5rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px' }}>
-                  {loading ? '' : (
+                <td key={i} style={{ minWidth: '8.5rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px', position: 'relative' }}>
+                  {loading && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                      color: 'black',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      zIndex: 10,
+                      fontSize: '16px',
+                      fontWeight: '600'
+                    }}>
+                      Loading...
+                    </div>
+                  )}
+                  {!loading && (
                     taskTimings[i]?.map(timing => (
                       timing.taskid === task.taskId ? (
-                        <>
-                          <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual)} style={{ color: seconds2hrmin(timing.actual) ? '#1cc88a' : 'inherit', cursor: 'pointer' }}>{timing.nickname} </span> : {seconds2hrmin(timing.actual)}
-                        </>
+                        <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual)} style={{ cursor: 'pointer' }}>
+                          <span style={{ color: '#1cc88a' }}>
+                            {timing.nickname}
+                          </span> : <span style={{ color: 'inherit', cursor:'default'}}>
+                            {seconds2hrmin(timing.actual)}
+                          </span>
+                        </span>
                       ) : ''
                     ))
                   )}
