@@ -1052,16 +1052,13 @@ exports.assignTask = (req, res) => {
     inputhraray,
     Activity,
     Dateassign,
+    employeeId,
     token
   } = req.body;
 
-  const userData = decryptToken(token);
-  const empid = userData.id;
+  const empid = employeeId;
 
-  const date = new Date(Dateassign);
-  date.setHours(0, 0, 1); // Set hours, minutes, seconds to 00:00:01
-  const todaydatetime = date.toISOString().split('T')[0] + ' 00:00:01';
-  const todaydatetime2 = date.toISOString().replace('T', ' ').slice(0, 19);
+  const todaydatetime = Dateassign + ' 00:00:01';
 
   const selectQuery = `SELECT * FROM Taskemp WHERE DATE(tasktimeemp) = ? AND taskid = ? AND AssignedTo_emp = ?`;
   db.query(selectQuery, [todaydatetime.split(' ')[0], valuetask, empid], (err, result) => {
@@ -1078,7 +1075,7 @@ exports.assignTask = (req, res) => {
         db.query(query, [empid], (err, queryResult) => {
           if (err) throw err;
           const rowqueryResult = queryResult[0];
-          const finalmsg = 'Task already assigned to ' + rowqueryResult.Name + '.';
+          const finalmsg = 'Task updated' + '.';
           res.send(finalmsg);
         });
       });
