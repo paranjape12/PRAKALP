@@ -10,7 +10,7 @@ import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus, faCircleIn
 
 import '../../pages/TaskOverview/TaskOverview.css';
 import { MenuItem } from '@material-ui/core';
-import EditEmployee from '../../components/Navbar/Dropdown/Manage Employee/EditEmployee';
+import EditEmployee1 from '../../components/EmployeeOverview/EditEmployee1';
 import LogsPopup from '../../components/EmployeeOverview/LogsPopup';
 import DeleteEmployeePopup from '../../components/EmployeeOverview/DeleteEmployeePopup';
 import { useNavigate } from 'react-router-dom';
@@ -121,7 +121,6 @@ function EmployeeOverview() {
   };
 
   // Table
-
   const toggleShowComplete = (e) => {
     e.stopPropagation();
     setShowComplete((prevShowComplete) => {
@@ -136,10 +135,28 @@ function EmployeeOverview() {
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [employees, setEmployees] = useState([]);
 
+  // useEffect(() => {
+  //   // Fetch employees
+  //   axios
+  //     .post("http://localhost:3001/api/allEmployeeOverview", {
+  //       token: localStorage.getItem("token"),
+  //     })
+  //     .then((response) => {
+  //       if (Array.isArray(response.data)) {
+  //         setEmployees(response.data);
+  //       } else {
+  //         console.error("Error: Expected an array but got", response.data);
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching employees:", error);
+  //     });
+  // }, []);
+
   useEffect(() => {
     // Fetch employees
     axios
-      .post("http://localhost:3001/api/allEmployeeOverview", {
+      .post("http://localhost:3001/api/empDropdown", {
         token: localStorage.getItem("token"),
       })
       .then((response) => {
@@ -154,6 +171,7 @@ function EmployeeOverview() {
       });
   }, []);
 
+  
   const [showComplete, setShowComplete] = useState(() => {
     const storedValue = localStorage.getItem("showEmpCompletedTasks");
     return JSON.parse(storedValue);
@@ -229,8 +247,6 @@ function EmployeeOverview() {
     return () => clearInterval(intervalId);
   }, []);
 
-  
-
   // hrishi
   const handleOpenEditEmployeeDialog = () => {
     setEditEmployeeOpen(true);
@@ -251,22 +267,41 @@ function EmployeeOverview() {
   };
 
 
-   // Define the callback function to handle successful deletion
+   // Define the callback function to handle successfully deletion
    const handleEmployeeDeleted = () => {
     // Fetch updated employees list
-    axios.post("http://localhost:3001/api/allEmployeeOverview", {
-      token: localStorage.getItem("token"),
-    })
-    .then(response => {
-      if (Array.isArray(response.data)) {
-        setEmployees(response.data);
-      } else {
-        console.error("Error: Expected an array but got", response.data);
-      }
-    })
-    .catch(error => {
-      console.error("Error fetching employees:", error);
-    });
+   
+      // Fetch employees
+      axios
+        .post("http://localhost:3001/api/empDropdown", {
+          token: localStorage.getItem("token"),
+        })
+        .then((response) => {
+          if (Array.isArray(response.data)) {
+            setEmployees(response.data);
+          } else {
+            console.error("Error: Expected an array but got", response.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching employees:", error);
+        });
+     
+  
+
+    // axios.post("http://localhost:3001/api/allEmployeeOverview", {
+    //   token: localStorage.getItem("token"),
+    // })
+    // .then(response => {
+    //   if (Array.isArray(response.data)) {
+    //     setEmployees(response.data);
+    //   } else {
+    //     console.error("Error: Expected an array but got", response.data);
+    //   }
+    // })
+    // .catch(error => {
+    //   console.error("Error fetching employees:", error);
+    // });
   };
 
   const handleOpenDeleteEmployeeDialog = (employeeId) => {
@@ -403,7 +438,7 @@ function EmployeeOverview() {
 
       </table>
       {editEmployeeOpen && (
-        <EditEmployee
+        <EditEmployee1
           open={editEmployeeOpen}
           handleClose={handleCloseEditEmployeeDialog}
         />
