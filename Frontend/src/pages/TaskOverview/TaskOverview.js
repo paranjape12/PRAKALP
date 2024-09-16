@@ -338,6 +338,16 @@ function TaskOverview() {
     };
   }, []);
 
+  useEffect(() => {
+    const updateTableWidth = () => {
+      if (tableRef.current) {
+        setTableWidth(tableRef.current.getBoundingClientRect().width);
+      }
+    };
+
+    updateTableWidth();
+  }, [projects, dates, expandedProjects]);
+
   return (
     <div>
       {loading ? (
