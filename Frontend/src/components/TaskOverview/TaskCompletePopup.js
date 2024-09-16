@@ -72,7 +72,7 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId }
 
     const token = localStorage.getItem('token');
     const taskCompleteData = {
-      id: task.taskempId || timingId,
+      id: timingId,
       min: minutes,
       hr: hours,
       msg: log,
@@ -81,7 +81,7 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId }
       isChecked2: taskInProgress,
       isChecked3: taskNotComplete,
       token: token,
-    };
+    };    
 
     if ((hours === '' && minutes === '') || (hours == 0 && minutes == 0) || hours > 8 || minutes > 59) {
       setErrorMessage("Please check time format (hr less than 8 and min less than 59)");
