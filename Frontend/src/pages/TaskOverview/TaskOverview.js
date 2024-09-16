@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import '../../pages/TaskOverview/TaskOverview.css';
 import Footer from '../../components/Footer';
@@ -84,9 +84,9 @@ function TaskOverview() {
   const [showMask, setShowMask] = useState(false);
   const [progress, setProgress] = useState(0);
   useEffect(() => {
-    
+
     fetchProjects();
-    
+
     const timer = setInterval(() => {
       setProgress((prevProgress) => {
         const nextProgress = prevProgress + 10;
@@ -224,7 +224,7 @@ function TaskOverview() {
 
     return () => clearInterval(intervalId);
   }, []);
-  
+
   function getTaskStatusColor(requiredTime, takenTime) {
     if (requiredTime < takenTime) {
       return 'bg-danger border border-danger';
@@ -299,7 +299,7 @@ function TaskOverview() {
         justifyContent: 'center',
         alignItems: 'center',
         color: 'white',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
         zIndex: 10,
         fontSize: '1.5rem',
         fontWeight: '700'
@@ -315,6 +315,28 @@ function TaskOverview() {
       setShowMask(false);
     }, 1000);
   };
+
+  const [tableWidth, setTableWidth] = useState(0);
+  const tableRef = useRef(null);
+
+  useEffect(() => {
+    const updateTableWidth = () => {
+      if (tableRef.current) {
+        setTableWidth(tableRef.current.getBoundingClientRect().width);
+      }
+    };
+
+    // Set initial width
+    updateTableWidth();
+
+    // Add resize event listener
+    window.addEventListener('resize', updateTableWidth);
+
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener('resize', updateTableWidth);
+    };
+  }, []);
 
   return (
     <div>
@@ -369,9 +391,14 @@ function TaskOverview() {
                   const isSunday = currentDate.getDay() === 0;
                   return (
                     <th
+                      ref={tableRef}
                       key={index}
                       className={isSunday ? 'th1th' : `th${date.day}`}
-                      style={{ backgroundColor: isSunday ? 'red' : '', color: 'white', width: '8.57rem' }}
+                      style={{
+                        backgroundColor: isSunday ? 'red' : '', color: 'white',
+                        width: `${100 / dates.length}%`,
+                        minWidth: '80px'
+                      }}
                     >
                       {currentDate.toLocaleString('default', { month: 'short', day: 'numeric' })}
                       <br />
@@ -417,6 +444,7 @@ function TaskOverview() {
                               dates={dates}
                               toggleShowTimeComplete={toggleShowTimeComplete}
                               seconds2dayhrmin={seconds2dayhrmin}
+                              tableWidth={tableWidth}
                             />
                           ))
                       ) : (

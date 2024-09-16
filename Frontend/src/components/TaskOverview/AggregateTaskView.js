@@ -147,7 +147,7 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
         const showSkeleton = loading;
 
         return (
-          <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden', position: 'relative' }}>
+          <td key={i} style={{ padding: '0', fontSize: '15px', width: `${100 / dates.length}%`,minWidth: '80px', }}>
             {showSkeleton && (
               <div style={{
                 position: 'absolute',
@@ -168,11 +168,11 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
               </div>
             )}
             <div title='Create New Task'
-              style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '8.55rem', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
+              style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '100%', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
               onClick={handleOpenAddTaskDialog}>
               {plannedTime !== null ? seconds2hrmin(plannedTime) : ''}
             </div>
-            <div style={{ paddingTop: '0.2rem', width: '8.55rem', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
+            <div style={{ paddingTop: '0.2rem', width: '100%', display: 'block', borderStyle: 'solid none none none', textAlign: 'center', height: '2rem', verticalAlign: 'middle', borderWidth: 'thin' }}>
               {actualTime !== null ? seconds2hrmin(actualTime) : ''}
             </div>
           </td>

@@ -25,7 +25,7 @@ function decryptToken(token) {
   return userData;
 }
 
-const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seconds2dayhrmin }) => {
+const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seconds2dayhrmin, tableWidth  }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(false);
   const [taskInfoDialogOpen, setTaskInfoDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState({});
@@ -204,80 +204,82 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
           )}
         </div>
 
-        <table style={{ marginLeft: '13.2rem' }}>
-          <tbody>
-            <tr>
-              <td title='Planned Timings' style={{ padding: '0.73rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
-              {dates.map((date, i) => (
-                <td key={i} style={{ minWidth: '8.5rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px', position: 'relative' }}>
-                  {loading && (
-                    <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                      color: 'white',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      zIndex: 10,
-                      fontSize: '16px',
-                      fontWeight: '600'
-                    }}>
-                      Loading...
-                    </div>
-                  )}
-                  {!loading && (
-                    taskTimings[i]?.map(timing => (
-                      timing.taskid === task.taskId ? `${timing.nickname} : ${seconds2hrmin(timing.planned)}` : ''
-                    ))
-                  )}
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <td title='Actual Timings' style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
-              {dates.map((date, i) => (
-                <td key={i} style={{ minWidth: '8.5rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px', position: 'relative' }}>
-                  {loading && (
-                    <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                      color: 'black',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      zIndex: 10,
-                      fontSize: '16px',
-                      fontWeight: '600'
-                    }}>
-                      Loading...
-                    </div>
-                  )}
-                  {!loading && (
-                    taskTimings[i]?.map(timing => (
-                      timing.taskid === task.taskId ? (
-                        <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual)} style={{ cursor: 'pointer' }}>
-                          <span style={{ color: '#1cc88a' }}>
-                            {timing.nickname}
-                          </span> : <span style={{ color: 'inherit', cursor:'default'}}>
-                            {seconds2hrmin(timing.actual)}
+        <div style={{ flex: 1, marginLeft: '13.2rem' }}> {/* Adjust margin as needed */}
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <tbody>
+              <tr>
+                <td title='Planned Timings' style={{ padding: '0.73rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
+                {dates.map((date, i) => (
+                  <td key={i} style={{ width: `${100 / dates.length}%`, minWidth: tableWidth, backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '800', fontSize: '13px', position: 'relative' }}>
+                    {loading && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                        color: 'white',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 10,
+                        fontSize: '16px',
+                        fontWeight: '600'
+                      }}>
+                        Loading...
+                      </div>
+                    )}
+                    {!loading && (
+                      taskTimings[i]?.map(timing => (
+                        timing.taskid === task.taskId ? `${timing.nickname} : ${seconds2hrmin(timing.planned)}` : ''
+                      ))
+                    )}
+                  </td>
+                ))}
+              </tr>
+              <tr>
+                <td title='Actual Timings' style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
+                {dates.map((date, i) => (
+                  <td key={i} style={{ width: `${100 / dates.length}%`, minWidth: tableWidth , backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px', position: 'relative' }}>
+                    {loading && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                        color: 'black',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 10,
+                        fontSize: '16px',
+                        fontWeight: '600'
+                      }}>
+                        Loading...
+                      </div>
+                    )}
+                    {!loading && (
+                      taskTimings[i]?.map(timing => (
+                        timing.taskid === task.taskId ? (
+                          <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual)} style={{ cursor: 'pointer' }}>
+                            <span style={{ color: '#1cc88a' }}>
+                              {timing.nickname}
+                            </span> : <span style={{ color: 'inherit', cursor:'default'}}>
+                              {seconds2hrmin(timing.actual)}
+                            </span>
                           </span>
-                        </span>
-                      ) : ''
-                    ))
-                  )}
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
+                        ) : ''
+                      ))
+                    )}
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
