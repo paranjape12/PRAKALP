@@ -10,7 +10,7 @@ const SettingsDialog = ({ open, onClose }) => {
     const [checkedValues, setCheckedValues] = useState([0, 1, 2, 3, 4]);
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
-    const [showAllEmployees, setShowAllEmployees] = useState(true); // New state for YES/NO checkbox
+    const [showAllEmployees, setShowAllEmployees] = useState(false); // New state for YES/NO checkbox
     const [employees, setEmployees] = useState([]);
 
     useEffect(() => {
@@ -35,7 +35,7 @@ const SettingsDialog = ({ open, onClose }) => {
             setCheckedValues(checkedValues.filter((val) => val !== value)); // Remove from checkedValues if already present
         }
     };
-    
+
     const handleSave = () => {
         setSuccessMessage('');
         setErrorMessage('');
@@ -49,10 +49,10 @@ const SettingsDialog = ({ open, onClose }) => {
         axios.post('http://localhost:3001/api/updateProjectSorting', data)
             .then(response => {
                 if (response.data.message === 'Success') {
-                     // Save the filter state locally
-                     const filterState = JSON.parse(localStorage.getItem('filterState')) || {};
-                     filterState[activeLink] = checkedValues;
-                     localStorage.setItem('filterState', JSON.stringify(filterState));
+                    // Save the filter state locally
+                    const filterState = JSON.parse(localStorage.getItem('filterState')) || {};
+                    filterState[activeLink] = checkedValues;
+                    localStorage.setItem('filterState', JSON.stringify(filterState));
                     setTimeout(() => setSuccessMessage('Projects sorted successfully !'), 1700);
                     setTimeout(onClose, 2500);
                 }
@@ -69,12 +69,12 @@ const SettingsDialog = ({ open, onClose }) => {
         setSuccessMessage('');
     }, 3000);
 
-  const handleEmployeeCheckboxChange = (e) => {
-        setShowAllEmployees(e.target.checked);
+    const handleEmployeeCheckboxChange = () => {
+        setShowAllEmployees(true);  // Handle YES option
     };
-
-    const handleEmployeeCheckboxChangeNo = (e) => {
-        setShowAllEmployees(false);
+    
+    const handleEmployeeCheckboxChangeNo = () => {
+        setShowAllEmployees(false);  // Handle NO option
     };
 
     useEffect(() => {
@@ -83,16 +83,16 @@ const SettingsDialog = ({ open, onClose }) => {
             axios.post("http://localhost:3001/api/allEmployeeOverview", {
                 token: localStorage.getItem("token"),
             })
-            .then(response => {
-                if (Array.isArray(response.data)) {
-                    setEmployees(response.data);
-                } else {
-                    console.error("Error: Expected an array but got", response.data);
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching employees:", error);
-            });
+                .then(response => {
+                    if (Array.isArray(response.data)) {
+                        setEmployees(response.data);
+                    } else {
+                        console.error("Error: Expected an array but got", response.data);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching employees:", error);
+                });
         } else {
             fetchEmployees();
         }
@@ -108,38 +108,43 @@ const SettingsDialog = ({ open, onClose }) => {
             console.error('Error fetching employees:', error);
         }
     };
+    
     const handleSaveYesNO = () => {
-        if (showAllEmployees) {
-            axios.post("http://localhost:3001/api/allEmployeeOverview", {
-                token: localStorage.getItem("token"),
-            })
-            .then(response => {
-                if (Array.isArray(response.data)) {
-                    setEmployees(response.data);
-                } else {
-                    console.error("Error: Expected an array but got", response.data);
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching employees:", error);
-            });
+        const token = localStorage.getItem("token");
+    
+        if (showAllEmployees == true) {
+            console.log("allEmployeeOverview API");
+            
+            // Call the API to show all employees
+            axios.post("http://localhost:3001/api/allEmployeeOverview", { token })
+                .then(response => {
+                    if (Array.isArray(response.data)) {
+                        setEmployees(response.data);
+                    } else {
+                        console.error("Error: Expected an array but got", response.data);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching all employees:", error);
+                });
         } else {
-            axios.post("http://localhost:3001/api/empDropdown", {
-                token: localStorage.getItem("token"),
-            })
-            .then(response => {
-                if (Array.isArray(response.data)) {
-                    setEmployees(response.data);
-                } else {
-                    console.error("Error: Expected an array but got", response.data);
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching employees:", error);
-            });
+            console.log("empDropdown API");
+            // Call the API to show a subset of employees
+            axios.post("http://localhost:3001/api/empDropdown", { token })
+                .then(response => {
+                    if (Array.isArray(response.data)) {
+                        setEmployees(response.data);
+                    } else {
+                        console.error("Error: Expected an array but got", response.data);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching specific employees:", error);
+                });
         }
     };
     
+
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
             <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>Setting
@@ -165,7 +170,7 @@ const SettingsDialog = ({ open, onClose }) => {
                                         Overview - Project
                                     </a>
                                 </li>
-                               
+
                             </ul>
                         </div>
                         <div className="col-9 col-md-10 d-flex flex-column flex-shrink-0 bg-light">
@@ -207,8 +212,8 @@ const SettingsDialog = ({ open, onClose }) => {
                                         <div className="card-body"></div>
                                     </div>
                                 </div>
-                                    {/*Content for overview- employee*/}
-                                 <div id="ev" className={`col-lg-12 pc p-1 ${activeLink === 'ev' ? '' : 'd-none'}`} style={{ maxHeight: '30rem', overflow: 'auto' }}>
+                                {/*Content for overview- employee*/}
+                                <div id="ev" className={`col-lg-12 pc p-1 ${activeLink === 'ev' ? '' : 'd-none'}`} style={{ maxHeight: '30rem', overflow: 'auto' }}>
                                     <div className='card border border-warning mb-1'>
                                         <div className="card-header p-2">
                                             <h6 className="text-myback font-weight-bold m-1">Show projects by</h6>
@@ -238,25 +243,25 @@ const SettingsDialog = ({ open, onClose }) => {
                                             </div>
                                             <a id="pagesort" onClick={handleSave} className="btn btn-success">Apply</a>
                                         </div>
-                                        </div>
-                                        <div className="card border border-warning mb-1">
-                                            <div className="card-header p-2">
+                                    </div>
+                                    <div className="card border border-warning mb-1">
+                                        <div className="card-header p-2">
                                             <h6 className="text-myback font-weight-bold m-1">Show Disable Employee</h6>
-                                            </div>
-                                            <div className="card-body">
+                                        </div>
+                                        <div className="card-body">
                                             <div className="input-group flex-nowrap mb-2">
                                                 <div className="form-check m-1">
-                                                    <input className="form-check-input mt-2 projschekck_setting" type="checkbox" value="yes" id="employeeShowAll" checked={showAllEmployees} onChange={handleEmployeeCheckboxChange} />
-                                                    <label className="rounded-pill form-check-label  p-1" htmlFor="employeeShowAll">YES</label>
+                                                    <input className="form-check-input mt-2 projschekck_setting" type="radio" name="employeeShowAll" value="yes" id="employeeShowAllYes" onChange={handleEmployeeCheckboxChange} />
+                                                    <label className="rounded-pill form-check-label p-1" htmlFor="employeeShowAllYes">YES</label>
                                                 </div>
                                                 <div className="form-check m-1">
-                                                    <input className="form-check-input mt-2 projschekck_setting" type="checkbox" value="NO" id="employeeShowAll" checked={!showAllEmployees} onChange={handleEmployeeCheckboxChangeNo} />
-                                                    <label className="rounded-pill form-check-label p-1" htmlFor="employeeShowAll">NO</label>
+                                                    <input className="form-check-input mt-2 projschekck_setting" type="radio" name="employeeShowAll" value="no" id="employeeShowAllNo" onChange={handleEmployeeCheckboxChangeNo} defaultChecked/>
+                                                    <label className="rounded-pill form-check-label p-1" htmlFor="employeeShowAllNo">NO</label>
                                                 </div>
                                             </div>
-                                                 <a id="pagesort" onClick={handleSaveYesNO} className="btn btn-success">Apply</a>
-                                                </div>
+                                            <a id="pagesort" onClick={handleSaveYesNO} className="btn btn-success">Apply</a>
                                         </div>
+                                    </div>
                                 </div>
                                 {/* Content for Overview - Project */}
                                 <div id="pv2" className={`col-lg-12 pc p-1 ${activeLink === 'pv2' ? '' : 'd-none'}`} style={{ maxHeight: '30rem', overflow: 'auto' }}>
@@ -297,7 +302,7 @@ const SettingsDialog = ({ open, onClose }) => {
                                         <div className="card-body"></div>
                                     </div>
                                 </div>
-                               
+
                             </div>
                             {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center', fontSize: '16px' }}>{errorMessage}</p>}
                             {successMessage && (
