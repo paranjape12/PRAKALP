@@ -40,6 +40,11 @@ const ProjectOverview = () => {
   const [totalWIPNosSum, setTotalWIPNosSum] = useState(0);
   const [totalWIPPlannedSum, setTotalWIPPlannedSum] = useState(0);
   const [totalWIPActualSum, setTotalWIPActualSum] = useState(0);
+  const [totalCMPNosSum, setTotalCMPNosSum] = useState(0);
+  const [totalCMPPlannedSum, setTotalCMPPlannedSum] = useState(0);
+  const [totalCMPActualSum,setTotalCMPActualSum]= useState(0);
+  //const [projectTimeDetails, setProjectTimeDetails] = useState({ planned: {}, actual: {} });
+
 
   const navigate = useNavigate();
 
@@ -113,6 +118,7 @@ const ProjectOverview = () => {
 };
 
 
+
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -122,6 +128,7 @@ const ProjectOverview = () => {
       setProjects(response.data.projects); // Set projects state with the response data
       setTotalProjects(response.data.totalProjects); // Set total projects count
       fetchProjectDetails(response.data.projects);
+      
       setLoading(false);
     } catch (err) {
       setError(err);
@@ -136,41 +143,88 @@ const ProjectOverview = () => {
         params: {
           employeeId: decryptToken(localStorage.getItem('token')).id,
           projectNames,
-          token : localStorage.getItem('token')
+          token: localStorage.getItem('token')
         }
       });
-
-      // Calculate the sums of planned and actual times
+  
+      console.log('Project Details Response:', response.data);
+      console.log('Total Task Count from Project Details:', response.data.totalTaskCount);
+  
       const totalPlannedSum = Object.values(response.data.projects).reduce(
         (acc, projectDetail) => acc + (projectDetail.planned || 0),
         0
       );
-
+  
       const totalActualSum = Object.values(response.data.projects).reduce(
         (acc, projectDetail) => acc + (projectDetail.actual || 0),
         0
       );
-
-      setProjectDetails(response.data.projects); // Set project details state with the response data
-      setTotalTaskCount(response.data.totalTaskCount); // Set the total task count
-      setTotalPlannedSum(totalPlannedSum); // Set the total planned sum in state
-      setTotalActualSum(totalActualSum); // Set the total actual sum in state
+      const totalYTSNosSum = Object.values(response.data.projects).reduce(
+        (acc, projectDetail) => acc + (projectDetail.YTSnos || 0),
+        0
+      );
+      const totalYTSPlannedSum = Object.values(response.data.projects).reduce(
+        (acc, projectDetail) => acc + (projectDetail.YTSplanned || 0),
+        0
+      );
+      const totalWIPNosSum = Object.values(response.data.projects).reduce(
+        (acc, projectDetail) => acc + (projectDetail.WIPnos || 0),
+        0
+      );
+      const totalWIPPlannedSum = Object.values(response.data.projects).reduce(
+        (acc, projectDetail) => acc + (projectDetail.WIPplanned || 0),
+        0
+      );
+      const totalWIPActualSum = Object.values(response.data.projects).reduce(
+        (acc, projectDetail) => acc + (projectDetail.WIPactual || 0),
+        0
+      );
+      const totalCMPNosSum = Object.values(response.data.projects).reduce(
+        (acc, projectDetail) => acc + (projectDetail.CMPnos || 0),
+        0
+      );
+      const totalCMPPlannedSum = Object.values(response.data.projects).reduce(
+        (acc, projectDetail) => acc + (projectDetail.CMPplanned || 0),
+        0
+      );
+  
+      setProjectDetails(response.data.projects);
+      setTotalTaskCount(response.data.totalTaskCount);
+      setTotalPlannedSum(totalPlannedSum);
+      setTotalActualSum(totalActualSum);
+      setTotalYTSNosSum(totalYTSNosSum);
+      setTotalYTSPlannedSum(totalYTSPlannedSum);
+      setTotalWIPNosSum(totalWIPNosSum);
+      setTotalWIPPlannedSum(totalWIPPlannedSum);
+      setTotalWIPActualSum(totalWIPActualSum);
+      setTotalCMPNosSum(totalCMPNosSum);
+      setTotalCMPPlannedSum(totalCMPPlannedSum);
+      setTotalCMPActualSum(totalCMPActualSum);
     } catch (err) {
       console.error("Error fetching project details:", err);
     }
   };
-
- 
   
-
+  
   useEffect(() => {
     console.log("Fetching projects...");
     fetchProjects();
   }, []);
-
+ 
   useEffect(() => {
     console.log("Projects state:", projects);
   }, [projects]);
+
+  // Fetch projects initially and every 4 seconds
+  useEffect(() => {
+    fetchProjects();
+    const intervalId = setInterval(() => {
+      fetchProjects();
+    }, 4000);
+
+    // Cleanup the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -233,7 +287,7 @@ const ProjectOverview = () => {
     setSelectedProjectId(null);
     setDeleteProjectDialogOpen(false);
   };
-
+  
   return (
     <div>
       {dates.length > 0 && (
@@ -350,15 +404,14 @@ const ProjectOverview = () => {
                     <th className="totalCol">{totalTaskCount} </th>
                     <th className="totalCol">{seconds2hrmin(totalPlannedSum)} </th>
                     <th className="totalCol">{seconds2hrmin(totalActualSum)} </th>
-                    {/* Placeholder cells for the remaining columns */}
-                    <th className="totalCol"></th>
-                    <th className="totalCol"></th>
-                    <th className="totalCol"></th>
-                    <th className="totalCol"></th>
-                    <th className="totalCol"></th>
-                    <th className="totalCol"></th>
-                    <th className="totalCol"></th>
-                    <th className="totalCol"></th>
+                    <th className="totalCol">{(totalYTSNosSum)} </th>
+                    <th className="totalCol">{seconds2hrmin(totalYTSPlannedSum)} </th>
+                    <th className="totalCol">{(totalWIPNosSum)} </th>
+                    <th className="totalCol">{seconds2hrmin(totalWIPPlannedSum)} </th>
+                    <th className="totalCol">{seconds2hrmin(totalWIPActualSum)} </th>
+                    <th className="totalCol">{totalCMPNosSum}</th>
+                    <th className="totalCol">{seconds2hrmin(totalCMPPlannedSum)}</th>
+                    <th className="totalCol">{seconds2hrmin(totalCMPActualSum)}</th>
                     <th className="totalCol"></th>
                     <th className="totalCol"></th>
                     <th className="totalCol"></th>
@@ -382,7 +435,16 @@ const ProjectOverview = () => {
                     const taskCount = projectDetail.task_count || 0;
                     const planned = projectDetail.planned || 0;
                     const actual = projectDetail.actual || 0;
-                   
+                    const YTSnos = projectDetail.YTSnos || 0;
+                    const YTSplanned = projectDetail.YTSplanned || 0;
+                    const WIPnos = projectDetail.WIPnos || 0;
+                    const WIPplanned = projectDetail.WIPplanned || 0;
+                    const WIPactual = projectDetail.WIPactual || 0;
+                    const CMPnos = projectDetail.CMPnos || 0;
+                    const CMPplanned  = projectDetail.CMPplanned || 0;
+                    const CMPactual  = projectDetail.CMPactual || 0;
+
+
                     return (
                       <tr key={index}>
                         <td
@@ -419,20 +481,45 @@ const ProjectOverview = () => {
                           <br />
                           {project.ProjectName}
                         </td>
-
-                        {taskCount !== 0 ? (
+                        
+                        {taskCount > 0 ? (
                           <>
                             <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#dda5e7'}}>{taskCount}</td>
                             <td style={{padding:'0', textAlign:'center',verticalAlign:'middle' ,background:'#858796'}}>{seconds2hrmin(planned)}</td>
                             <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#c6e6eb'}}>{seconds2hrmin(actual)}</td>
                            
-                          <td
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#dda5e7'}}>{YTSnos}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#858796'}}>{seconds2hrmin(YTSplanned)}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#dda5e7'}}>{WIPnos}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#858796'}}>{seconds2hrmin(WIPplanned)}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#c6e6eb'}}>{seconds2hrmin(WIPactual)}</td>
+                            
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#dda5e7'}}>{(CMPnos)}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#858796'}}>{seconds2hrmin(CMPplanned)}</td>
+                            <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#c6e6eb'}}>{seconds2hrmin(CMPactual)}</td>
+
+
+                            <td>1</td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td>3</td>
+                            <td>4</td>
+                            <td>4</td>
+                            <td>5</td>
+                            <td>5</td>
+                            <td>6</td>
+                            <td>6</td>
+                            <td>7</td>
+                            <td>7</td>
+                            {/* <td
                               className="text-center addtask"
                               style={{ fontSize: "13.44px", verticalAlign: "middle" }}
-                              colSpan="17"
+                              colSpan="15"
                             >
                               test
-                            </td>
+                            </td> */}
                           </>
                         ) : (
                           <td
