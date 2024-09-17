@@ -148,25 +148,6 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
 
         return (
           <td key={i} style={{ padding: '0', fontSize: '15px', width: `${100 / dates.length}%`,minWidth: '80px', }}>
-            {showSkeleton && (
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                color: 'white',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 10,
-                fontSize: '20px',
-                fontWeight: '700'
-              }}>
-                Loading...
-              </div>
-            )}
             <div title='Create New Task'
               style={{ cursor: 'pointer', paddingTop: '0.2rem', width: '100%', display: 'block', backgroundColor: 'gray', color: 'white', border: 'none', textAlign: 'center', height: '2rem', verticalAlign: 'middle' }}
               onClick={handleOpenAddTaskDialog}>
