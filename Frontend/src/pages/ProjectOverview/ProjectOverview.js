@@ -21,6 +21,7 @@ const ProjectOverview = () => {
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const [dates, setDates] = useState([]);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [startDateIndex, setStartDateIndex] = useState(0);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,6 +119,12 @@ const ProjectOverview = () => {
 };
 
 
+const handleOpenSettingsDialog = () => {
+  setSettingsDialogOpen(true);
+};
+const handleCloseSettingsDialog = () => {
+  setSettingsDialogOpen(false);
+};
 
   const fetchProjects = async () => {
     try {
@@ -295,6 +302,9 @@ const ProjectOverview = () => {
           onPreviousDayClick={handlePreviousDayClick}
           onNextDayClick={handleNextDayClick}
           dates={dates}
+          settingsDialogOpen={settingsDialogOpen} 
+          onSettingsClose={handleCloseSettingsDialog} 
+          onOpenSettingsDialog={handleOpenSettingsDialog}
         />
       )}
       <div className="container-fluid p-0" style={{ marginTop: "2.5rem" }}>
