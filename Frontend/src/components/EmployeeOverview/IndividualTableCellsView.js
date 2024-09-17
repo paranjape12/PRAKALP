@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import AggregateTaskDetailsView from './AggregateTaskDetailsView';
 import IndividualTaskDetailsView from './IndividualTaskDetailsView';
+import { Buffer } from 'buffer';
 import EditProjectPopup from '../TaskOverview/EditProjectPopup';
 import DeleteProjectPopup from '../TaskOverview/DeleteProjectPopup';
 import { CircularProgress } from '@mui/material';
@@ -23,9 +24,18 @@ const getBackgroundColor = (proj_status) => {
     }
 };
 
+function decryptToken(token) {
+    const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+    const userData = JSON.parse(decodedToken)[0];
+    return userData;
+}
+
+const token = localStorage.getItem('token');
+const userData = decryptToken(token);
+
 function GradientCircularProgress() {
     return (
-        <td colSpan={9} style={{ padding: '0.4rem 40rem', minWidth:'auto' }}>
+        <td colSpan={9} style={{ padding: '0.4rem 40rem', minWidth: 'auto' }}>
             <svg width={0} height={0}>
                 <defs>
                     <linearGradient id="my_gradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -187,9 +197,11 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
                                             />
                                         )}
                                         [{project.projectSalesOrder}]
-                                        <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
-                                            <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
-                                        </a>
+                                        {userData.Type !== "Employee" && (
+                                            <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
+                                                <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
+                                            </a>
+                                        )}
                                         <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.projectId} name={project.projectName} value={project.proj_status} onClick={() => handleOpenEditProjectDialog(project)}>
                                             <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
                                         </a>
