@@ -34,6 +34,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
   const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
   const [taskDetails, setTaskDetails] = useState(null);
   const [taskCompleteOpen, setTaskCompleteOpen] = useState(false);
+  const [timingId, setTimingId] = useState(null);  
   const [nickname, setNickname] = useState('');
   const [taskTimings, setTaskTimings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -138,10 +139,13 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
     setDeleteTaskDialogOpen(false);
   };
 
-  const handleOpenTaskCompleteDialog = (time) => {
+  const handleOpenTaskCompleteDialog = (time, timingId) => {
     setTaskCompletionTime(time);
+    setTimingId(timingId);  
     setTaskCompleteOpen(true);
   };
+  
+  
 
   const handleCloseTaskCompleteDialog = () => {
     setTaskCompleteOpen(false);
@@ -192,6 +196,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
               task={task}
               handleClose={handleCloseTaskCompleteDialog}
               completionTime={taskCompletionTime}  // Pass the task completion time as a prop
+              timingId={timingId}
             />
           )}
 
@@ -264,7 +269,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
                     {!loading && (
                       taskTimings[i]?.map(timing => (
                         timing.taskid === task.taskId ? (
-                          <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual)} style={{ cursor: 'pointer' }}>
+                          <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual, timing.id)} style={{ cursor: 'pointer' }}>
                             <span style={{ color: '#1cc88a' }}>
                               {timing.nickname}
                             </span> : <span style={{ color: 'inherit', cursor:'default'}}>

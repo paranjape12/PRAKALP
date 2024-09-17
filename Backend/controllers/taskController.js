@@ -285,7 +285,7 @@ exports.indViewPATimes = (req, res) => {
     }
 
     const sqlGetSums = `
-      SELECT taskid, AssignedTo_emp as empid, timetocomplete_emp AS planned,
+      SELECT id, DATE(tasktimeemp), taskid, AssignedTo_emp as empid, timetocomplete_emp AS planned,
              actualtimetocomplete_emp AS actual
       FROM Taskemp
       WHERE DATE(tasktimeemp) IN (?)
