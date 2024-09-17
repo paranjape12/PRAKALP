@@ -24,34 +24,23 @@ function EmployeeOverview() {
       navigate("/");
     }
   }, [navigate]);
+  const [showComplete, setShowComplete] = useState(() => {
+    const storedValue = localStorage.getItem("showEmpCompletedTasks");
+    return JSON.parse(storedValue) || false; // Ensure a default value
+  });
 
-  const getBackgroundColor = (proj_status) => {
-    switch (proj_status) {
-      case 1:
-        return "#ADD8E6";
-      case 2:
-        return "#ffff00ad";
-      case 3:
-        return "#ff8d00b8";
-      case 4:
-        return "#04ff00b8";
-      default:
-        return "#FFFFFF";
-    }
-  };
+  
 
-  const seconds2dayhrmin = (ss) => {
-    const s = ss % 60;
-    const h = Math.floor((ss % 28800) / 3600); // 8 hours = 28,800 seconds
-    const d = Math.floor((ss % 230400) / 28800); // 8 hours * 30 days = 230,400 seconds
-    const m = Math.floor((ss % 3600) / 60);
-
-    const formattedH = h < 10 ? "0" + h : h;
-    const formattedM = m < 10 ? "0" + m : m;
-    const formattedD = d < 10 ? "0" + d : d;
-
-    return ` ${formattedD} : ${formattedH} : ${formattedM} `;
-  };
+  const [showExpand, setShowExpand] = useState({});
+  const [projects, setProjects] = useState([]);
+  const [showTimeDetails, setShowTimeDetails] = useState(true);
+  const [projectTimeDetails, setProjectTimeDetails] = useState({});
+  const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
+  const [logsPopupOpen, setLogsPopupOpen] = useState(false);
+  const [deleteEmployeeOpen, setDeleteEmployeeOpen] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null); // Add state to track the selected employee ID for deletion
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false); // Manage dialog open/close
+  const [settingsValue, setSettingsValue] = useState(""); // Store settings (Yes/No)
 
   // Navbar
 
@@ -135,64 +124,35 @@ function EmployeeOverview() {
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [employees, setEmployees] = useState([]);
 
-  // useEffect(() => {
-  //   // Fetch employees
-  //   axios
-  //     .post("http://localhost:3001/api/allEmployeeOverview", {
-  //       token: localStorage.getItem("token"),
-  //     })
-  //     .then((response) => {
-  //       if (Array.isArray(response.data)) {
-  //         setEmployees(response.data);
-  //       } else {
-  //         console.error("Error: Expected an array but got", response.data);
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching employees:", error);
-  //     });
-  // }, []);
 
   useEffect(() => {
-    // Fetch employees
-    axios
-      .post("http://localhost:3001/api/empDropdown", {
-        token: localStorage.getItem("token"),
-      })
-      .then((response) => {
+    const fetchEmployees = async () => {
+      try {
+        const apiUrl = settingsValue === "yes"
+          ? "http://localhost:3001/api/allEmployeeOverview"
+          : "http://localhost:3001/api/empDropdown";
+        
+        const response = await axios.post(apiUrl, {
+          token: localStorage.getItem("token"),
+        });
+        
         if (Array.isArray(response.data)) {
           setEmployees(response.data);
         } else {
           console.error("Error: Expected an array but got", response.data);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching employees:", error);
-      });
-  }, []);
+      }
+    };
+
+    fetchEmployees();
+  }, [settingsValue, showComplete]);
+  
+  
+  
 
   
-  const [showComplete, setShowComplete] = useState(() => {
-    const storedValue = localStorage.getItem("showEmpCompletedTasks");
-    return JSON.parse(storedValue);
-  });
-
-  const [showTimeComplete, setShowTimeComplete] = useState(true);
-  const [showExpand, setShowExpand] = useState({});
-  const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [projects, setProjects] = useState([]);
-  const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState(null);
-  const [projectName, setProjectName] = useState(null);
-  const [showTimeDetails, setShowTimeDetails] = useState(true);
-  const [projectTimeDetails, setProjectTimeDetails] = useState({});
-  const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
-  const [logsPopupOpen, setLogsPopupOpen] = useState(false);
-  const [deleteEmployeeOpen, setDeleteEmployeeOpen] = useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null); // Add state to track the selected employee ID for deletion
-  const [userRole, setUserRole] = useState('');
-
 
   useEffect(() => {
     const initialProjectTimeDetails = {};
@@ -247,7 +207,7 @@ function EmployeeOverview() {
     return () => clearInterval(intervalId);
   }, []);
 
-  // hrishi
+  
   const handleOpenEditEmployeeDialog = () => {
     setEditEmployeeOpen(true);
   };
@@ -286,22 +246,6 @@ function EmployeeOverview() {
         .catch((error) => {
           console.error("Error fetching employees:", error);
         });
-     
-  
-
-    // axios.post("http://localhost:3001/api/allEmployeeOverview", {
-    //   token: localStorage.getItem("token"),
-    // })
-    // .then(response => {
-    //   if (Array.isArray(response.data)) {
-    //     setEmployees(response.data);
-    //   } else {
-    //     console.error("Error: Expected an array but got", response.data);
-    //   }
-    // })
-    // .catch(error => {
-    //   console.error("Error fetching employees:", error);
-    // });
   };
 
   const handleOpenDeleteEmployeeDialog = (employeeId) => {
@@ -314,6 +258,22 @@ function EmployeeOverview() {
     setDeleteEmployeeOpen(false);
   };
 
+  //Setting filter Yes/No
+  // Handler to open/close the SettingsDialog
+  const handleOpenSettingsDialog = () => {
+    setSettingsDialogOpen(true);
+  };
+  const handleCloseSettingsDialog = () => {
+    setSettingsDialogOpen(false);
+  };
+
+   // Handler to get settings from SettingsDialog (onApply)
+   const handleSettingsApply = (value) => {
+    setSettingsValue(value); // Save the Yes/No value
+    console.log(settingsValue);
+    setSettingsDialogOpen(false); // Close the dialog after applying settings
+  };
+
   return (
     <>
       {dates.length > 0 && (
@@ -322,6 +282,10 @@ function EmployeeOverview() {
           onPreviousDayClick={handlePreviousDayClick}
           onNextDayClick={handleNextDayClick}
           dates={dates}
+          settingsDialogOpen={settingsDialogOpen} // Pass open state to Navbar
+          onSettingsApply={handleSettingsApply} // Pass apply handler to Navbar
+          onSettingsClose={handleCloseSettingsDialog} // Pass close handler to Navbar
+          onOpenSettingsDialog={handleOpenSettingsDialog} // Pass open handler to Navbar
         />
       )}
       <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed'  }}>
@@ -454,7 +418,7 @@ function EmployeeOverview() {
         />
       )}
 
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 }

@@ -12,7 +12,7 @@ import SettingsDialog from '../Navbar/Dropdown/Settings/SettingsDialog';
 import AddEmployee from '../Navbar/Dropdown/Manage Employee/AddEmployee';
 
 
-function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
+function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settingsDialogOpen,onOpenSettingsDialog,onSettingsClose,onSettingsApply }) {
   const [activeButton, setActiveButton] = useState(null);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showMenuDropdown, setShowMenuDropdown] = useState(false);
@@ -21,10 +21,8 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
   const [assignTaskDialogOpen, setAssignTaskDialogOpen] = useState(false);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
-  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [addEmployeeDialogOpen ,setAddEmployeeDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);  //add-emp3
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -76,12 +74,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
     setAssignTaskDialogOpen(false);
   };
 
-  const handleOpenSettingsDialog = () => {
-    setSettingsDialogOpen(true);
-  };
-  const handleCloseSettingsDialog = () => {
-    setSettingsDialogOpen(false);
-  };
+  
 
   const handleMenuButtonClick = () => {
     setShowMenuDropdown(!showMenuDropdown);
@@ -163,7 +156,6 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
           ) : (
             <div className="placeholder-class"></div>
           )}
-
           <div className='dropdown'>
             <button className={activeButton === 'menu' ? 'home_bg active' : 'home_bg'} onClick={() => { handleMenuButtonClick('menu'); }}>
               <FontAwesomeIcon icon={faBars} style={{ fontSize: '1.6rem' }} color='white' />
@@ -243,7 +235,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
                     <div>
                  <button 
                    className="dropdown-item d-flex align-items-center"
-                   onClick={handleOpenSettingsDialog}
+                   onClick={onOpenSettingsDialog}
                    title="Add Project"
                   >
                   <div className="mr-3">
@@ -255,7 +247,9 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates }) {
                        Setting
                 </div>
                </button>
-               <SettingsDialog open={settingsDialogOpen} onClose={handleCloseSettingsDialog} />          
+               <SettingsDialog open={settingsDialogOpen} onClose={onSettingsClose}
+                onApply={onSettingsApply}  // Pass apply handler to SettingsDialog
+                 />          
                </div>
               </div>
             )}

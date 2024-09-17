@@ -5,21 +5,22 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 
-const SettingsDialog = ({ open, onClose }) => {
+const SettingsDialog = ({ open, onClose,onApply  }) => {
     const [activeLink, setActiveLink] = useState('pv');
     const [checkedValues, setCheckedValues] = useState([0, 1, 2, 3, 4]);
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
-    const [showAllEmployees, setShowAllEmployees] = useState(false); // New state for YES/NO checkbox
-    const [employees, setEmployees] = useState([]);
+    
 
     useEffect(() => {
         if (open) {
             const savedFilter = JSON.parse(localStorage.getItem('filterState')) || { pv: [0, 1, 2, 3, 4] };
             setCheckedValues(savedFilter[activeLink] || []);
+    
+            
         }
     }, [open, activeLink]);
-
+    
     const handleClose = () => {
         onClose();
     };
@@ -27,6 +28,7 @@ const SettingsDialog = ({ open, onClose }) => {
     const handleClick = (id) => {
         setActiveLink(id);
     };
+
     const handleCheckboxChange = (value) => {
         const index = checkedValues.indexOf(value);
         if (index === -1) {
@@ -49,101 +51,41 @@ const SettingsDialog = ({ open, onClose }) => {
         axios.post('http://localhost:3001/api/updateProjectSorting', data)
             .then(response => {
                 if (response.data.message === 'Success') {
-                    // Save the filter state locally
                     const filterState = JSON.parse(localStorage.getItem('filterState')) || {};
                     filterState[activeLink] = checkedValues;
                     localStorage.setItem('filterState', JSON.stringify(filterState));
                     setTimeout(() => setSuccessMessage('Projects sorted successfully !'), 1700);
                     setTimeout(onClose, 2500);
                 }
-
             })
             .catch(error => {
                 console.error('Error updating project sorting:', error);
-                setErrorMessage('Error in updating project sorting.')
+                setErrorMessage('Error in updating project sorting.');
             });
     };
 
-    setTimeout(() => {
-        setErrorMessage('');
-        setSuccessMessage('');
-    }, 3000);
-
-    const handleEmployeeCheckboxChange = () => {
-        setShowAllEmployees(true);  // Handle YES option
-    };
-    
-    const handleEmployeeCheckboxChangeNo = () => {
-        setShowAllEmployees(false);  // Handle NO option
-    };
-
+    // Reset success/error messages after 3 seconds
     useEffect(() => {
-        // Fetch employees based on the showAllEmployees state
-        if (showAllEmployees) {
-            axios.post("http://localhost:3001/api/allEmployeeOverview", {
-                token: localStorage.getItem("token"),
-            })
-                .then(response => {
-                    if (Array.isArray(response.data)) {
-                        setEmployees(response.data);
-                    } else {
-                        console.error("Error: Expected an array but got", response.data);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error fetching employees:", error);
-                });
-        } else {
-            fetchEmployees();
-        }
-    }, [showAllEmployees]);
+        const timer = setTimeout(() => {
+            setErrorMessage('');
+            setSuccessMessage('');
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, [errorMessage, successMessage]);
 
-    const fetchEmployees = async () => {
-        try {
-            const response = await axios.post('http://localhost:3001/api/empDropdown', {
-                token: localStorage.getItem('token'),
-            });
-            setEmployees(response.data);
-        } catch (error) {
-            console.error('Error fetching employees:', error);
-        }
+ 
+    
+    const [selectedValue, setSelectedValue] = useState('no'); // Default value
+
+    if (!open) return null; // Don't render the dialog if it's not open
+  
+    const handleRadioChange = (event) => {
+      setSelectedValue(event.target.value); // Update selected value on radio button change
     };
-    
-    const handleSaveYesNO = () => {
-        const token = localStorage.getItem("token");
-    
-        if (showAllEmployees == true) {
-            console.log("allEmployeeOverview API");
-            
-            // Call the API to show all employees
-            axios.post("http://localhost:3001/api/allEmployeeOverview", { token })
-                .then(response => {
-                    if (Array.isArray(response.data)) {
-                        setEmployees(response.data);
-                    } else {
-                        console.error("Error: Expected an array but got", response.data);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error fetching all employees:", error);
-                });
-        } else {
-            console.log("empDropdown API");
-            // Call the API to show a subset of employees
-            axios.post("http://localhost:3001/api/empDropdown", { token })
-                .then(response => {
-                    if (Array.isArray(response.data)) {
-                        setEmployees(response.data);
-                    } else {
-                        console.error("Error: Expected an array but got", response.data);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error fetching specific employees:", error);
-                });
-        }
+  
+    const handleApplyClick = () => {
+      onApply(selectedValue); // Call the onApply handler with the selected value
     };
-    
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
@@ -251,15 +193,15 @@ const SettingsDialog = ({ open, onClose }) => {
                                         <div className="card-body">
                                             <div className="input-group flex-nowrap mb-2">
                                                 <div className="form-check m-1">
-                                                    <input className="form-check-input mt-2 projschekck_setting" type="radio" name="employeeShowAll" value="yes" id="employeeShowAllYes" onChange={handleEmployeeCheckboxChange} />
+                                                    <input className="form-check-input mt-2 projschekck_setting" type="radio" name="employeeShowAll" value="yes" id="employeeShowAllYes" onChange={handleRadioChange}  checked={selectedValue === 'yes'} />
                                                     <label className="rounded-pill form-check-label p-1" htmlFor="employeeShowAllYes">YES</label>
                                                 </div>
                                                 <div className="form-check m-1">
-                                                    <input className="form-check-input mt-2 projschekck_setting" type="radio" name="employeeShowAll" value="no" id="employeeShowAllNo" onChange={handleEmployeeCheckboxChangeNo} defaultChecked/>
+                                                    <input className="form-check-input mt-2 projschekck_setting" type="radio" name="employeeShowAll" value="no" id="employeeShowAllNo"  onChange={handleRadioChange} checked={selectedValue === 'no'} defaultChecked/>
                                                     <label className="rounded-pill form-check-label p-1" htmlFor="employeeShowAllNo">NO</label>
                                                 </div>
                                             </div>
-                                            <a id="pagesort" onClick={handleSaveYesNO} className="btn btn-success">Apply</a>
+                                            <a id="pagesort" onClick={handleApplyClick} className="btn btn-success">Apply</a>
                                         </div>
                                     </div>
                                 </div>
