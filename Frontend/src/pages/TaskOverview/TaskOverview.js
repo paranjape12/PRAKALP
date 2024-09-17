@@ -83,6 +83,10 @@ function TaskOverview() {
   const [loading, setLoading] = useState(true);
   const [showMask, setShowMask] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false); // Manage dialog open/close
+
+
+
   useEffect(() => {
 
     fetchProjects();
@@ -225,15 +229,7 @@ function TaskOverview() {
     return () => clearInterval(intervalId);
   }, []);
 
-  function getTaskStatusColor(requiredTime, takenTime) {
-    if (requiredTime < takenTime) {
-      return 'bg-danger border border-danger';
-    } else if (takenTime === 0) {
-      return 'bg-warning border border-warning';
-    } else {
-      return 'bg-success border border-success';
-    }
-  }
+  
 
   const handleOpenEditProjectDialog = (project) => {
     setSelectedProject({
@@ -348,6 +344,18 @@ function TaskOverview() {
     updateTableWidth();
   }, [projects, dates, expandedProjects]);
 
+
+
+   // Handler to open/close the SettingsDialog
+   const handleOpenSettingsDialog = () => {
+    setSettingsDialogOpen(true);
+  };
+  const handleCloseSettingsDialog = () => {
+    setSettingsDialogOpen(false);
+  };
+
+
+
   return (
     <div>
       {loading ? (
@@ -377,6 +385,9 @@ function TaskOverview() {
               onPreviousDayClick={handlePreviousDayClick}
               onNextDayClick={handleNextDayClick}
               dates={dates}
+              settingsDialogOpen={settingsDialogOpen} // Pass open state to Navbar
+              onSettingsClose={handleCloseSettingsDialog} // Pass close handler to Navbar
+              onOpenSettingsDialog={handleOpenSettingsDialog} // Pass open handler to Navbar
             />
           )}
           <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed' }}>
