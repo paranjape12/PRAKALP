@@ -8,6 +8,7 @@ import AddTaskModal from '../../components/Navbar/Dropdown/Add Task/AddTask';
 import AggregateTaskView from '../../components/TaskOverview/AggregateTaskView';
 import IndividualTaskView from '../../components/TaskOverview/IndividualTaskView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Buffer } from 'buffer';
 import axios from 'axios';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -229,7 +230,7 @@ function TaskOverview() {
     return () => clearInterval(intervalId);
   }, []);
 
-  
+
 
   const handleOpenEditProjectDialog = (project) => {
     setSelectedProject({
@@ -295,7 +296,7 @@ function TaskOverview() {
         justifyContent: 'center',
         alignItems: 'center',
         color: 'white',
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         zIndex: 10,
         fontSize: '1.5rem',
         fontWeight: '700'
@@ -345,9 +346,17 @@ function TaskOverview() {
   }, [projects, dates, expandedProjects]);
 
 
+  function decryptToken(token) {
+    const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+    const userData = JSON.parse(decodedToken)[0];
+    return userData;
+  }
 
-   // Handler to open/close the SettingsDialog
-   const handleOpenSettingsDialog = () => {
+  const token = localStorage.getItem('token');
+  const userData = decryptToken(token);
+
+  // Handler to open/close the SettingsDialog
+  const handleOpenSettingsDialog = () => {
     setSettingsDialogOpen(true);
   };
   const handleCloseSettingsDialog = () => {
@@ -442,9 +451,11 @@ function TaskOverview() {
                       />
                     )}
                     [{project.projectSalesOrder}]
+                    {userData.Type !== "Employee" && (
                     <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
                       <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
                     </a>
+                    )}
                     <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.projectId} name={project.projectName} value={project.proj_status} onClick={() => handleOpenEditProjectDialog(project)}>
                       <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
                     </a>
