@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, Button } from '@mui/material';
 import './SettingsDialog.css';
+import { Buffer } from 'buffer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
@@ -11,6 +12,15 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     
+    function decryptToken(token) {
+        const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+        const userData = JSON.parse(decodedToken)[0];
+        return userData;
+      }
+    
+      const token = localStorage.getItem('token');
+      const userData = decryptToken(token);
+
 
     useEffect(() => {
         if (open) {
@@ -87,6 +97,7 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
       onApply(selectedValue); // Call the onApply handler with the selected value
     };
 
+    
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
             <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>Setting
@@ -186,6 +197,7 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
                                             <a id="pagesort" onClick={handleSave} className="btn btn-success">Apply</a>
                                         </div>
                                     </div>
+                                    {userData.Type !== "Employee" && (
                                     <div className="card border border-warning mb-1">
                                         <div className="card-header p-2">
                                             <h6 className="text-myback font-weight-bold m-1">Show Disable Employee</h6>
@@ -204,6 +216,7 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
                                             <a id="pagesort" onClick={handleApplyClick} className="btn btn-success">Apply</a>
                                         </div>
                                     </div>
+                                    )}
                                 </div>
                                 {/* Content for Overview - Project */}
                                 <div id="pv2" className={`col-lg-12 pc p-1 ${activeLink === 'pv2' ? '' : 'd-none'}`} style={{ maxHeight: '30rem', overflow: 'auto' }}>
