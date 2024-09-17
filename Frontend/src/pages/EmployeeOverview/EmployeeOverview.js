@@ -270,7 +270,7 @@ function EmployeeOverview() {
    // Handler to get settings from SettingsDialog (onApply)
    const handleSettingsApply = (value) => {
     setSettingsValue(value); // Save the Yes/No value
-    console.log(settingsValue);
+    // console.log(settingsValue);
     setSettingsDialogOpen(false); // Close the dialog after applying settings
   };
 
