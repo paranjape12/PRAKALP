@@ -13,6 +13,7 @@ import { MenuItem } from '@material-ui/core';
 import EditEmployee1 from '../../components/EmployeeOverview/EditEmployee1';
 import LogsPopup from '../../components/EmployeeOverview/LogsPopup';
 import DeleteEmployeePopup from '../../components/EmployeeOverview/DeleteEmployeePopup';
+import EnableEmployee from '../../components/EmployeeOverview/EnableEmployee';
 import { useNavigate } from 'react-router-dom';
 
 function EmployeeOverview() {
@@ -38,6 +39,7 @@ function EmployeeOverview() {
   const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
   const [logsPopupOpen, setLogsPopupOpen] = useState(false);
   const [deleteEmployeeOpen, setDeleteEmployeeOpen] = useState(false);
+  const [enableEmployeeOpen, setEnableEmployeeOpen] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null); // Add state to track the selected employee ID for deletion
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false); // Manage dialog open/close
   const [settingsValue, setSettingsValue] = useState(""); // Store settings (Yes/No)
@@ -248,6 +250,8 @@ function EmployeeOverview() {
         });
   };
 
+  
+// Delete employee popup
   const handleOpenDeleteEmployeeDialog = (employeeId) => {
     setSelectedEmployeeId(employeeId);
     setDeleteEmployeeOpen(true);
@@ -257,6 +261,61 @@ function EmployeeOverview() {
     setSelectedEmployeeId(null);
     setDeleteEmployeeOpen(false);
   };
+
+
+  // Define the callback function to handle successfully deletion
+  // const handleEmployeeEnable = () => {
+  //   // Fetch updated employees list
+  //           // Fetch employees
+  //           axios
+  //           .post("http://localhost:3001/api/empDropdown", {
+  //             token: localStorage.getItem("token"),
+  //           })
+  //           .then((response) => {
+  //             if (Array.isArray(response.data)) {
+  //               setEmployees(response.data);
+  //             } else {
+  //               console.error("Error: Expected an array but got", response.data);
+  //             }
+  //           })
+  //           .catch((error) => {
+  //             console.error("Error fetching employees:", error);
+  //           });
+  //         }
+
+
+
+
+  const handleEmployeeEnable = () => {
+    // Fetch updated employees list after enabling the employee
+    axios
+      .post('http://localhost:3001/api/empDropdown', {
+        token: localStorage.getItem('token'),
+      })
+      .then((response) => {
+        if (Array.isArray(response.data)) {
+          setEmployees(response.data);
+        } else {
+          console.error('Error: Expected an array but got', response.data);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching employees:', error);
+      });
+  };
+  
+
+  // Enable employee popup
+  const handleOpenEnableEmployeeDialog = (employeeId) => {
+    setSelectedEmployeeId(employeeId);  // Set the employee ID to enable
+    setEnableEmployeeOpen(true);        // Open the dialog
+  };
+  
+  const handleCloseEnableEmployeeDialog = () => {
+    setSelectedEmployeeId(null);        // Reset employee ID
+    setEnableEmployeeOpen(false);       // Close the dialog
+  };
+  
 
   //Setting filter Yes/No
   // Handler to open/close the SettingsDialog
@@ -348,12 +407,8 @@ function EmployeeOverview() {
                         className="font-weight-bold"
                          src={Disableemp}
                          style={{ float: 'right', cursor: 'pointer', width:'18px', marginRight:'0.4rem' }}
+                         onClick={() => handleOpenEnableEmployeeDialog(employee.id)}
                        />
-                      //  <FontAwesomeIcon
-                      //     icon={faD} 
-                      //     className="font-weight-bold" 
-                      //     style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem',color: "#cc1e1e" }}
-                      //   />
                       ) : (
                         <FontAwesomeIcon
                           icon={faTrashAlt}
@@ -417,6 +472,15 @@ function EmployeeOverview() {
 
         />
       )}
+        {enableEmployeeOpen && (
+          <EnableEmployee
+            openEnableEmp={enableEmployeeOpen}
+            CloseEnableEmp={handleCloseEnableEmployeeDialog} // Fixed prop name
+            selectedEmployeeId={selectedEmployeeId}
+            onEmployeeEnabled={handleEmployeeEnable} // Callback for updating employee list after enabling
+          />
+        )}
+
 
       <Footer />
     </>
