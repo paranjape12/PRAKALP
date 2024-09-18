@@ -5,6 +5,7 @@ import { Buffer } from 'buffer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const SettingsDialog = ({ open, onClose,onApply  }) => {
     const [activeLink, setActiveLink] = useState('pv');
@@ -49,8 +50,8 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
     };
 
     const handleSave = () => {
-        setSuccessMessage('');
-        setErrorMessage('');
+        // setSuccessMessage('');
+        // setErrorMessage('');
         const token = localStorage.getItem('token');
         const data = {
             token: token,
@@ -64,27 +65,16 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
                     const filterState = JSON.parse(localStorage.getItem('filterState')) || {};
                     filterState[activeLink] = checkedValues;
                     localStorage.setItem('filterState', JSON.stringify(filterState));
-                    setTimeout(() => setSuccessMessage('Projects sorted successfully !'), 1700);
+                    setTimeout(() => toast.success('Projects sorted successfully !'), 1700);
                     setTimeout(onClose, 2500);
                 }
             })
             .catch(error => {
                 console.error('Error updating project sorting:', error);
-                setErrorMessage('Error in updating project sorting.');
+                toast.error('Error in updating project sorting.');
             });
     };
-
-    // Reset success/error messages after 3 seconds
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setErrorMessage('');
-            setSuccessMessage('');
-        }, 3000);
-        return () => clearTimeout(timer);
-    }, [errorMessage, successMessage]);
-
  
-    
     const [selectedValue, setSelectedValue] = useState('no'); // Default value
 
     if (!open) return null; // Don't render the dialog if it's not open
@@ -259,12 +249,6 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
                                 </div>
 
                             </div>
-                            {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center', fontSize: '16px' }}>{errorMessage}</p>}
-                            {successMessage && (
-                                <div className="text-center">
-                                    <p style={{ color: 'green', marginTop: '0.5rem', fontSize: '16px' }}>{successMessage}</p>
-                                </div>
-                            )}
                         </div>
                     </main>
                 </div>

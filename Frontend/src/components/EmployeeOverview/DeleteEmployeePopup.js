@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { Buffer } from 'buffer';
 import { useNavigate } from 'react-router-dom'; 
-
+import { toast } from 'react-toastify';
 // Decrypt token function
 function decryptToken(token) {
   const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
@@ -15,6 +15,7 @@ function decryptToken(token) {
 
 function DeleteEmployeePopup({ open, handleClose,selectedEmployeeId, onEmployeeDeleted }) {
   const navigate = useNavigate();
+  
   const [userRole, setUserRole] = useState('');
 
   useEffect(() => {
@@ -34,9 +35,9 @@ function DeleteEmployeePopup({ open, handleClose,selectedEmployeeId, onEmployeeD
           const response = await axios.post('http://localhost:3001/api/deleteEmployee', {
               empid: selectedEmployeeId
           });
-
           if (response.status === 200) {
               const data = response.data;
+              toast.success("Employee deleted successfully!");
               if (data.message === 'Success') {
                   console.log("Employee deleted successfully!");
                   if (userRole === 'Employee') {
