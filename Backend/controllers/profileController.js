@@ -537,3 +537,52 @@ exports.deleteEmployee = (req, res) => {
   });
 };
 
+// EnableEmployee
+exports.enableEmployee = (req, res) => {
+  const empid = req.body.empid;
+
+  db.query('SELECT * FROM `logincrd` WHERE `id` = ?', [empid], (error, results) => {
+    if (error) {
+      console.error('Error fetching employee: ' + error);
+      return res.status(500).json({ message: 'Error fetching employee' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    if (results[0].disableemp === 0) {
+      return res.status(400).json({ message: 'Employee is already enabled' });
+    }
+
+    db.beginTransaction(error => {
+      if (error) {
+        console.error('Error starting transaction: ' + error);
+        return res.status(500).json({ message: 'Error starting transaction' });
+      }
+
+      // Update the `disableemp` field to 0 to enable the employee
+      db.query('UPDATE `logincrd` SET `disableemp` = 0 WHERE `id` = ?', [empid], error => {
+        if (error) {
+          return db.rollback(() => {
+            console.error('Error enabling employee: ' + error);
+            res.status(500).json({ message: 'Error enabling employee' });
+          });
+        }
+
+        // Commit the transaction after updating the employee's status
+        db.commit(error => {
+          if (error) {
+            return db.rollback(() => {
+              console.error('Error committing transaction: ' + error);
+              res.status(500).json({ message: 'Error committing transaction' });
+            });
+          }
+
+          res.status(200).json({ message: 'Success, employee enabled' });
+        });
+      });
+    });
+  });
+};
+
