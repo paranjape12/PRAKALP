@@ -108,10 +108,14 @@ exports.getProjectNames = (req, res ) => {
 };
 
 exports.empOverviewPrjIndividual = (req, res) => {
-  const { employeeid } = req.body;
+  const { employeeid, projStates } = req.body;
+  
   if (!employeeid) {
     return res.status(400).send('employeeid is required');
   }
+
+  // projStates should be an array of statuses. If not provided, default to all valid statuses.
+  const validProjStates = projStates && projStates.length > 0 ? projStates : [0, 1, 2, 3, 4];
 
   const query1 = 'SELECT DISTINCT taskid FROM `Taskemp` WHERE AssignedTo_emp = ?';
 
@@ -126,34 +130,33 @@ exports.empOverviewPrjIndividual = (req, res) => {
 
     const placeholders = taskIds.map(() => '?').join(',');  // Create the correct number of placeholders
 
-    // Corrected query2 with dynamically generated placeholders
+    // Updated query2 with dynamic project statuses
     const query2 = `
       SELECT DISTINCT p.ProjectName 
       FROM \`Task\` t
       JOIN \`Projects\` p ON t.projectName = p.ProjectName
       WHERE t.id IN (${placeholders}) 
-      AND p.Status IN (1, 2, 3, 4)
+      AND p.Status IN (${validProjStates.map(() => '?').join(',')})
     `;
 
-    // console.log("Generated Query2: ", query2);  // Log the query to check it's formed correctly
-
-    // Use taskIds for placeholders
-    db.query(query2, taskIds, (err, projects) => {
+    // Use taskIds for placeholders and projStates for project status
+    db.query(query2, [...taskIds, ...validProjStates], (err, projects) => {
       if (err) {
         console.error("Error in Query2: ", err);
         return res.status(500).send(err);
       }
       const projectsCount = projects.length;
 
-      const query3 = `  SELECT t.*, p.ProjectName, p.Status 
+      const query3 = `  
+        SELECT t.*, p.ProjectName, p.Status 
         FROM \`Task\` t
         JOIN \`Projects\` p ON t.projectName = p.ProjectName
         WHERE t.id IN (${placeholders}) 
-        AND p.Status IN (1, 2, 3, 4)
+        AND p.Status IN (${validProjStates.map(() => '?').join(',')})
       `;
       const query4 = `SELECT * FROM \`Task\` WHERE id IN (${placeholders}) AND aproved = '1'`;
 
-      db.query(query3, taskIds, (err, allTasks) => {
+      db.query(query3, [...taskIds, ...validProjStates], (err, allTasks) => {
         if (err) return res.status(500).send(err);
 
         const totalTasks = allTasks.length;
@@ -173,6 +176,7 @@ exports.empOverviewPrjIndividual = (req, res) => {
     });
   });
 };
+
 
 
 

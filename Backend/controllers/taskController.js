@@ -465,7 +465,7 @@ exports.completeTask = (req, res) => {
 //original api 
 
 exports.EmpOverviewtaskDtlsAggView = async (req, res) => {
-  const { empid, iscomplete } = req.body;
+  const { empid, iscomplete, status } = req.body; // 'status' provided by the user
 
   try {
     // Get the distinct task IDs
@@ -477,7 +477,7 @@ exports.EmpOverviewtaskDtlsAggView = async (req, res) => {
 
     const taskIds = taskIdsResult.map(row => row.taskid);
 
-    // Get the distinct project names
+    // Get the distinct project names from Task table based on task IDs
     const projectNamesResult = await query(`SELECT DISTINCT projectName FROM Task WHERE id IN (?)`, [taskIds]);
 
     if (!Array.isArray(projectNamesResult) || projectNamesResult.length === 0) {
@@ -486,23 +486,37 @@ exports.EmpOverviewtaskDtlsAggView = async (req, res) => {
 
     const projectNames = projectNamesResult.map(row => row.projectName);
 
-    // Create the base query
-    let sql = `SELECT * FROM Task WHERE projectName IN (?) AND id IN (?)`;
-    const params = [projectNames, taskIds];
+    // Filter project names based on the 'status' and selected project names
+    const filteredProjectNamesResult = await query(
+      `SELECT ProjectName FROM projects WHERE Status IN (?) AND ProjectName IN (?)`,
+      [status, projectNames]
+    );
+
+    if (!Array.isArray(filteredProjectNamesResult) || filteredProjectNamesResult.length === 0) {
+      return res.status(200).send([]);
+    }
+
+    const filteredProjectNames = filteredProjectNamesResult.map(row => row.ProjectName);
+
+    // Create the base query using the filtered project names
+    let sql = `SELECT COUNT(*) AS taskCount FROM Task WHERE projectName IN (?) AND id IN (?)`;
+    const params = [filteredProjectNames, taskIds];
 
     if (!iscomplete) {
       sql += ` AND aproved = '0'`;
     }
 
-    // Execute the final query
+     // Execute the final query
     const tasksResult = await query(sql, params);
 
-    res.status(200).send(tasksResult);
+    // Only send the task count in the response
+    res.status(200).send({ taskCount: tasksResult[0].taskCount });
   } catch (error) {
     console.error('Error fetching tasks:', error);
     res.status(500).send('Internal server error');
   }
 };
+
 
 function query(sql, params) {
   return new Promise((resolve, reject) => {
