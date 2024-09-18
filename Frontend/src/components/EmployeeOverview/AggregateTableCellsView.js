@@ -39,11 +39,17 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
     };
 
     useEffect(() => {
-        axios.post('http://localhost:3001/api/empOverviewPrjIndividual', { employeeid: empId })
+        // Retrieve filterState from localStorage and extract `ev`
+        const filterState = JSON.parse(localStorage.getItem('filterState'));
+        const projStates = filterState?.ev || [0, 1, 2, 3, 4]; // Default to [0,1,2,3,4] if ev is not found
+
+        axios.post('http://localhost:3001/api/empOverviewPrjIndividual', {
+            employeeid: empId,
+            projStates // Pass projStates as an additional parameter
+        })
             .then(response => {
                 const { projectsCount, totalTasks, approvedTaskCount } = response.data;
                 setProjectsCount(projectsCount);
-                setTotalTasks(totalTasks);
                 setCompletedTasks(approvedTaskCount);
                 setAverageCompletedTasks(totalTasks ? (approvedTaskCount / totalTasks) * 100 : 0);
             })
@@ -52,17 +58,37 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
             });
     }, [empId]);
 
+
     useEffect(() => {
-        axios.post('http://localhost:3001/api/EmpOverviewtaskDtlsAggView', { empid: empId, iscomplete: isComplete })
-            .then(response => {
-                const tasksResult = response.data;
-                const totalTasks = tasksResult.reduce((acc, task) => acc + 1, 0);
-                setTotalTasks(totalTasks);
-            })
-            .catch(error => {
+        // Function to fetch tasks data
+        const fetchTasksData = async () => {
+            try {
+                // Retrieve the filterState from localStorage
+                const filterState = JSON.parse(localStorage.getItem('filterState'));
+
+                // Check if filterState exists and has 'ev' property
+                const status = filterState?.ev || [];
+
+                // Make the API call with the empId, isComplete, and status parameters
+                const response = await axios.post('http://localhost:3001/api/EmpOverviewtaskDtlsAggView', {
+                    empid: empId,
+                    iscomplete: isComplete,
+                    status
+                });
+
+                // Set the total tasks count from the response
+                setTotalTasks(response.data.taskCount);
+            } catch (error) {
                 console.error('There was an error fetching the data!', error);
-            });
-    }, [empId, isComplete]);
+            }
+        };
+
+        // Call the fetch function
+        fetchTasksData();
+
+    }, [empId, isComplete]); // Dependency array, triggers on empId or isComplete changes
+
+
 
     useEffect(() => {
         axios.post('http://localhost:3001/api/emptaskDtlsAggTimes', { empid: empId, iscomplete: isComplete })
@@ -90,7 +116,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
             .then(response => {
 
                 const data = response.data.reduce((acc, { taskDate, planned, actual }) => {
-                    const formattedDate = new Date(taskDate.slice(0, 10)); 
+                    const formattedDate = new Date(taskDate.slice(0, 10));
                     formattedDate.setDate(formattedDate.getDate() + 1);
                     const formattedDateStr = formattedDate.toISOString().slice(0, 10); // Convert back to "YYYY-MM-DD" string
                     acc.planned[formattedDateStr] = planned;
@@ -109,14 +135,14 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
         <>
             {projectsCount > 0 && (
                 <>
-                    <td style={{ fontSize: '13.5px', padding:'0.2rem' }}>
+                    <td style={{ fontSize: '13.5px', padding: '0.2rem' }}>
                         <div>Total Projects Assigned: {projectsCount}</div>
                         <div>Completed Tasks: {completedTasks}</div>
                         <div>Average Completed Tasks: {averageCompletedTasks.toFixed(0)} %</div>
                     </td>
                     <td style={{ display: 'flex', padding: '0', borderStyle: 'none' }}>
-                        <div className="card">
-                            <div className="card-header text-light" style={{ paddingRight: '5.3rem', paddingLeft: '0.3rem', paddingTop:'0', paddingBottom:'0' }}>
+                        <div className="card" style={{ minWidth: '14.3rem'}}>
+                            <div className="card-header text-light" style={{ paddingRight: '5.3rem', paddingLeft: '0.3rem', paddingTop: '0', paddingBottom: '0' }}>
                                 <div style={{ fontSize: '13px' }} className="m-0 font-weight-bold text-left text-dark">
                                     Total Task Assign: {totalTasks}
                                     <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time">
