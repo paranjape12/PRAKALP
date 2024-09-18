@@ -89,8 +89,6 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settin
 
   const handleLogout = () => {
     navigate('/');
-    const keysToRemove = ['token', 'showTimeDetails', 'showEmpCompletedTasks'];
-    keysToRemove.forEach(key => localStorage.removeItem(key));
 };
 
 
