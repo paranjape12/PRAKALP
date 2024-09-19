@@ -134,7 +134,7 @@ exports.empOverviewPrjIndividual = (req, res) => {
     const query2 = `
       SELECT DISTINCT p.ProjectName 
       FROM \`Task\` t
-      JOIN \`Projects\` p ON t.projectName = p.ProjectName
+      JOIN \`projects\` p ON t.projectName = p.ProjectName
       WHERE t.id IN (${placeholders}) 
       AND p.Status IN (${validProjStates.map(() => '?').join(',')})
     `;
@@ -150,7 +150,7 @@ exports.empOverviewPrjIndividual = (req, res) => {
       const query3 = `  
         SELECT t.*, p.ProjectName, p.Status 
         FROM \`Task\` t
-        JOIN \`Projects\` p ON t.projectName = p.ProjectName
+        JOIN \`projects\` p ON t.projectName = p.ProjectName
         WHERE t.id IN (${placeholders}) 
         AND p.Status IN (${validProjStates.map(() => '?').join(',')})
       `;
