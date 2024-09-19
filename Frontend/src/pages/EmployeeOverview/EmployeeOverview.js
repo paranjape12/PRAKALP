@@ -131,8 +131,8 @@ function EmployeeOverview() {
     const fetchEmployees = async () => {
       try {
         const apiUrl = settingsValue === "yes"
-          ? "http://localhost:3001/api/allEmployeeOverview"
-          : "http://localhost:3001/api/empDropdown";
+          ? `${process.env.REACT_APP_API_BASE_URL}/allEmployeeOverview`
+          : `${process.env.REACT_APP_API_BASE_URL}/empDropdown`;
         
         const response = await axios.post(apiUrl, {
           token: localStorage.getItem("token"),
@@ -174,7 +174,7 @@ function EmployeeOverview() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch("http://localhost:3001/api/taskOverview", {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/taskOverview`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -235,7 +235,7 @@ function EmployeeOverview() {
    
       // Fetch employees
       axios
-        .post("http://localhost:3001/api/empDropdown", {
+        .post(`${process.env.REACT_APP_API_BASE_URL}/empDropdown`, {
           token: localStorage.getItem("token"),
         })
         .then((response) => {
@@ -268,7 +268,7 @@ function EmployeeOverview() {
   //   // Fetch updated employees list
   //           // Fetch employees
   //           axios
-  //           .post("http://localhost:3001/api/empDropdown", {
+  //           .post(`${process.env.REACT_APP_API_BASE_URL}/empDropdown", {
   //             token: localStorage.getItem("token"),
   //           })
   //           .then((response) => {
@@ -289,7 +289,7 @@ function EmployeeOverview() {
   const handleEmployeeEnable = () => {
     // Fetch updated employees list after enabling the employee
     axios
-      .post('http://localhost:3001/api/empDropdown', {
+      .post(`${process.env.REACT_APP_API_BASE_URL}/empDropdown`, {
         token: localStorage.getItem('token'),
       })
       .then((response) => {

@@ -33,7 +33,7 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
   const fetchProjectTimeDetails = async (projectName, userId, startDate, userRole, userNickname) => {
     setLoading(true); // Start loading when fetching data
     try {
-      const response = await axios.get('http://localhost:3001/api/empOverviewIndAggPATimes', {
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/empOverviewIndAggPATimes`, {
         params: { projectName, userId, startDate, userRole, userNickname }
       });
 

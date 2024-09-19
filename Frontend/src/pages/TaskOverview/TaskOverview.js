@@ -193,7 +193,7 @@ function TaskOverview() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/taskOverview', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/taskOverview`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -249,7 +249,7 @@ function TaskOverview() {
 
   const handleSaveEditProject = async (updatedProject) => {
     try {
-      const response = await axios.post('http://localhost:3001/api/updateProject', {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/updateProject`, {
         ProjectName: updatedProject.projectName,
         Projectid: updatedProject.projectId,
         projstatus: updatedProject.projectStatus,

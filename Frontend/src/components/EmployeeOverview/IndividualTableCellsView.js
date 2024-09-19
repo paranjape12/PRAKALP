@@ -30,8 +30,8 @@ function decryptToken(token) {
     return userData;
 }
 
-const token = localStorage.getItem('token');
-const userData = decryptToken(token);
+//const token = localStorage.getItem('token');
+const userData = {"Type": "Admin"} //decryptToken(token);
 
 function GradientCircularProgress() {
     return (
@@ -70,7 +70,7 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
             setProjects(cachedProjects[empId]);
         } else {
             try {
-                const response = await axios.get('http://localhost:3001/api/EmpOverviewPlusMinus', {
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/EmpOverviewPlusMinus`, {
                     params: { empid: empId, U_type: empType }
                 });
                 setProjects(response.data);
@@ -100,7 +100,7 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
     const handleSaveEditProject = async (updatedProject) => {
         try {
             const response = await axios.post(
-                "http://localhost:3001/api/updateProject",
+                `${process.env.REACT_APP_API_BASE_URL}/updateProject`,
                 {
                     ProjectName: updatedProject.projectName,
                     Projectid: updatedProject.projectId,

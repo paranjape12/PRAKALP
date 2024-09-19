@@ -67,7 +67,7 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
     }
 
     try {
-      const response = await axios.post('http://localhost:3001/api/createTask', {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/createTask`, {
         ProjectName: selectedProject,
         TaskName: taskName,
         Empname: selectedEmployee,
@@ -99,7 +99,7 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/getProjectNames');
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/getProjectNames`);
       setProjects(response.data);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -109,7 +109,7 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
   //Select Employee api 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.post('http://localhost:3001/api/empDropdown', {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/empDropdown`, {
         token: localStorage.getItem('token'),
       });
       setSelectedEmployee('');

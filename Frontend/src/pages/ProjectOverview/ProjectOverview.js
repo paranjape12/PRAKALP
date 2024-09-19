@@ -129,7 +129,7 @@ const handleCloseSettingsDialog = () => {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3001/api/projectOverview', {
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/projectOverview`, {
         params: { token } // Send token as query parameter
       });
       setProjects(response.data.projects); // Set projects state with the response data
@@ -146,7 +146,7 @@ const handleCloseSettingsDialog = () => {
   const fetchProjectDetails = async (projects) => {
     try {
       const projectNames = projects.map(project => project.ProjectName);
-      const response = await axios.get('http://localhost:3001/api/totalHrs', {
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/totalHrs`, {
         params: {
           employeeId: decryptToken(localStorage.getItem('token')).id,
           projectNames,
@@ -254,7 +254,7 @@ const handleCloseSettingsDialog = () => {
   const handleSaveEditProject = async (updatedProject) => {
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/updateProject",
+        `${process.env.REACT_APP_API_BASE_URL}/updateProject`,
         {
           ProjectName: updatedProject.projectName,
           Projectid: updatedProject.projectId,

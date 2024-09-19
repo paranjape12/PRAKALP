@@ -22,7 +22,7 @@ const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName 
 
   const handleDelete = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/deleteProject', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/deleteProject`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -84,14 +84,14 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId }
     };    
 
     if ((hours === '' && minutes === '') || (hours == 0 && minutes == 0) || hours > 8 || minutes > 59) {
-      setErrorMessage("Please check time format (hr less than 8 and min less than 59)");
+      setErrorMessage("Please cpheck time format (hr less than 8 and min less than 59)");
       return;
     } else if (log === '') {
       setErrorMessage("Please enter log with no special character");
       return;
     } else {
       try {
-        const response = await axios.post('http://localhost:3001/api/completeTask', taskCompleteData);
+        const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/completeTask`, taskCompleteData);
         if (response.data === 'Success') {
           setSuccessMessage('Task timimg changed successfully.')
           setTimeout(handleClose, 2500);

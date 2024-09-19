@@ -59,7 +59,7 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
             projshowval2: activeLink === 'pv2' ? checkedValues.filter(v => v !== 0) : null,
             projshowval_pv: activeLink === 'ev' ? checkedValues : null
         };
-        axios.post('http://localhost:3001/api/updateProjectSorting', data)
+        axios.post(`${process.env.REACT_APP_API_BASE_URL}/updateProjectSorting`, data)
             .then(response => {
                 if (response.data.message === 'Success') {
                     const filterState = JSON.parse(localStorage.getItem('filterState')) || {};

@@ -32,7 +32,7 @@ function EnableEmployee({ openEnableEmp, CloseEnableEmp, selectedEmployeeId, onE
     setError(null);
 
     try {
-      const response = await axios.post('http://localhost:3001/api/enableEmployee', {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/enableEmployee`, {
         empid: selectedEmployeeId,
       });
 

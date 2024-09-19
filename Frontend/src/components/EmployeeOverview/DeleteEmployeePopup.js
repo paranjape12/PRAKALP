@@ -32,7 +32,7 @@ function DeleteEmployeePopup({ open, handleClose,selectedEmployeeId, onEmployeeD
 
   const handleDeleteEmployee = async () => {
       try {
-          const response = await axios.post('http://localhost:3001/api/deleteEmployee', {
+          const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/deleteEmployee`, {
               empid: selectedEmployeeId
           });
           if (response.status === 200) {

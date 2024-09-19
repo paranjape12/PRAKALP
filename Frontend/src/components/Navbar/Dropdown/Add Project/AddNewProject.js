@@ -44,7 +44,7 @@ function AddNewProject({open,onClose}) {
         setErrorMessage("Please enter project name");
     } else {
         try {
-            const response = await axios.post("http://localhost:3001/api/addProject", {
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/addProject`, {
                 ProjectName: projectName,
                 sales_order: projectSalesOrder
             });

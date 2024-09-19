@@ -43,7 +43,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
         const filterState = JSON.parse(localStorage.getItem('filterState'));
         const projStates = filterState?.ev || [0, 1, 2, 3, 4]; // Default to [0,1,2,3,4] if ev is not found
 
-        axios.post('http://localhost:3001/api/empOverviewPrjIndividual', {
+        axios.post(`${process.env.REACT_APP_API_BASE_URL}/empOverviewPrjIndividual`, {
             employeeid: empId,
             projStates // Pass projStates as an additional parameter
         })
@@ -70,7 +70,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
                 const status = filterState?.ev || [];
 
                 // Make the API call with the empId, isComplete, and status parameters
-                const response = await axios.post('http://localhost:3001/api/EmpOverviewtaskDtlsAggView', {
+                const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/EmpOverviewtaskDtlsAggView`, {
                     empid: empId,
                     iscomplete: isComplete,
                     status
@@ -91,7 +91,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
 
 
     useEffect(() => {
-        axios.post('http://localhost:3001/api/emptaskDtlsAggTimes', { empid: empId, iscomplete: isComplete })
+        axios.post(`${process.env.REACT_APP_API_BASE_URL}/emptaskDtlsAggTimes`, { empid: empId, iscomplete: isComplete })
             .then(response => {
                 const { required, taken } = response.data;
                 setProjectTimeDetails(prevDetails => ({ ...prevDetails, required, taken }));
@@ -106,7 +106,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
         const startDate = new Date(dates[0].date).toISOString().slice(0, 10);
         const endDate = new Date(dates[dates.length - 1].date).toISOString().slice(0, 10);
 
-        axios.get('http://localhost:3001/api/empAggtasktimes', {
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/empAggtasktimes`, {
             params: {
                 startDate: startDate,
                 endDate: endDate,

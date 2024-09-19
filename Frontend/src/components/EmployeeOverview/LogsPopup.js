@@ -97,7 +97,7 @@ const LogsPopup = ({ open, handleClose, employee }) => {
   const fetchLogs = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/employeeLogs",
+        `${process.env.REACT_APP_API_BASE_URL}/employeeLogs`,
         {
           employeeId: employee?.id,
           fromDate,

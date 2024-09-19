@@ -59,7 +59,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
       token:localStorage.getItem('token'),
     };
 
-    axios.post('http://localhost:3001/api/assignTask', data)
+    axios.post(`${process.env.REACT_APP_API_BASE_URL}/assignTask`, data)
       .then(response => {
         showMessage(setSuccessMessage, response.data);
         setTimeout(onClose, 1500); // Close after 1500 ms
@@ -84,7 +84,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
   useEffect(() => {
     if (selectedProject) {
       // Fetch tasks based on the selected project
-      axios.get(`http://localhost:3001/api/task?projectName=${selectedProject}`)
+      axios.get(`${process.env.REACT_APP_API_BASE_URL}/task?projectName=${selectedProject}`)
         .then((response) => {
           setTasks(response.data);
         })
@@ -97,7 +97,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
   // API to fetch projects
   const fetchProjects = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/getProjectNames');
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/getProjectNames`);
       setProjects(response.data);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -107,7 +107,7 @@ const AssignTaskDialog = ({ open, onClose }) => {
   // API to fetch employees
   const fetchEmployees = async () => {
     try {
-      const response = await axios.post('http://localhost:3001/api/empDropdown', {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/empDropdown`, {
         token: localStorage.getItem('token'),
       });
       setSelectedEmployeeId('');

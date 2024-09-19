@@ -36,7 +36,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settin
   
   // useEffect(() => {
   //   // Fetch pages
-  //   axios.get('http://localhost:3001/api/pages')
+  //   axios.get(`${process.env.REACT_APP_API_BASE_URL}/pages')
   // .then(response => {
   //   console.log('Pages fetched successfully:', response.data);
   // })
