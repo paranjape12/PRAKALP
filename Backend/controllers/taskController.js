@@ -310,7 +310,7 @@ exports.indViewPATimes = (req, res) => {
       // Get nicknames for each empid
       const sqlGetNicknames = `
         SELECT id, Nickname
-        FROM logincrd
+        FROM Logincrd
         WHERE id IN (?)
       `;
 
@@ -396,9 +396,9 @@ exports.taskInfoDialog = (req, res) => {
     let query = '';
 
     if (userType == 'Employee') {
-      query = `SELECT Taskemp.*, logincrd.Name AS Name FROM Taskemp JOIN logincrd ON Taskemp.AssignedTo_emp = logincrd.id WHERE Taskemp.taskid =${taskId} AND AssignedTo_emp=${userId};`;
+      query = `SELECT Taskemp.*, Logincrd.Name AS Name FROM Taskemp JOIN Logincrd ON Taskemp.AssignedTo_emp = Logincrd.id WHERE Taskemp.taskid =${taskId} AND AssignedTo_emp=${userId};`;
     } else {
-      query = `SELECT Taskemp.*, logincrd.Name AS Name FROM Taskemp JOIN logincrd ON Taskemp.AssignedTo_emp = logincrd.id WHERE Taskemp.taskid =${taskId}`;
+      query = `SELECT Taskemp.*, Logincrd.Name AS Name FROM Taskemp JOIN Logincrd ON Taskemp.AssignedTo_emp = Logincrd.id WHERE Taskemp.taskid =${taskId}`;
     }
 
     db.query(query, (error, results) => {

@@ -263,7 +263,7 @@ exports.addemployee = async (req, res ) => {
   
 
   // SQL query to insert employee data
-  const sql = 'INSERT INTO logincrd SET ?';
+  const sql = 'INSERT INTO Logincrd SET ?';
   db.query(sql, emp, (err, result) => {
     if (err) {
       console.error('Error inserting employee:', err);
@@ -272,7 +272,7 @@ exports.addemployee = async (req, res ) => {
     console.log('New employee inserted');
 
     // Fetch the ID of the latest created employee
-    const fetchLatestId = 'SELECT id FROM logincrd ORDER BY id DESC LIMIT 1';
+    const fetchLatestId = 'SELECT id FROM Logincrd ORDER BY id DESC LIMIT 1';
     db.query(fetchLatestId, (err, result) => {
       if (err) {
         console.error('Error fetching latest employee ID:', err);
@@ -290,7 +290,7 @@ exports.addemployee = async (req, res ) => {
           acesstype: acessval
         };
 
-        const insertEmpAccess = 'INSERT INTO empacess SET ?';
+        const insertEmpAccess = 'INSERT INTO EmpAcess SET ?';
         return new Promise((resolve, reject) => {
           db.query(insertEmpAccess, empAccess, (err, result) => {
             if (err) {
@@ -323,7 +323,7 @@ exports.editEmpAccessData = (req, res ) => {
     return res.status(400).json({ error: 'Empid query parameter is required' });
   }
 
-  const query = 'SELECT * FROM empacess WHERE Empid = ? ORDER BY `id` DESC LIMIT 3';
+  const query = 'SELECT * FROM EmpAcess WHERE Empid = ? ORDER BY `id` DESC LIMIT 3';
   db.query(query, [empId], (err, results) => {
     if (err) {
       console.error('Error executing query:', err);
@@ -417,7 +417,7 @@ exports.updateemployee = (req, res ) => {
 
 //     const placeholders = taskIds.map(() => '?').join(',');
 
-//     db.query('SELECT * FROM `logincrd` WHERE `id` = ?', [empid], (error, results) => {
+//     db.query('SELECT * FROM `Logincrd` WHERE `id` = ?', [empid], (error, results) => {
 //       if (error) {
 //         console.error('Error fetching employee: ' + error);
 //         return res.status(500).json({ message: 'Error fetching employee' });
@@ -433,7 +433,7 @@ exports.updateemployee = (req, res ) => {
 //           return res.status(500).json({ message: 'Error starting transaction' });
 //         }
 
-//         db.query('DELETE FROM `logincrd` WHERE `id` = ?', [empid], error => {
+//         db.query('DELETE FROM `Logincrd` WHERE `id` = ?', [empid], error => {
 //           if (error) {
 //             return db.rollback(() => {
 //               console.error('Error deleting employee: ' + error);
@@ -495,7 +495,7 @@ exports.deleteEmployee = (req, res) => {
 
     const taskIds = result.map(row => row.taskid);
 
-    db.query('SELECT * FROM `logincrd` WHERE `id` = ?', [empid], (error, results) => {
+    db.query('SELECT * FROM `Logincrd` WHERE `id` = ?', [empid], (error, results) => {
       if (error) {
         console.error('Error fetching employee: ' + error);
         return res.status(500).json({ message: 'Error fetching employee' });
@@ -512,7 +512,7 @@ exports.deleteEmployee = (req, res) => {
         }
 
         // Instead of deleting the employee, update the `disableemp` field to 1
-        db.query('UPDATE `logincrd` SET `disableemp` = 1 WHERE `id` = ?', [empid], error => {
+        db.query('UPDATE `Logincrd` SET `disableemp` = 1 WHERE `id` = ?', [empid], error => {
           if (error) {
             return db.rollback(() => {
               console.error('Error disabling employee: ' + error);
@@ -541,7 +541,7 @@ exports.deleteEmployee = (req, res) => {
 exports.enableEmployee = (req, res) => {
   const empid = req.body.empid;
 
-  db.query('SELECT * FROM `logincrd` WHERE `id` = ?', [empid], (error, results) => {
+  db.query('SELECT * FROM `Logincrd` WHERE `id` = ?', [empid], (error, results) => {
     if (error) {
       console.error('Error fetching employee: ' + error);
       return res.status(500).json({ message: 'Error fetching employee' });
@@ -562,7 +562,7 @@ exports.enableEmployee = (req, res) => {
       }
 
       // Update the `disableemp` field to 0 to enable the employee
-      db.query('UPDATE `logincrd` SET `disableemp` = 0 WHERE `id` = ?', [empid], error => {
+      db.query('UPDATE `Logincrd` SET `disableemp` = 0 WHERE `id` = ?', [empid], error => {
         if (error) {
           return db.rollback(() => {
             console.error('Error enabling employee: ' + error);
