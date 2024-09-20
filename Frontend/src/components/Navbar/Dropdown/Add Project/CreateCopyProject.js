@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, InputLabel, Select, FormControl, MenuItem, Checkbox, FormControlLabel } from '@mui/material';
 import './CreateCopyProject.css';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+
 
 function CreateCopyProject({ open, onClose, onBack }) {
   const [projectName, setProjectName] = useState('');
@@ -11,9 +13,7 @@ function CreateCopyProject({ open, onClose, onBack }) {
   const [tasks, setTasks] = useState([]);
   const [checkedTasks, setCheckedTasks] = useState({});
   const [allChecked, setAllChecked] = useState(true);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  
+
   useEffect(() => {
     if (selectedProject) {
       axios.get(`${process.env.REACT_APP_API_BASE_URL}/task?projectName=${selectedProject}`)
@@ -51,10 +51,6 @@ function CreateCopyProject({ open, onClose, onBack }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Clear previous messages
-      setErrorMessage('');
-      setSuccessMessage('');
-
     const taskNames = [];
     const taskValues = [];
 
@@ -65,24 +61,21 @@ function CreateCopyProject({ open, onClose, onBack }) {
       }
     });
    
-      
-     
-     
       // Validation checks
       const firstchar = salesOrder.charAt(0);
     const withSpace = salesOrder.length;
 
     if (salesOrder === '') {
-        setErrorMessage("Please enter project sales order");
+        toast.error("Please enter project sales order");
         return;
     } else if (firstchar !== '2' && firstchar !== "I") {
-        setErrorMessage("Please enter project sales order with first letter must be '2' or 'I'");
+        toast.error("Please enter project sales order with first letter must be '2' or 'I'");
         return;
       } else if (withSpace !== 6) {
-        setErrorMessage("Sales order length must be equal to 6 characters");
+        toast.error("Sales order length must be equal to 6 characters");
         return;
     } else if (projectName === '') {
-        setErrorMessage("Please enter project name");
+        toast.error("Please enter project name");
         return;
     } 
     try {
@@ -94,19 +87,19 @@ function CreateCopyProject({ open, onClose, onBack }) {
       });
 
       if (response.data === 'Project exist') {
-        setErrorMessage('Project already exists');
+        toast.error('Project already exists');
       } else if (response.data === 'Success') {
-        setSuccessMessage('Project created successfully');
+        toast.success('Project created successfully');
         setTimeout(() => {
           onClose();
       }, 1500);
       
       } else {
-        setErrorMessage('Error creating project');
+        toast.error('Error creating project');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      // setErrorMessage('Error submitting form');
+      // toast.error('Error submitting form');
     }
   };
   
@@ -227,12 +220,6 @@ function CreateCopyProject({ open, onClose, onBack }) {
             </div>
           </div>
         </div>
-
-        {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem' }}>{errorMessage}</p>}
-                          {!errorMessage && (
-                            <div className="text-center">
-                              <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
-                            </div>)}
       </DialogContent>
       <DialogActions>
         <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={onClose} color="primary">

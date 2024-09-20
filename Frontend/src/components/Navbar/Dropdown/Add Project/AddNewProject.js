@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, InputLabel} from '@mui/material';
 import CreateCopyProject  from './CreateCopyProject';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 function AddNewProject({open,onClose}) {
-  const [projectName, setProjectName] = useState('');
-  const [salesOrder, setSalesOrder] = useState('');
+  const [projectName, setProjectName] = useState(''); 
   const [openCopyDialog, setOpenCopyDialog] = useState(false);
   const [showMainDialog, setShowMainDialog] = useState(true);
   const [projectSalesOrder, setProjectSalesOrder] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
 
   const handleCreateCopyProjectClick = () => {
     setShowMainDialog(false);
@@ -26,22 +24,18 @@ function AddNewProject({open,onClose}) {
     setShowMainDialog(true);
     setOpenCopyDialog(false);
   };
-
-  
- 
-    
   const handleSubmit = async () => {
     const firstchar = projectSalesOrder.charAt(0);
     const withSpace = projectSalesOrder.length;
 
     if (projectSalesOrder === '') {
-        setErrorMessage("Please enter project sales order");
+        toast.error("Please enter project sales order");
     } else if (firstchar !== '2' && firstchar !== "I") {
-        setErrorMessage("Please enter project sales order with first letter must be '2' or 'I'");
+        toast.error("Please enter project sales order with first letter must be '2' or 'I'");
       } else if (withSpace !== 6) {
-        setErrorMessage("Sales order length must be equal to 6 characters");
+        toast.error("Sales order length must be equal to 6 characters");
     } else if (projectName === '') {
-        setErrorMessage("Please enter project name");
+        toast.error("Please enter project name");
     } else {
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/addProject`, {
@@ -49,23 +43,20 @@ function AddNewProject({open,onClose}) {
                 sales_order: projectSalesOrder
             });
             if (response.data === "Project exist") {
-                setErrorMessage("This project name is already used");
+                toast.error("This project name is already used");
             } else if (response.data === "Error") {
-                setErrorMessage("Unable to create a new project");
+                toast.error("Unable to create a new project");
             } else {
-                setSuccessMessage("Project created successfully");
+                toast.success("Project created successfully");
                 setProjectName('');
                 setProjectSalesOrder('');
             }
         } catch (error) {
-            setErrorMessage("Error: Unable to create a new project");
+            toast.error("Error: Unable to create a new project");
         }
     }
 
-    setTimeout(() => {
-        setErrorMessage('');
-        setSuccessMessage('');
-    }, 5000);
+   
 };
 
   return (
@@ -103,11 +94,7 @@ function AddNewProject({open,onClose}) {
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
             />
-            {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem' }}>{errorMessage}</p>}
-                          {!errorMessage && (
-                            <div className="text-center">
-                              <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
-                            </div>)}
+           
           </DialogContent>
           <DialogActions>
             <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={onClose} color="primary">
