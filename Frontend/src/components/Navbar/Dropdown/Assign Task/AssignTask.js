@@ -25,48 +25,6 @@ const AssignTaskDialog = ({ open, onClose }) => {
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState('');
 
-  // const handleSave = () => {
-   
-
-  //   // Validation checks
-  //   if (!selectedTask) {
-  //     toast.error("Please select a task.");
-  //     return;
-  //   }
-  //   if (!selectedEmployeeId) {
-  //     toast.error("Please select an employee.");
-  //     return;
-  //   }
-  //   if (!activity.trim()) {
-  //     toast.error("Please enter activity details.");
-  //     return;
-  //   }
-  //   if (hours < 0 || hours > 8 || minutes < 0 || minutes > 59 || (!hours && !minutes)) {
-  //     toast.error("Expected time range: hour (0 - 8); minutes (0 - 59)");
-  //     return;
-  //   }
-
-  //   const data = {
-  //     valuetask: selectedTask,
-  //     inputminaray: minutes,
-  //     inputhraray: hours,
-  //     Activity: activity,
-  //     Dateassign: date,
-  //     employeeId: selectedEmployeeId,
-  //     token:localStorage.getItem('token'),
-  //   };
-
-  //   axios.post(`${process.env.REACT_APP_API_BASE_URL}/assignTask`, data)
-  //     .then(response => {
-  //       toast.success(response.data);
-  //       setTimeout(onClose, 1500); // Close after 1500 ms
-  //     })
-  //     .catch(error => {
-  //       console.error('Error assigning task:', error);
-  //       toast.error('Failed to assign task. Please try again.');
-  //     });
-      
-  // };
   const handleSave = () => {
     // Validation checks
     if (!selectedTask) {
@@ -140,7 +98,6 @@ const AssignTaskDialog = ({ open, onClose }) => {
         });
     }
   }, [selectedProject]);
-
   // API to fetch projects
   const fetchProjects = async () => {
     try {
