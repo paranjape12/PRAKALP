@@ -8,6 +8,7 @@ import { Buffer } from 'buffer';
 import EditProjectPopup from '../TaskOverview/EditProjectPopup';
 import DeleteProjectPopup from '../TaskOverview/DeleteProjectPopup';
 import { CircularProgress } from '@mui/material';
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 
 const getBackgroundColor = (proj_status) => {
     switch (proj_status) {
@@ -24,14 +25,7 @@ const getBackgroundColor = (proj_status) => {
     }
 };
 
-function decryptToken(token) {
-    const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
-    const userData = JSON.parse(decodedToken)[0];
-    return userData;
-}
-
-//const token = localStorage.getItem('token');
-const userData = {"Type": "Admin"} //decryptToken(token);
+const userData = getUserDataFromToken();
 
 function GradientCircularProgress() {
     return (

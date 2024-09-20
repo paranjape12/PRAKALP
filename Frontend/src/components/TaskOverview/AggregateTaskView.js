@@ -6,6 +6,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask';
 import { Buffer } from 'buffer';
 import Skeleton from '@mui/material/Skeleton'; // Import Skeleton from Material-UI
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 
 const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2dayhrmin, showComplete }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(() => {
@@ -56,13 +57,7 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     }
   };
 
-  function decryptToken(token) {
-    const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
-    const userData = JSON.parse(decodedToken)[0];
-    return userData;
-  }
-
-  const decrypToken = decryptToken(localStorage.getItem('token'));
+  const decrypToken = getUserDataFromToken();
 
   useEffect(() => {
     const assignBy = decrypToken.id;

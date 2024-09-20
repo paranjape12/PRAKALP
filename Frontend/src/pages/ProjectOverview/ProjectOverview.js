@@ -7,14 +7,9 @@ import axios from "axios";
 import { faTrashAlt, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import { Buffer } from "buffer";
 import "../../pages/TaskOverview/TaskOverview.css";
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 import EditProjectPopup from "../../components/TaskOverview/EditProjectPopup";
 import DeleteProjectPopup from "../../components/TaskOverview/DeleteProjectPopup";
-
-function decryptToken(token) {
-  const decodedToken = Buffer.from(token, "base64").toString("utf-8");
-  const userData = JSON.parse(decodedToken)[0];
-  return userData;
-}
 
 const ProjectOverview = () => {
   const today = new Date();
@@ -144,11 +139,12 @@ const handleCloseSettingsDialog = () => {
   };
 
   const fetchProjectDetails = async (projects) => {
+    const userData = getUserDataFromToken();
     try {
       const projectNames = projects.map(project => project.ProjectName);
       const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/totalHrs`, {
         params: {
-          employeeId: decryptToken(localStorage.getItem('token')).id,
+          employeeId: userData.id,
           projectNames,
           token: localStorage.getItem('token')
         }

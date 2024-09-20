@@ -4,12 +4,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import { Buffer } from 'buffer';
 import { toast } from 'react-toastify';
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 // Decrypt token function
-function decryptToken(token) {
-  const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
-  const userData = JSON.parse(decodedToken)[0]; // Assuming the role is the first item in the array
-  return userData;
-}
 function EnableEmployee({ openEnableEmp, CloseEnableEmp, selectedEmployeeId, onEmployeeEnabled }) {  // Correct destructuring of props
   const [userRole, setUserRole] = useState('');
   const [error, setError] = useState(null);
@@ -19,7 +15,7 @@ function EnableEmployee({ openEnableEmp, CloseEnableEmp, selectedEmployeeId, onE
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const userData = decryptToken(token);
+        const userData = getUserDataFromToken();
         setUserRole(userData.Type);
       } catch (error) {
         console.error('Failed to decode token:', error);

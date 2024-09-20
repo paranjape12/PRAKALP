@@ -6,21 +6,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { getUserDataFromToken } from '../../../../utils/tokenUtils';
 
 const SettingsDialog = ({ open, onClose,onApply  }) => {
     const [activeLink, setActiveLink] = useState('pv');
     const [checkedValues, setCheckedValues] = useState([0, 1, 2, 3, 4]);
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
-    
-    function decryptToken(token) {
-        const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
-        const userData = JSON.parse(decodedToken)[0];
-        return userData;
-      }
-    
+        
       const token = localStorage.getItem('token');
-      const userData = decryptToken(token);
+      const userData = getUserDataFromToken();
 
 
     useEffect(() => {
@@ -59,8 +54,8 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
             projshowval2: activeLink === 'pv2' ? checkedValues.filter(v => v !== 0) : null,
             projshowval_pv: activeLink === 'ev' ? checkedValues : null
         };
-        axios.post(`${process.env.REACT_APP_API_BASE_URL}/updateProjectSorting`, data)
-            .then(response => {
+    axios.post(`${process.env.REACT_APP_API_BASE_URL}/updateProjectSorting`, data)
+        .then(response => {
                 if (response.data.message === 'Success') {
                     const filterState = JSON.parse(localStorage.getItem('filterState')) || {};
                     filterState[activeLink] = checkedValues;
@@ -164,7 +159,7 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
                                         <div className="card-body">
                                             <div className="input-group flex-nowrap mb-2">
                                                 <div className="form-check m-1">
-                                                    <input className="form-check-input mt-2 projschekck_setting" type="checkbox" value="0" id="projectst_setting_nw" checked={checkedValues.includes(0)} onChange={() => handleCheckboxChange(0)} defaultChecked />
+                                                    <input className="form-check-input mt-2 projschekck_setting" type="checkbox" value="0" id="projectst_setting_nw" />
                                                     <label className="rounded-pill form-check-label  p-1" htmlFor="projectst_setting_nw" style={{ backgroundColor: 'white' }}>New</label>
                                                 </div>
                                                 <div className="form-check m-1">

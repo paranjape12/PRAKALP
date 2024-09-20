@@ -8,11 +8,11 @@ import AddTaskModal from '../../components/Navbar/Dropdown/Add Task/AddTask';
 import AggregateTaskView from '../../components/TaskOverview/AggregateTaskView';
 import IndividualTaskView from '../../components/TaskOverview/IndividualTaskView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Buffer } from 'buffer';
 import axios from 'axios';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 
 const today = new Date();
 
@@ -87,6 +87,11 @@ function TaskOverview() {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false); // Manage dialog open/close
 
 
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   useEffect(() => {
 
@@ -345,15 +350,7 @@ function TaskOverview() {
     updateTableWidth();
   }, [projects, dates, expandedProjects]);
 
-
-  function decryptToken(token) {
-    const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
-    const userData = JSON.parse(decodedToken)[0];
-    return userData;
-  }
-
-  const token = localStorage.getItem('token');
-  const userData = decryptToken(token);
+  const userData = getUserDataFromToken();
 
   // Handler to open/close the SettingsDialog
   const handleOpenSettingsDialog = () => {

@@ -6,12 +6,7 @@ import { useState, useEffect } from 'react';
 import { Buffer } from 'buffer';
 import { useNavigate } from 'react-router-dom'; 
 import { toast } from 'react-toastify';
-// Decrypt token function
-function decryptToken(token) {
-  const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
-  const userData = JSON.parse(decodedToken)[0]; // Assuming the role is the first item in the array
-  return userData;
-}
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 
 function DeleteEmployeePopup({ open, handleClose,selectedEmployeeId, onEmployeeDeleted }) {
   const navigate = useNavigate();
@@ -22,7 +17,7 @@ function DeleteEmployeePopup({ open, handleClose,selectedEmployeeId, onEmployeeD
       const token = localStorage.getItem('token');
       if (token) {
           try {
-              const userData = decryptToken(token);
+              const userData = getUserDataFromToken();
               setUserRole(userData.Type);
           } catch (error) {
               console.error('Failed to decode token:', error);

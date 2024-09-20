@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Buffer } from 'buffer';
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask';
@@ -62,13 +63,7 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
         return `${formattedH} : ${formattedM}`;
     };
 
-    function decryptToken(token) {
-        const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
-        const userData = JSON.parse(decodedToken)[0];
-        return userData;
-    }
-
-    const decrypToken = decryptToken(localStorage.getItem('token'));
+    const decrypToken = getUserDataFromToken();
 
     useEffect(() => {
         const assignBy = decrypToken.id;
