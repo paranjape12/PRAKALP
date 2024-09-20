@@ -3,6 +3,8 @@ import { Dialog, DialogTitle, InputAdornment, DialogContent, DialogActions, Text
 import './AssignTask.css'
 import axios from 'axios';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { toast } from 'react-toastify';
+
 
 const theme = createTheme({
   typography: {
@@ -18,37 +20,72 @@ const AssignTaskDialog = ({ open, onClose }) => {
   const [minutes, setMinutes] = useState(0);
   const [date, setDate] = useState(new Date().toISOString().substr(0, 10));
   const [activity, setActivity] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [projects, setProjects] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState('');
 
-  const handleSave = () => {
-    const showMessage = (setMessage, message) => {
-      setMessage(message);
-      setTimeout(() => setMessage(''), 1500);
-    };
+  // const handleSave = () => {
+   
 
+  //   // Validation checks
+  //   if (!selectedTask) {
+  //     toast.error("Please select a task.");
+  //     return;
+  //   }
+  //   if (!selectedEmployeeId) {
+  //     toast.error("Please select an employee.");
+  //     return;
+  //   }
+  //   if (!activity.trim()) {
+  //     toast.error("Please enter activity details.");
+  //     return;
+  //   }
+  //   if (hours < 0 || hours > 8 || minutes < 0 || minutes > 59 || (!hours && !minutes)) {
+  //     toast.error("Expected time range: hour (0 - 8); minutes (0 - 59)");
+  //     return;
+  //   }
+
+  //   const data = {
+  //     valuetask: selectedTask,
+  //     inputminaray: minutes,
+  //     inputhraray: hours,
+  //     Activity: activity,
+  //     Dateassign: date,
+  //     employeeId: selectedEmployeeId,
+  //     token:localStorage.getItem('token'),
+  //   };
+
+  //   axios.post(`${process.env.REACT_APP_API_BASE_URL}/assignTask`, data)
+  //     .then(response => {
+  //       toast.success(response.data);
+  //       setTimeout(onClose, 1500); // Close after 1500 ms
+  //     })
+  //     .catch(error => {
+  //       console.error('Error assigning task:', error);
+  //       toast.error('Failed to assign task. Please try again.');
+  //     });
+      
+  // };
+  const handleSave = () => {
     // Validation checks
     if (!selectedTask) {
-      showMessage(setErrorMessage, "Please select a task.");
+      toast.error("Please select a task.");
       return;
     }
     if (!selectedEmployeeId) {
-      showMessage(setErrorMessage, "Please select an employee.");
+      toast.error("Please select an employee.");
       return;
     }
     if (!activity.trim()) {
-      showMessage(setErrorMessage, "Please enter activity details.");
+      toast.error("Please enter activity details.");
       return;
     }
     if (hours < 0 || hours > 8 || minutes < 0 || minutes > 59 || (!hours && !minutes)) {
-      showMessage(setErrorMessage, "Expected time range: hour (0 - 8); minutes (0 - 59)");
+      toast.error("Expected time range: hour (0 - 8); minutes (0 - 59)");
       return;
     }
-
+  
     const data = {
       valuetask: selectedTask,
       inputminaray: minutes,
@@ -56,21 +93,31 @@ const AssignTaskDialog = ({ open, onClose }) => {
       Activity: activity,
       Dateassign: date,
       employeeId: selectedEmployeeId,
-      token:localStorage.getItem('token'),
+      token: localStorage.getItem('token'),
     };
-
+  
     axios.post(`${process.env.REACT_APP_API_BASE_URL}/assignTask`, data)
       .then(response => {
-        showMessage(setSuccessMessage, response.data);
+        toast.success(response.data);
         setTimeout(onClose, 1500); // Close after 1500 ms
       })
       .catch(error => {
         console.error('Error assigning task:', error);
-        showMessage(setErrorMessage, 'Failed to assign task. Please try again.');
+        toast.error('Failed to assign task. Please try again.');
+      })
+      .finally(() => {
+        // Reset form fields
+        setSelectedProject('');
+        setSelectedEmployeeId('');
+        setSelectedEmployeeName('');
+        setHours(0);
+        setMinutes(0);
+        setDate(new Date().toISOString().substr(0, 10));
+        setActivity('');
+        setSelectedTask('');
       });
   };
-
-
+  
   const handleClose = () => {
     onClose();
   };
@@ -262,14 +309,6 @@ const AssignTaskDialog = ({ open, onClose }) => {
               />
             </div>
           )}
-
-          {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
-          {successMessage && (
-            <div className="text-center">
-              <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
-            </div>
-          )}
-
         </DialogContent>
         <DialogActions>
           <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={handleClose} color="primary">

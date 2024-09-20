@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import './AddTask.css'
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const theme = createTheme({
   typography: {
@@ -24,8 +25,6 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(projectName|| '');
   const [selectedEmployee, setSelectedEmployee] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [employees, setEmployees] = useState([]);
   const [taskDetails, setTaskDetails] = useState('');
 
@@ -34,64 +33,67 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
   };
 
   const handleSave = async () => {
-
-    const showMessage = (setMessage, message) => {
-      setMessage(message);
-      setTimeout(() => setMessage(''), 1500);
-    };
-
-    // Clear previous messages
-    setErrorMessage('');
-    setSuccessMessage('');
-
     // Validation checks
     if (selectedProject === '') {
-      showMessage(setErrorMessage, 'Select at least one project');
+      toast.error('Select at least one project');
       return;
     }
     if (hours === 0 && minutes === 0) {
-      showMessage(setErrorMessage, 'Please enter time required to complete the task');
+      toast.error('Please enter time required to complete the task');
       return;
     }
     if (hours > 99 || minutes > 59) {
-      showMessage(setErrorMessage, 'Hours limit must be less than 100 and minutes limit must be less than 60');
+      toast.error('Hours limit must be less than 100 and minutes limit must be less than 60');
       return;
     }
     if (selectedEmployee === '') {
-      showMessage(setErrorMessage, 'Select an employee');
+      toast.error('Select an employee');
       return;
     }
     if (taskName === '') {
-      showMessage(setErrorMessage, 'Please enter task name');
+      toast.error('Please enter task name');
       return;
     }
+   
+    const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/createTask`, {
+      ProjectName: selectedProject,
+      TaskName: taskName,
+      Empname: selectedEmployee,
+      islasttask: lastTask ? 1 : 0,
+      taskdetails: taskDetails,
+      hr: hours,
+      min: minutes,
+      assignDate: assignDate,
+      hrAssign: hrAssign,
+      minAssign: minAssign,
+      token: localStorage.getItem('token'),
+    });
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/createTask`, {
-        ProjectName: selectedProject,
-        TaskName: taskName,
-        Empname: selectedEmployee,
-        islasttask: lastTask ? 1 : 0,
-        taskdetails: taskDetails,
-        hr: hours,
-        min: minutes,
-        assignDate: assignDate,
-        hrAssign: hrAssign,
-        minAssign: minAssign,
-        token: localStorage.getItem('token'),
-      });
-
       if (response.data === 'Success') {
-        showMessage(setSuccessMessage, "Task added Successfully !");
+        toast.success('Task added successfully!');
         setTimeout(onClose, 2500);
       }
     } catch (error) {
       console.error('Error saving task:', error);
-      showMessage(setErrorMessage, 'Error saving task');
+      toast.error('Error saving task');
+    } finally {
+      // Reset form fields after successful save or failure
+      if (response.data.message === 'Success') {
+        setTaskName('');
+        setLastTask(false);
+        setHours(0);
+        setMinutes(0);
+        setMinAssign(0);
+        setAssignDate(new Date().toISOString().substr(0, 10));
+        setHrAssign(0);
+        setSelectedProject(projectName || '');
+        setSelectedEmployee('');
+        setTaskDetails('');
+      }
     }
   };
-
-
+  
   useEffect(() => {
     fetchProjects();
     fetchEmployees();
@@ -318,13 +320,6 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
           onChange={(e) => setTaskDetails(e.target.value)}
         />
 
-
-        {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
-        {successMessage && (
-          <div className="text-center">
-            <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
-          </div>
-        )}
       </DialogContent>
       <DialogActions>
         <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={handleClose} color="primary">
