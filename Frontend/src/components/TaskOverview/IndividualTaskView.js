@@ -19,12 +19,6 @@ function getTaskStatusColor(status, approved) {
   }
 }
 
-function decryptToken(token) {
-  const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
-  const userData = JSON.parse(decodedToken)[0];
-  return userData;
-}
-
 const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seconds2dayhrmin, tableWidth  }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(false);
   const [taskInfoDialogOpen, setTaskInfoDialogOpen] = useState(false);
@@ -35,7 +29,6 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
   const [taskDetails, setTaskDetails] = useState(null);
   const [taskCompleteOpen, setTaskCompleteOpen] = useState(false);
   const [timingId, setTimingId] = useState(null);  
-  const [nickname, setNickname] = useState('');
   const [taskTimings, setTaskTimings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [taskCompletionTime, setTaskCompletionTime] = useState(null);  // New state to hold task completion time
@@ -66,18 +59,6 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
 
     fetchTaskDetails();
   }, [task.taskId]);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const userData = decryptToken(token);
-        setNickname(userData.Nickname);
-      } catch (error) {
-        console.error('Failed to decode token:', error);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     const fetchTaskTimings = async () => {
