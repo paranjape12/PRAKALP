@@ -109,6 +109,7 @@ function Register() {
                                                     className="form-control form-control-user"
                                                     id="exampleInputPassword"
                                                     placeholder="Password"
+                                                    style={{padding:'1.5rem'}}
 
                                                 />
                                                 <div className="input-group-prepend">
