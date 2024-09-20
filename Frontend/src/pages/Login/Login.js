@@ -7,13 +7,12 @@ import axios from "axios";
 import { Buffer } from "buffer";
 import "./Login.css";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { toast } from 'react-toastify';
 
 function Login() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
@@ -46,19 +45,19 @@ function Login() {
   const handleLogin = async () => {
     try {
       if (!email || !password) {
-        setErrorMessage('Please enter all credentials');
+        toast.error('Please enter all credentials');
         return;
       }
 
       const emailRegex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
       const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
       if (!emailRegex.test(email)) {
-        setErrorMessage('Email format mismatch. Please enter a valid email address');
+        toast.error('Email format mismatch. Please enter a valid email address');
         return;
       }
 
       if (!passRegex.test(password)) {
-        setErrorMessage(`Password format mismatch. 
+        toast.error(`Password format mismatch. 
           Please enter a valid password with the following criteria:
           1. At least one capital letter.
           2. Must contain a special character (@, $, !, &, etc).
@@ -80,17 +79,18 @@ function Login() {
       const userData = response.data.result;
       generateToken(userData);
       saveCredentials();
+      toast.success('Login successful');
       navigate('/task');  // Use navigate instead of window.location
     } else if (response.data.message === 'This account is disabled') {
-      setErrorMessage('This account is disabled.');
+      toast.error('This account is disabled.');
     } else {
-      setErrorMessage('Please enter a valid email or password');
+      toast.error('Please enter a valid email or password');
       setEmail('');
       setPassword('');
     }
   } catch (error) {
     console.error('Login error:', error);
-    setErrorMessage('An error occurred. Please try again.');
+    toast.error('An error occurred. Please try again.');
   }
 };
 
@@ -239,12 +239,6 @@ function Login() {
                           >
                             <strong>Login</strong>
                           </button>
-                          {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem' }}>{errorMessage}</p>}
-                          {!errorMessage && (
-                            <div className="text-center">
-                              <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
-                            </div>
-                          )}
                         </div>
                         <hr />
                         <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}

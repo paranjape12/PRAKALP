@@ -5,11 +5,11 @@ import eyeIconSlash from '../../assets/images/eye-slash.svg';
 import ErrorMessageModal from "../../components/ErrorMessageModal";
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 function Register() {
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
+   
 
     const togglePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible);
@@ -31,27 +31,27 @@ function Register() {
         const emailDomain = email.split('@')[1];
 
         if (fname === "" || lname === "" || email === "" || passwd === "" || cpass === "") {
-            setErrorMessage("Please enter all account details");
+            toast.error("Please enter all account details");
             return;
         }
         if (!EmailRegex.test(email)) {
-            setErrorMessage("Please Enter Valid Email Format<br> eg.Abc@abcd.com");
+            toast.error("Please Enter Valid Email Format<br> eg.Abc@abcd.com");
             return;
         }
         if (!PassRegex.test(passwd)) {
-            setErrorMessage("Password format mismatch. Expected form eg. Abcd@123 <br>1. Atleast one capital letter. <br>2. Password must contain a special character (@, $, !, &, etc).<br>3. Password length must be greater than 8 characters.");
+            toast.error("Password format mismatch. Expected form eg. Abcd@123 <br>1. Atleast one capital letter. <br>2. Password must contain a special character (@, $, !, &, etc).<br>3. Password length must be greater than 8 characters.");
             return;
         }
         if (cpass !== passwd) {
-            setErrorMessage("Password and confirm password are not match ");
+            toast.error("Password and confirm password are not match ");
             return;
         }
         if (selectedVal === 'unset') {
-            setErrorMessage("Please Select Location ");
+            toast.error("Please Select Location ");
             return;
         }
         if (emailDomain !== 'protovec.com') {
-            setErrorMessage("Please Enter Company Provided Email");
+            toast.error("Please Enter Company Provided Email");
             return;
         }
         try {
@@ -64,15 +64,15 @@ function Register() {
             });
 
             if (response.data.message === 'Success') {
-                setSuccessMessage("Register Successful !")
+                toast.success("Register Successful !")
                 setTimeout(() => {
                     window.location = '/';
                 }, 3000);
             } else {
-                setErrorMessage('Unable to create account');
+                toast.error('Unable to create account');
             }
         } catch (error) {
-            setErrorMessage('Error occurred while creating account');
+            toast.error('Error occurred while creating account');
         }
     };
 
@@ -80,17 +80,7 @@ function Register() {
     return (
         <div id="reg-body">
             <div className="container">
-                {successMessage && (
-                    <div className="modal fade" id="Sucessmsg" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div className="modal-dialog modal-sm" role="document">
-                            <div className="modal-content p-1">
-                                <div className="modal-header p-1">
-                                    <h6 className="text-success text-center m-0" id="Sucessmsgtext">{successMessage}</h6>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+
                 <div className="card o-hidden border-0 shadow-lg my-5">
                     <div className="card-body p-0">
                         <div className="row">
@@ -139,7 +129,7 @@ function Register() {
                                         <div className="form-group row">
                                             <div className="flex-nowrap col col-md-4">
                                                 <select className="form-select border border-primary text-center form-control form-control-user p-1" aria-label="Default select example" id="dropLocation">
-                                                    <option className="bg-secondary text-white" defaultChecked="unset">
+                                                    <option className="bg-secondary text-white" value="unset" defaultValue>
                                                         Select Location
                                                     </option>
                                                     <option className="text-dark" value="Mumbai">
@@ -161,16 +151,6 @@ function Register() {
                                             <h6>Already have an account? Login!</h6>
                                         </Link>
                                     </div>
-                                    {errorMessage.split('<br>').map((line, index) => (
-                                        <div className="text-left">
-                                            <p style={{ color: 'red', margin: '0' }} key={index}>{line}</p>
-                                        </div>
-                                    ))}
-                                    {!errorMessage && (
-                                        <div className="text-center">
-                                            <p style={{ color: 'green', margin: '0' }}>{successMessage}</p>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
