@@ -5,6 +5,7 @@ import AddEmployee from './AddEmployee';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import DeleteEmployeePopup from '../../../EmployeeOverview/DeleteEmployeePopup';
+import { toast } from 'react-toastify';
 
 const EditEmployee = ({ open, handleClose }) => {
 
@@ -12,17 +13,10 @@ const EditEmployee = ({ open, handleClose }) => {
   const [employees, setEmployees] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [showPasswordFields, setShowPasswordFields] = useState(true);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  
 
-  const showMessage = (setMessage, message) => {
-    setMessage(message);
-    setTimeout(() => {
-      setMessage('');
-      if (setMessage === setSuccessMessage) handleClose();
-    }, 1500);
-  };
-
+  
+ 
   const [loadingAccessData, setLoadingAccessData] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(0);
   const [openDeletePopup, setOpenDeletePopup] = useState(false);
@@ -183,19 +177,18 @@ const EditEmployee = ({ open, handleClose }) => {
     e.preventDefault();
 
     if (formData.Password !== formData.confirmPassword) {
-      setErrorMessage(`Passwords do not match`);
+      toast.error(`Passwords do not match`);
       return;
     }
 
-    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$.!%*?&])[A-Za-z\d@$!.%*?&]{8,}$/;
     if (!passwordRegex.test(formData.Password)) {
-      setErrorMessage(`Password must be in format 'Abc@123'`);
+      toast.error(`Password must be in format 'Abc@123'`);
       return;
     }
-
     const emailDomain = "@protovec.com";
     if (!formData.Email.endsWith(emailDomain)) {
-      setErrorMessage(`Email must end with ${emailDomain}`);
+      toast.error(`Email must end with ${emailDomain}`);
       return;
     }
 
@@ -222,10 +215,11 @@ const EditEmployee = ({ open, handleClose }) => {
 
     axios.put(`${process.env.REACT_APP_API_BASE_URL}/updateemployee`, requestData)
       .then(response => {
-        showMessage(setSuccessMessage, "Employee updated successfully!");
+        toast.success("Employee updated successfully!");
+        setTimeout(handleClose, 2500);
       })
       .catch(error => {
-        showMessage(setErrorMessage, "Employee update failed!");
+        toast.error("Employee update failed!");
         console.error('There was an error updating the employee!', error);
       });
   };
@@ -522,12 +516,6 @@ const EditEmployee = ({ open, handleClose }) => {
             </div>
           </div>
         </form>
-        {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
-        {successMessage && (
-          <div className="text-center">
-            <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
-          </div>
-        )}
       </DialogContent>
       <DialogActions>
         <Button className='close-btn' onClick={handleClose} variant='contained'>

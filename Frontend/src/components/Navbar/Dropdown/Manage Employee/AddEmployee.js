@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Buffer } from "buffer";
 import {
@@ -16,23 +16,17 @@ import {
   FormControlLabel,
   InputAdornment,
   IconButton,
-  Table,
-  TableHead,
-  TableCell,
-  TableRow,
-  TableBody,
+  
 } from "@material-ui/core";
 import "./AddEmployee.css";
 import EditEmployee from "./EditEmployee";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { toast } from 'react-toastify';
 
 const AddEmployee = ({ openDialog, handleClose  }) => {
-  const emailRef = useRef(null);
+  
   const [showPasswordFields, setShowPasswordFields] = useState(true);
-  const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const [emailError, setemailError] = useState([]);
   const [roleError, setRoleError] = useState("");
   const [locationError, setLocationError] = useState("");
@@ -40,13 +34,7 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
   const [OpenEditEmployeeDialog, setOpenEditEmployeeDialog] = useState(false);
   const [showMainDialog, setShowMainDialog] = useState(true);
   
-  const showMessage = (setMessage, message) => {
-    setMessage(message);
-    setTimeout(() => {
-      setMessage("");
-      if (setMessage === setSuccessMessage) handleClose();
-    }, 3000);
-  };
+ 
 
   const handleEditEmployeeClick = () => {
     setShowMainDialog(false);
@@ -199,36 +187,23 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
 
     const emailDomain = "@protovec.com";
     if (!formData.Email.endsWith(emailDomain)) {
-      setemailError(`Email must end with ${emailDomain}`);
-      setTimeout(() => {
-        setemailError("");
-       }, 3000);
+      toast.error(`Email must end with ${emailDomain}`);
       return;
     }
 
     const { Name, Email, Password, confirmPassword, Type, Location , Nickname } = formData;
     
     if (formData.Type === "unset") {
-      setRoleError("Role is required");
-      setTimeout(() => {
-        setRoleError("");
-       }, 3000);
+      toast.error("Role is required");
     } else {
       setRoleError("");
     }  
 
     if (formData.Location === "unset") {
-      setLocationError("Location is required");
-      setTimeout(() => {
-        setLocationError("");
-       }, 3000);
+      toast.error("Location is required");
     } else {
       setLocationError("");
     }
-
-    // Extract first name and last name from full name
-    const [fname, ...lnameParts] = Name.split(" ");
-    const lname = lnameParts.join(" ");
 
     // Define the pagename and pagevalue arrays
     const pagename = Object.keys(formData.access);
@@ -244,10 +219,9 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
       ? `${formData.Email.split("@")[0]}@Protovec123`
       : formData.Password;
 
-    const passwordRegex =
-      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$.!%*?&])[A-Za-z\d@$!%.*?&]{8,}$/;
     if (!passwordRegex.test(newPassword)) {
-      setErrorMessage("Password must be in format 'Abc@123'");
+      toast.error("Password must be in format 'Abc@123'");
       return;
     }
 
@@ -272,7 +246,8 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
         .post(`${process.env.REACT_APP_API_BASE_URL}/addemployee`, requestData)
         .then((response) => {
           if (response.status === 200) {
-            showMessage(setSuccessMessage, "Employee added successfully!");
+            toast.success("Employee added successfully!");
+            setTimeout(handleClose, 2500);
             setFormData({
               Name: "",
               Email: "",
@@ -287,19 +262,16 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
           }
         })
         .catch((error) => {
-          showMessage(setErrorMessage, "Employee add failed!");
+          toast.error("Employee add failed!");
           console.error("There was an error adding the employee!", error);
         });
     } else {
-      setErrorMessage("Please fill all the required fields correctly");
-      setTimeout(() => {
-        setErrorMessage("");
-       }, 3000);
+      toast.error("Please fill all the required fields correctly");
     }
   };
 
-  // Create a ref for Transition
-  const nodeRef = useRef(EditEmployee);
+
+ 
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -595,20 +567,6 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
               </div>
             </div>
           </form>
-          {errorMessage && (
-            <p
-              style={{ color: "red", marginTop: "0.5rem", textAlign: "center" }}
-            >
-              {errorMessage}
-            </p>
-          )}
-          {successMessage && (
-            <div className="text-center">
-              <p style={{ color: "green", marginTop: "0.5rem" }}>
-                {successMessage}
-              </p>
-            </div>
-          )}
           <hr style={{ marginTop: "1rem", marginBottom: "0" }} />
         </DialogContent>
         <DialogActions>
