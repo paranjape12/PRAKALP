@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, useLocation, Link ,} from 'react-router-dom';
+import { useNavigate, useLocation, Link, } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faGear, faSquarePlus, faUser, faUsers, faBars, faCircleUser, faDiagramProject, faRightFromBracket, faHouse } from '@fortawesome/free-solid-svg-icons';
+import { faGear, faSquarePlus, faUser, faUsers, faBars, faCircleUser, faDiagramProject, faRightFromBracket, faHouse } from '@fortawesome/free-solid-svg-icons';
 import './Navbar.css';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask'
 import AddNewProject from '../Navbar/Dropdown/Add Project/AddNewProject';
@@ -12,7 +12,7 @@ import SettingsDialog from '../Navbar/Dropdown/Settings/SettingsDialog';
 import AddEmployee from '../Navbar/Dropdown/Manage Employee/AddEmployee';
 
 
-function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settingsDialogOpen,onOpenSettingsDialog,onSettingsClose,onSettingsApply }) {
+function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, settingsDialogOpen, onOpenSettingsDialog, onSettingsClose, onSettingsApply }) {
   const [activeButton, setActiveButton] = useState(null);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showMenuDropdown, setShowMenuDropdown] = useState(false);
@@ -21,7 +21,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settin
   const [assignTaskDialogOpen, setAssignTaskDialogOpen] = useState(false);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
-  const [addEmployeeDialogOpen ,setAddEmployeeDialogOpen] = useState(false);
+  const [addEmployeeDialogOpen, setAddEmployeeDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
 
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settin
     { PageName: 'Task' },
     // Add more pages as needed
   ];
-  
+
   // useEffect(() => {
   //   // Fetch pages
   //   axios.get(`${process.env.REACT_APP_API_BASE_URL}/pages')
@@ -66,7 +66,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settin
   const handleCloseAddTaskDialog = () => {
     setAddTaskDialogOpen(false);
   };
-  
+
   const handleOpenAssignTaskDialog = () => {
     setAssignTaskDialogOpen(true);
   };
@@ -74,7 +74,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settin
     setAssignTaskDialogOpen(false);
   };
 
-  
+
 
   const handleMenuButtonClick = () => {
     setShowMenuDropdown(!showMenuDropdown);
@@ -90,7 +90,8 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settin
   const handleLogout = () => {
     navigate('/');
     localStorage.removeItem('token');
-};
+    localStorage.removeItem('filterState');
+  };
 
 
   const background = isPopupVisible ? 'blurred-background' : '';
@@ -160,96 +161,96 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settin
               <FontAwesomeIcon icon={faBars} style={{ fontSize: '1.6rem' }} color='white' />
             </button>
             {showMenuDropdown && (
-              <div className="dropdown-content" style={{borderRadius:'10px'}}>
+              <div className={`dropdown-content ${showMenuDropdown ? 'show' : ''}`} style={{ borderRadius: '10px' }}>
                 <div>
-                 <button 
-                   className='dropdown-item d-flex align-items-center'
-                   onClick={handleOpenAddProjectDialog}
-                   title="Add Project"
+                  <button
+                    className='dropdown-item d-flex align-items-center'
+                    onClick={handleOpenAddProjectDialog}
+                    title="Add Project"
                   >
-                  <div className='mr-3'>
-                    <div className='icon-circle bg-primary'>
-                       <FontAwesomeIcon icon={faSquarePlus} style={{color: "white",}} />
+                    <div className='mr-3'>
+                      <div className='icon-circle bg-primary'>
+                        <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white", }} />
+                      </div>
                     </div>
-                  </div>
-                <div>
-                     Add Project
-                </div>
-               </button>
-               <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} />
-          </div>
-          <div>
-                 <button 
-                   className='dropdown-item d-flex align-items-center'
-                   onClick={handleOpenAddEmployeeDialog}
-                   title="Add Project"
-                  >
-                  <div className='mr-3'>
-                    <div className='icon-circle bg-success'>
-                    <FontAwesomeIcon icon={faUsers} style={{color: "white",}} />
-                    </div>
-                  </div>
-                <div>
-                      Manage Employee
-                </div>
-               </button>
-               <AddEmployee openDialog={addEmployeeDialogOpen} handleClose={handleCloseAddEmployeeDialog} pages={pages} />
-          </div>
-
-          <div>
-                 <button 
-                   className='dropdown-item d-flex align-items-center'
-                   onClick={handleOpenAddTaskDialog}
-                   title="Add Project"
-                  >
-                  <div className='mr-3'>
-                    <div className='icon-circle bg-warning'>
-                       <FontAwesomeIcon icon={faSquarePlus} style={{color: "white",}} />
-                    </div>
-                  </div>
-                <div>
-                       Add Task
-                </div>
-               </button>
-               <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />         
-                </div>
-                <div>
-                 <button 
-                   className='dropdown-item d-flex align-items-center'
-                   onClick={handleOpenAssignTaskDialog}
-                   title="Add Project"
-                  >
-                  <div className='mr-3'>
-                    <div className='icon-circle bg-warning'>
-                       <FontAwesomeIcon icon={faSquarePlus} style={{color: "white",}} />
-                    </div>
-                  </div>
-                <div>
-                    Assign Task
-                </div>
-               </button>
-                   <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} />         
-                    </div>
-
                     <div>
-                 <button 
-                   className="dropdown-item d-flex align-items-center"
-                   onClick={onOpenSettingsDialog}
-                   title="Add Project"
-                  >
-                  <div className="mr-3">
-                    <div className="icon-circle bg-secondary">
-                    <FontAwesomeIcon icon={faGear} style={{color: "white",}} />
+                      Add Project
                     </div>
-                  </div>
-                <div>
-                       Setting
+                  </button>
+                  <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} />
                 </div>
-               </button>
-               <SettingsDialog open={settingsDialogOpen} onClose={onSettingsClose}
-                onApply={onSettingsApply}  // Pass apply handler to SettingsDialog
-                 />          
-               </div>
+                <div>
+                  <button
+                    className='dropdown-item d-flex align-items-center'
+                    onClick={handleOpenAddEmployeeDialog}
+                    title="Add Project"
+                  >
+                    <div className='mr-3'>
+                      <div className='icon-circle bg-success'>
+                        <FontAwesomeIcon icon={faUsers} style={{ color: "white", }} />
+                      </div>
+                    </div>
+                    <div>
+                      Manage Employee
+                    </div>
+                  </button>
+                  <AddEmployee openDialog={addEmployeeDialogOpen} handleClose={handleCloseAddEmployeeDialog} pages={pages} />
+                </div>
+
+                <div>
+                  <button
+                    className='dropdown-item d-flex align-items-center'
+                    onClick={handleOpenAddTaskDialog}
+                    title="Add Project"
+                  >
+                    <div className='mr-3'>
+                      <div className='icon-circle bg-warning'>
+                        <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white", }} />
+                      </div>
+                    </div>
+                    <div>
+                      Add Task
+                    </div>
+                  </button>
+                  <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />
+                </div>
+                <div>
+                  <button
+                    className='dropdown-item d-flex align-items-center'
+                    onClick={handleOpenAssignTaskDialog}
+                    title="Add Project"
+                  >
+                    <div className='mr-3'>
+                      <div className='icon-circle bg-warning'>
+                        <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white", }} />
+                      </div>
+                    </div>
+                    <div>
+                      Assign Task
+                    </div>
+                  </button>
+                  <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} />
+                </div>
+
+                <div>
+                  <button
+                    className="dropdown-item d-flex align-items-center"
+                    onClick={onOpenSettingsDialog}
+                    title="Add Project"
+                  >
+                    <div className="mr-3">
+                      <div className="icon-circle bg-secondary">
+                        <FontAwesomeIcon icon={faGear} style={{ color: "white", }} />
+                      </div>
+                    </div>
+                    <div>
+                      Setting
+                    </div>
+                  </button>
+                  <SettingsDialog open={settingsDialogOpen} onClose={onSettingsClose}
+                    onApply={onSettingsApply}  // Pass apply handler to SettingsDialog
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -258,7 +259,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates,settin
             <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
               <FontAwesomeIcon icon={faCircleUser} size='2x' color='white' />
               {showProfileDropdown && (
-                <div className="dropdown-content">
+                <div className={`dropdown-content ${showProfileDropdown ? 'show' : ''}`}>
                   <div>
                     <div><button><Link to="/profile" style={{ textDecoration: 'none', color: 'black' }}>
                       <FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile

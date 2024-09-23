@@ -97,23 +97,18 @@
 }
 
 .dropdown-content {
-  display: none;
+  display: none; /* Hidden by default */
   position: absolute;
   background-color: #f9f9f9;
-  min-width: 180px; 
-  border-radius:2px ;
-  /* box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2); */
+  min-width: 180px;
+  border-radius: 2px;
   z-index: 200;
-  margin: 0;
-  padding: 0;
   right: 0;
 }
 
-.dropdown:hover .dropdown-content {
+/* Show dropdown content when state is active */
+.dropdown-content.show {
   display: block;
-  /* width: 20px; */
-  background-color: white;
-  border-radius: 1px;
 }
 
 .dropdown-content button {
