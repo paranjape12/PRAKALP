@@ -48,14 +48,14 @@ function Login() {
         toast.error('Please enter all credentials');
         return;
       }
-
+  
       const emailRegex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
       const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
       if (!emailRegex.test(email)) {
         toast.error('Email format mismatch. Please enter a valid email address');
         return;
       }
-
+  
       if (!passRegex.test(password)) {
         toast.error(`Password format mismatch. 
           Please enter a valid password with the following criteria:
@@ -64,35 +64,54 @@ function Login() {
           3. Password length must be at least 8 characters.`);
         return;
       }
-
+  
       // Encode password to base64
       const encodedPassword = Buffer.from(password).toString('base64');
-
+  
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/getLogin`, {
         email,
         pass: encodedPassword, // Send the encoded password to the backend
         rememberMe: rememberMe.toString() // Convert rememberMe boolean to string
       });
-
+  
       // Handle responses
-    if (response.data.message === 'Success') {
-      const userData = response.data.result;
-      generateToken(userData);
-      saveCredentials();
-      toast.success('Login successful');
-      navigate('/task');  // Use navigate instead of window.location
-    } else if (response.data.message === 'This account is disabled') {
-      toast.error('This account is disabled.');
-    } else {
-      toast.error('Please enter a valid email or password');
-      setEmail('');
-      setPassword('');
+      if (response.data.message === 'Success') {
+        const userData = response.data.result;
+        
+        // Extract projsorting values from userData
+        const projsorting = userData[0].projsorting.split(' ').map(Number); // Assuming it is space-separated numbers
+        const projsorting2 = userData[0].projsorting2.split(' ').map(Number);
+        const projsorting_pv = userData[0].projsorting_pv.split(' ').map(Number);
+  
+        // Create the filterState object
+        const filterState = {
+          pv: projsorting,
+          ev: projsorting_pv,  // Assuming "ev" uses the same as "projsorting"
+          pv2: projsorting2,
+        };
+  
+        // Save filterState in localStorage
+        localStorage.setItem('filterState', JSON.stringify(filterState));
+  
+        // Generate and store token
+        generateToken(userData);
+        saveCredentials();
+  
+        toast.success('Login successful');
+        navigate('/task');  // Use navigate instead of window.location
+      } else if (response.data.message === 'This account is disabled') {
+        toast.error('This account is disabled.');
+      } else {
+        toast.error('Please enter a valid email or password');
+        setEmail('');
+        setPassword('');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('An error occurred. Please try again.');
     }
-  } catch (error) {
-    console.error('Login error:', error);
-    toast.error('An error occurred. Please try again.');
-  }
-};
+  };
+  
 
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -233,6 +252,7 @@ function Login() {
                         <div>
                           <button
                             id="loginbtn"
+                            style={{width: '100%'}}
                             className="btn btn-primary btn-user"
                             onClick={handleLogin}
                             type="button" // Use type="button" to prevent form submission
