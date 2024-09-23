@@ -142,7 +142,7 @@ function Register() {
                                                 </select>
                                             </div>
                                         </div>
-                                        <button type="button" id="registerbtn" className="btn btn-primary btn-reg-user btn-block" onClick={handleRegister}>
+                                        <button style={{width: '100%'}} type="button" id="registerbtn" className="btn btn-primary btn-reg-user btn-block" onClick={handleRegister}>
                                             Register Account
                                         </button>
                                     </form>
