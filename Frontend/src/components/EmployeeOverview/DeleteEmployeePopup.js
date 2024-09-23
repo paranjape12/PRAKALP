@@ -68,7 +68,7 @@ function DeleteEmployeePopup({ open, handleClose,selectedEmployeeId, onEmployeeD
     <Dialog open={open} onClose={handleClose} aria-labelledby="delete-employee-title">
       <DialogTitle id="delete-employee-title" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" component="div" color="error" sx={{ fontWeight: 'bold' }}>
-          Remove Employee
+          Disable Employee
         </Typography>
         <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
           <CloseIcon />
@@ -78,7 +78,7 @@ function DeleteEmployeePopup({ open, handleClose,selectedEmployeeId, onEmployeeD
       <DialogContent>
         <input type="hidden" id="deleteproidinput" />
         <Typography variant="body1">
-          Are you sure you want to permanently remove this Employee?
+          Are you sure you want to disable this Employee?
       </Typography>
       </DialogContent>
       <DialogActions>
