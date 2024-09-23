@@ -277,11 +277,20 @@ const EditEmployee = ({ open, handleClose }) => {
     setSelectedEmployeeId(null);
   };
 
+  const handleOpenAddEmpPopup = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseAddEmpPopup = () => {
+    handleClose();
+    setOpenDialog(false);
+  };
+
   return (
     <Dialog open={open} maxWidth='md'>
       <DialogTitle>Edit Employee
-        <Button className='addEmp-btn' style={{ marginLeft: '35rem' }} onClick={() => setOpenDialog(true)} color='primary' variant='contained'>Add Employee</Button>
-        <AddEmployee openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} />
+        <Button className='addEmp-btn' style={{ marginLeft: '35rem' }} onClick={handleOpenAddEmpPopup} color='primary' variant='contained'>Add Employee</Button>
+        <AddEmployee openDialog={openDialog} handleClose={handleCloseAddEmpPopup}/>
         <hr style={{ marginTop: "0.3rem", marginBottom: "0" }} />
       </DialogTitle>
       <DialogContent>
