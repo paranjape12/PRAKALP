@@ -29,7 +29,7 @@ const userData = getUserDataFromToken();
 
 function GradientCircularProgress() {
     return (
-        <td colSpan={9} style={{ padding: '0.4rem 40rem', minWidth: 'auto' }}>
+        <td colSpan={9} style={{ padding: '1% 10%', minWidth: '100%' }}>
             <svg width={0} height={0}>
                 <defs>
                     <linearGradient id="my_gradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -44,7 +44,7 @@ function GradientCircularProgress() {
     );
 }
 
-function IndividualTableCellsView({ employee, isComplete, dates }) {
+function IndividualTableCellsView({ employee, isComplete, dates, columnWidths  }) {
     const [localShowTimeDetails, setLocalShowTimeDetails] = useState(true);
     const [totalTasks, setTotalTasks] = useState(0);
     const [projects, setProjects] = useState([]);
@@ -180,7 +180,7 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
                     projects.map((project) => (
                         <React.Fragment key={project.projectId}>
                             <tr>
-                                <td style={{ fontSize: '13.5px', padding: '0', backgroundColor: getBackgroundColor(project.proj_status), minWidth: '15rem' }}>
+                                <td style={{ fontSize: '13.5px', padding: '0', backgroundColor: getBackgroundColor(project.proj_status), minWidth: `${(columnWidths.projectWidth/16)*0.98}rem` }}>
                                     <div className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', paddingLeft: '0.5rem', fontSize: '13.44px' }}>
                                         {project.assigntaskpresent && (
                                             <FontAwesomeIcon
@@ -205,9 +205,9 @@ function IndividualTableCellsView({ employee, isComplete, dates }) {
                                 </td>
                                 {expandedProjects[project.projectId] === 'individual' ? (
                                     <IndividualTaskDetailsView dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
-                                        seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} />
+                                        seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} columnWidths={columnWidths}/>
                                 ) : (
-                                    <AggregateTaskDetailsView dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
+                                    <AggregateTaskDetailsView columnWidths={columnWidths} dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
                                         seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} />
                                 )}
                             </tr>

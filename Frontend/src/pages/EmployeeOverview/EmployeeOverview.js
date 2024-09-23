@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer';
 import Disableemp from "../../assets/images/icons/letter-d.png";
@@ -43,6 +43,36 @@ function EmployeeOverview() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null); // Add state to track the selected employee ID for deletion
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false); // Manage dialog open/close
   const [settingsValue, setSettingsValue] = useState(""); // Store settings (Yes/No)
+  const projectRef = useRef(null);
+  const taskDetailsRef = useRef(null);
+  const dateRef = useRef(null);
+  
+  const [columnWidths, setColumnWidths] = useState({
+    projectWidth: 0,
+    taskDetailsWidth: 0,
+    dateWidth: 0,
+  });
+
+  useEffect(() => {
+    const updateColumnWidths = () => {
+      const projectWidth = projectRef.current ? projectRef.current.getBoundingClientRect().width : 0;
+      const taskDetailsWidth = taskDetailsRef.current ? taskDetailsRef.current.getBoundingClientRect().width : 0;
+      const dateWidth = dateRef.current ? dateRef.current.getBoundingClientRect().width : 0;
+
+      setColumnWidths({
+        projectWidth: projectWidth, 
+        taskDetailsWidth: taskDetailsWidth,
+        dateWidth: dateWidth,
+      });
+    };
+
+    // Measure widths on mount and when the window resizes
+    updateColumnWidths();
+    window.addEventListener('resize', updateColumnWidths);
+    return () => {
+      window.removeEventListener('resize', updateColumnWidths);
+    };
+  }, []);
 
   // Navbar
 
@@ -350,9 +380,9 @@ function EmployeeOverview() {
       <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed'  }}>
         <thead className="text-white" id="theader" style={{ fontSize: '13px' }}>
           <tr className="text-center small" style={{ position: 'sticky', top: '2.45rem', zIndex: '5' }}>
-            <th style={{ width: '10rem', verticalAlign: 'revert', color: 'white' }}>Employee Name</th>
-            <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white' }}>Projects</th>
-            <th style={{ width: '16rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
+            <th style={{ width: '12%', verticalAlign: 'revert', color: 'white' }}>Employee Name</th>
+            <th ref={projectRef} style={{ width: '16%', verticalAlign: 'revert', color: 'white' }}>Projects</th>
+            <th ref={taskDetailsRef} style={{ width: '16.5%', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 <span style={{ flexGrow: 1, textAlign: 'center' }}>Task Details</span>
                 <div className="taskEye" style={{ position: 'absolute', right: '1rem' }}>
@@ -369,7 +399,7 @@ function EmployeeOverview() {
               const currentDate = new Date(date.date);
               const isSunday = currentDate.getDay() === 0;
               return (
-                <th
+                <th ref={index === 0 ? dateRef : null}
                   key={index}
                   className={isSunday ? "th1th" : `th${date.day}`}
                   style={{
@@ -438,7 +468,7 @@ function EmployeeOverview() {
                 </div>
               </td>
               {showExpand[employee.id] ? (
-                <IndividualTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} />
+                <IndividualTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} columnWidths={columnWidths}/>
               ) : (
                 <AggregateTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} />
               )}

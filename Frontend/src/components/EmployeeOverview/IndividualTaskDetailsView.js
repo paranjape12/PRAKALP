@@ -12,7 +12,7 @@ import { CircularProgress } from '@mui/material';
 
 function GradientCircularProgress() {
     return (
-        <td colSpan={8} style={{ padding: '0.4rem 35rem', minWidth:'auto' }}>
+        <td colSpan={8} style={{ padding: '1% 10%', minWidth: 'auto' }}>
             <svg width={0} height={0}>
                 <defs>
                     <linearGradient id="my_gradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -27,7 +27,7 @@ function GradientCircularProgress() {
     );
 }
 
-function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDetails, handleToggleShowTimeComplete, seconds2dayhrmin }) {
+function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDetails, handleToggleShowTimeComplete, seconds2dayhrmin, columnWidths }) {
     const [deleteTaskDialogOpen, setDeleteTaskDialogOpen] = useState(false);
     const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
@@ -216,99 +216,85 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
             ) : (
                 <div className="task-container" style={{ display: 'flex', flexDirection: 'column' }}>
                     {taskDetails.tasks.map((task, index) => (
-                        <div key={index} className="p-0" style={{ width: '100%', verticalAlign: 'top', height: '100%', display: 'flex', border: 'none' }}>
-                            <div style={{ flex: '1', height: '2rem', display: 'flex', flexDirection: 'column', width: '14.2rem', marginLeft: '0' }}>
-                                <div style={{ height: '1.5rem', width: '14.2rem', border: 'none' }}>
-                                    <h6 className={`m-0 py-1 text-center font-weight-bold text-white ${getTaskStatusColor(task.Status, task.aproved)}`} style={{ marginTop: '0.5rem', fontSize: '11px' }}>
-                                        {task.TaskName}
-                                    </h6>
-                                    <FontAwesomeIcon icon={faTrashAlt} title='Delete Task' style={{ float: 'right', cursor: 'pointer', color: 'red', paddingTop: '0.2rem', paddingLeft: '0.5rem', paddingRight: '0.4rem' }} onClick={() => handleOpenDeleteTaskDialog(task)} />
-                                    <FontAwesomeIcon icon={faPencilAlt} title='Edit Task' style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={() => handleOpenEditTaskDialog(task)} />
-                                    {task.Status === "1" && (<FontAwesomeIcon icon={faCopyright} color='#1cc88a' title='Marked as Complete' style={{ float: 'right', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} />)}
-                                    <FontAwesomeIcon icon={faCircleInfo} title='Task Info' style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={() => handleTaskInfoDialogOpen(task)} />
-                                    {project.projectLastTask === 1 && (<FontAwesomeIcon icon={faL} title='Last Task' style={{ color: '#36b9cc', paddingTop: '0.2rem', float: 'right', paddingLeft: '0.5rem' }} />)}
-                                    <FontAwesomeIcon title='Show/Hide Time' icon={localShowTimeDetails ? faEyeSlash : faEye} onClick={handleToggleShowTimeComplete} style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem' }} />
-                                </div>
+                        <div key={index} className="p-0" style={{ width: '100%', display: 'flex', flexDirection: 'row', border: 'none' }}>
+                            {/* Task Detail Section */}
+                            <div style={{ flex: '1', display: 'flex', flexDirection: 'column', margin: '0', padding: '0' }}>
+                                <div style={{ height: '2rem', display: 'flex', flexDirection: 'column', width: 'auto' }}>
+                                    <div style={{ height: '1.5rem', display: 'flex', flexDirection: 'column', width: '100%', border: 'none' }}>
+                                        {/* Task title in its own line */}
+                                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                            <h6 className={`m-0 py-1 text-center font-weight-bold text-white ${getTaskStatusColor(task.Status, task.aproved)}`} style={{ width:'100%',fontSize: '11px', margin: '0' }}>
+                                                {task.TaskName}
+                                            </h6>
+                                        </div>
 
-                                <TaskInfoDialog
-                                    key={task.id}
-                                    open={taskInfoDialogOpen && selectedTask?.id === task.id}
-                                    project={project}
-                                    task={task}
-                                    taskDetails={taskInfoDetails}
-                                    handleClose={handleTaskInfoDialogClose}
-                                />
-
-                                <TaskCompletePopup
-                                    open={taskCompleteOpen}
-                                    task={task}
-                                    handleClose={handleCloseTaskCompleteDialog}
-                                    completionTime={taskCompletionTime}
-                                    timingId={selectedTimingId}
-                                />
-
-                                {selectedTask && selectedTask.id === task.id && (
-                                    <EditTaskTeamLeadVersion
-                                        open={editTaskDialogOpen}
-                                        handleClose={handleCloseEditTaskDialog}
-                                        projectDetails={selectedTask}
-                                    />
-                                )}
-
-                                {deleteTaskDialogOpen && taskToDelete?.id === task.id && (
-                                    <DeleteTaskPopup
-                                        task={taskToDelete}
-                                        open={deleteTaskDialogOpen}
-                                        handleClose={handleCloseDeleteTaskDialog}
-                                    />
-                                )}
-
-                                {localShowTimeDetails && (
-                                    <div className="card-body text-left" style={{ padding: '0', fontSize: '11px', height: 'auto', width: '13rem', marginLeft: '0.2rem', marginTop: '1rem' }}>
-                                        R: {seconds2dayhrmin(task.timetocomplete || 0)}
-                                        <br />
-                                        T: {seconds2dayhrmin(taskDetails.taskemps.find(emp => Number(emp.taskid) === task.id)?.actual || 0)}
+                                        {/* Icons in the next line */}
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%' }}>
+                                            <FontAwesomeIcon icon={faTrashAlt} title="Delete Task" style={{ cursor: 'pointer', color: 'red', paddingLeft: '0.5rem' }} onClick={() => handleOpenDeleteTaskDialog(task)} />
+                                            <FontAwesomeIcon icon={faPencilAlt} title="Edit Task" style={{ cursor: 'pointer', color: '#4e73df', paddingLeft: '0.5rem' }} onClick={() => handleOpenEditTaskDialog(task)} />
+                                            {task.Status === "1" && <FontAwesomeIcon icon={faCopyright} color="#1cc88a" title="Marked as Complete" style={{ paddingLeft: '0.5rem' }} />}
+                                            <FontAwesomeIcon icon={faCircleInfo} title="Task Info" style={{ cursor: 'pointer', color: '#4e73df', paddingLeft: '0.5rem' }} onClick={() => handleTaskInfoDialogOpen(task)} />
+                                            {project.projectLastTask === 1 && <FontAwesomeIcon icon={faL} title="Last Task" style={{ color: '#36b9cc', paddingLeft: '0.5rem' }} />}
+                                            <FontAwesomeIcon title="Show/Hide Time" icon={localShowTimeDetails ? faEyeSlash : faEye} onClick={handleToggleShowTimeComplete} style={{ cursor: 'pointer', color: '#4e73df', paddingLeft: '0.5rem' }} />
+                                        </div>
                                     </div>
-                                )}
 
+
+                                    {/* Task Dialogs */}
+                                    <TaskInfoDialog key={task.id} open={taskInfoDialogOpen && selectedTask?.id === task.id} project={project} task={task} taskDetails={taskInfoDetails} handleClose={handleTaskInfoDialogClose} />
+                                    <TaskCompletePopup open={taskCompleteOpen} task={task} handleClose={handleCloseTaskCompleteDialog} completionTime={taskCompletionTime} timingId={selectedTimingId} />
+                                    {selectedTask && selectedTask.id === task.id && (
+                                        <EditTaskTeamLeadVersion open={editTaskDialogOpen} handleClose={handleCloseEditTaskDialog} projectDetails={selectedTask} />
+                                    )}
+                                    {deleteTaskDialogOpen && taskToDelete?.id === task.id && (
+                                        <DeleteTaskPopup task={taskToDelete} open={deleteTaskDialogOpen} handleClose={handleCloseDeleteTaskDialog} />
+                                    )}
+
+                                    {/* Show Time Details */}
+                                    {localShowTimeDetails && (
+                                        <div className="card-body text-left" style={{ padding: '0', fontSize: '11px', marginTop: '1rem', marginLeft:'0.3rem'}}>
+                                            R: {seconds2dayhrmin(task.timetocomplete || 0)}
+                                            <br />
+                                            T: {seconds2dayhrmin(taskDetails.taskemps.find(emp => Number(emp.taskid) === task.id)?.actual || 0)}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <table>
+
+                            {/* Timing Table */}
+                            <table style={{ margin: '0', padding: '0', borderSpacing: '0' }}>
                                 <tbody>
+                                    {/* Planned Timings */}
                                     <tr>
-                                        <td title='Planned Timings' style={{ padding: '0.8rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none solid none none' }}>P</td>
+                                        <td title="Planned Timings" style={{ padding: '0.5rem', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', border: 'none' }}>P</td>
                                         {dates.map((date, i) => (
-                                            <td onClick={handleOpenAssignTaskDialog} title='Assign New Task' key={i} style={{ cursor: 'pointer', minWidth: '7.7rem', backgroundColor: 'gray', color: 'white', borderStyle: 'none solid solid none', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}
-                                            >
+                                            <td key={i} onClick={handleOpenAssignTaskDialog} title="Assign New Task" style={{ cursor: 'pointer', minWidth: `${(columnWidths.dateWidth / 16)}rem`, padding:'0.5rem', backgroundColor: 'gray', color: 'white', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
                                                 {loading ? '' : (
                                                     taskTimings.filter(timing => timing.taskDate === date.ymdDate && timing.taskid === task.id).map(timing => (
-                                                        <span key={timing.taskid} style={{ fontWeight: '700' }}>
-                                                            {employee.Nickname} : {seconds2hrmin(timing.planned || 0)}
-                                                        </span>
+                                                        <span key={timing.taskid} style={{ fontWeight: '700' }}>{employee.Nickname} : {seconds2hrmin(timing.planned || 0)}</span>
                                                     ))
                                                 )}
                                             </td>
                                         ))}
                                     </tr>
+
+                                    {/* Actual Timings */}
                                     <tr>
-                                        <td title='Actual Timings' style={{ padding: '0.8rem 0.5rem', fontSize: '13.44px' }}>A</td>
+                                        <td title="Actual Timings" style={{ padding: '0.5rem', fontSize: '13.44px' }}>A</td>
                                         {dates.map((date, i) => (
-                                            <td key={i} style={{ minWidth: '7.7rem', backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
+                                            <td key={i} style={{ minWidth: `${(columnWidths.dateWidth / 16)}rem`, backgroundColor: 'white', border: '1px solid gray', padding:'0.5rem', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
                                                 {loading ? '' : (
                                                     taskTimings.filter(timing => timing.taskDate === date.ymdDate && timing.taskid === task.id).map(timing => (
-                                                        <><span key={timing.id} style={{ fontWeight: '700', color: '#1cc88a', cursor: 'pointer' }} onClick={() => handleOpenTaskCompleteDialog(timing.actual, timing.id)} >
+                                                        <><span key={timing.id} style={{ fontWeight: '700', color: '#1cc88a', cursor: 'pointer' }} onClick={() => handleOpenTaskCompleteDialog(timing.actual, timing.id)}>
                                                             {employee.Nickname} :</span> {seconds2hrmin(timing.actual || 0)}
                                                         </>
-
                                                     ))
                                                 )}
                                             </td>
                                         ))}
                                     </tr>
                                     {assignTaskOpen && (
-                                        <AssignTaskDialog
-                                            open={assignTaskOpen}
-                                            onClose={handleCloseAssignTaskDialog}
-                                        />
+                                        <AssignTaskDialog open={assignTaskOpen} onClose={handleCloseAssignTaskDialog} />
                                     )}
                                 </tbody>
                             </table>

@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask';
 
-function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetails, handleToggleShowTimeComplete, seconds2dayhrmin }) {
+function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetails, handleToggleShowTimeComplete, seconds2dayhrmin, columnWidths }) {
     const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
     const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
     const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
@@ -150,11 +150,11 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
 
     const handleCloseAddTaskDialog = () => {
         setAddTaskDialogOpen(false);
-    };
+    };    
 
     return (
-        <div style={{ width: '14rem' }}>
-            <td style={{ minWidth: '14rem', padding: '0', border: 'none' }}>
+        <div style={{ width: '100%' }}>
+            <td style={{ minWidth: `${columnWidths.taskDetailsWidth * 0.93}px`, padding: '0', border: 'none' }}>
                 <div className="card" style={{ overflow: 'hidden' }}>
                     <div className={`text-center ${getTaskStatusColor(project.requiredTime, project.takenTime)}`} style={{ paddingRight: '4rem', paddingLeft: '0.3rem' }}>
                         <div style={{ fontSize: '14px' }} className="m-0 font-weight-bold text-left text-light">
@@ -181,20 +181,20 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
                     </div>
                 </div>
             </td>
-            <td style={{ padding: '0', width: '7rem' }}>
+            <td style={{ padding: '0', width: '6.5rem' }}>
                 <div style={{ verticalAlign: 'middle', height: 'auto', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <div title='Planned Timings' style={{ padding: '0.4rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none none none solid' }}>P</div>
-                    <div title='Actual Timings' style={{ padding: '0.4rem 0.5rem', fontSize: '13.44px', borderStyle: 'solid none none none', borderWidth: 'thin' }}>A</div>
+                    <div title='Planned Timings' style={{ padding: '0.4rem 0.4rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none none none solid' }}>P</div>
+                    <div title='Actual Timings' style={{ padding: '0.4rem 0.4rem', fontSize: '13.44px', borderStyle: 'solid none none none', borderWidth: 'thin' }}>A</div>
                 </div>
             </td>
             {dates.map((date, i) => (
-                <td key={i} style={{ padding: '0', fontSize: '15px', width: '7rem', overflow: 'hidden' }}>
+                <td key={i} style={{ padding: '0', fontSize: '15px', width: `${(columnWidths.dateWidth)*0.99}px`, overflow: 'hidden' }}>
                     <div
                         title='Create New Task'
                         style={{
                             cursor: 'pointer',
                             paddingTop: '0.2rem',
-                            width: '7.68rem',
+                            width: `${(columnWidths.dateWidth)*0.99}px`,
                             display: 'block',
                             backgroundColor: 'gray',
                             color: 'white',
@@ -210,7 +210,7 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
                     <div
                         style={{
                             paddingTop: '0.2rem',
-                            width: '7.68rem',
+                            width: `${(columnWidths.dateWidth)*0.99}px`,
                             display: 'block',
                             borderStyle: 'solid none none none',
                             textAlign: 'center',
