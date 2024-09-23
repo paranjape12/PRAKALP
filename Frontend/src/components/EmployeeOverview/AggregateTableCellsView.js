@@ -41,7 +41,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
     useEffect(() => {
         // Retrieve filterState from localStorage and extract `ev`
         const filterState = JSON.parse(localStorage.getItem('filterState'));
-        const projStates = filterState?.ev || [0, 1, 2, 3, 4]; // Default to [0,1,2,3,4] if ev is not found
+        const projStates = filterState?.ev; // Default to [1,2,3,4] if ev is not found
 
         axios.post(`${process.env.REACT_APP_API_BASE_URL}/empOverviewPrjIndividual`, {
             employeeid: empId,
@@ -67,7 +67,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
                 const filterState = JSON.parse(localStorage.getItem('filterState'));
 
                 // Check if filterState exists and has 'ev' property
-                const status = filterState?.ev || [];
+                const status = filterState?.ev;
 
                 // Make the API call with the empId, isComplete, and status parameters
                 const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/EmpOverviewtaskDtlsAggView`, {
@@ -116,10 +116,13 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
             .then(response => {
 
                 const data = response.data.reduce((acc, { taskDate, planned, actual }) => {
-                    const formattedDate = new Date(taskDate.slice(0, 10));
-                    const formattedDateStr = formattedDate.toISOString().slice(0, 10); // Convert back to "YYYY-MM-DD" string
-                    acc.planned[formattedDateStr] = planned;
-                    acc.actual[formattedDateStr] = actual;
+                    const dateObject = new Date(taskDate);
+                    const formattedDateStr = dateObject.toLocaleDateString();
+                    const [day, month, year] = formattedDateStr.split("/").map(Number);
+                    const convertedDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                    acc.planned[convertedDateStr] = planned;
+                    acc.actual[convertedDateStr] = actual;
                     return acc;
                 }, { planned: {}, actual: {} });
 
@@ -140,9 +143,9 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
                         <div>Average Completed Tasks: {averageCompletedTasks.toFixed(0)} %</div>
                     </td>
                     <td style={{ display: 'flex', padding: '0', borderStyle: 'none' }}>
-                        <div className="card" style={{ minWidth: '14.3rem'}}>
-                            <div className="card-header text-light" style={{ paddingRight: '5.3rem', paddingLeft: '0.3rem', paddingTop: '0', paddingBottom: '0' }}>
-                                <div style={{ fontSize: '13px' }} className="m-0 font-weight-bold text-left text-dark">
+                        <div className="card" style={{ minWidth: '90%' }}>
+                            <div className="card-header text-light" style={{ paddingLeft: '0.3rem', paddingTop: '0', paddingBottom: '0' }}>
+                                <div style={{ fontSize: '12.5px' }} className="m-0 font-weight-bold text-left text-dark">
                                     Total Task Assign: {totalTasks}
                                     <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time">
                                         <div className="taskEye" style={{ position: 'absolute', right: '0.5rem' }}>
@@ -165,7 +168,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
                                 )}
                             </div>
                         </div>
-                        <div style={{ verticalAlign: 'middle', height: 'auto', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ width: '10%', verticalAlign: 'middle', height: 'auto', display: 'flex', flexDirection: 'column' }}>
                             <td title='Planned Timings' style={{ padding: '0.4rem 0.5rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none none none solid' }}>P</td>
                             <td title='Actual Timings' style={{ padding: '0.4rem 0.5rem', fontSize: '13.44px', borderStyle: 'solid none none solid' }}>A</td>
                         </div>
