@@ -9,7 +9,6 @@ import axios from 'axios';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus, faCircleInfo,faD } from '@fortawesome/free-solid-svg-icons';
 
 import '../../pages/TaskOverview/TaskOverview.css';
-import { MenuItem } from '@material-ui/core';
 import EditEmployee1 from '../../components/EmployeeOverview/EditEmployee1';
 import LogsPopup from '../../components/EmployeeOverview/LogsPopup';
 import DeleteEmployeePopup from '../../components/EmployeeOverview/DeleteEmployeePopup';
@@ -189,13 +188,6 @@ function EmployeeOverview() {
     setProjectTimeDetails(initialProjectTimeDetails);
   }, [projects, showTimeDetails]);
 
-  // Modify the toggleShowTimeComplete function to toggle time details for a specific project
-  const toggleShowTimeComplete = (projectId) => {
-    setProjectTimeDetails((prevState) => ({
-      ...prevState,
-      [projectId]: !prevState[projectId] || false,
-    }));
-  };
 
   const fetchProjects = async () => {
     try {
@@ -281,30 +273,6 @@ function EmployeeOverview() {
     setDeleteEmployeeOpen(false);
   };
 
-
-  // Define the callback function to handle successfully deletion
-  // const handleEmployeeEnable = () => {
-  //   // Fetch updated employees list
-  //           // Fetch employees
-  //           axios
-  //           .post(`${process.env.REACT_APP_API_BASE_URL}/empDropdown", {
-  //             token: localStorage.getItem("token"),
-  //           })
-  //           .then((response) => {
-  //             if (Array.isArray(response.data)) {
-  //               setEmployees(response.data);
-  //             } else {
-  //               console.error("Error: Expected an array but got", response.data);
-  //             }
-  //           })
-  //           .catch((error) => {
-  //             console.error("Error fetching employees:", error);
-  //           });
-  //         }
-
-
-
-
   const handleEmployeeEnable = () => {
     // Fetch updated employees list after enabling the employee
     axios
@@ -359,6 +327,7 @@ function EmployeeOverview() {
   const handleCloseEditEmployeeDialog = () => {
     setEditEmployeeOpen(false);
   };
+  
   return (
     <>
       {dates.length > 0 && (
@@ -484,7 +453,8 @@ function EmployeeOverview() {
       </table>
       {editEmployeeOpen && (
         <EditEmployee1
-          open={editEmployeeOpen}
+          // open={editEmployeeOpen}
+          open={handleOpenEditEmployeeDialog}
           handleClose={handleCloseEditEmployeeDialog}
         />
       )}

@@ -584,7 +584,7 @@ const AddEmployee1 = ({ openDialog, handleClose  }) => {
       </Dialog>
       )}
       {OpenEditEmployeeDialog && 
-      <EditEmployee1 open={OpenEditEmployeeDialog} handleClose={handleEditEmployeeCloseDialog} onBack={handleAddEmployeeBackDialog }/>}
+      <EditEmployee1 open={openDialog} handleClose={handleClose} onBack={handleAddEmployeeBackDialog }/>}
 
     </>
   );

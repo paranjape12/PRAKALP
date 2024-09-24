@@ -11,7 +11,6 @@ const EditEmployee1 = ({ open, handleClose }) => {
 
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [employees, setEmployees] = useState([]);
-  const [openDialog, setOpenDialog] = useState(false);
   const [showPasswordFields, setShowPasswordFields] = useState(true);
   const [loadingAccessData, setLoadingAccessData] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(0);
@@ -281,20 +280,11 @@ const EditEmployee1 = ({ open, handleClose }) => {
     setOpenAddEmployeeDialog(true);
   };
 
-  const handleAddEmployeeCloseDialog = () => {
-    setShowMainDialog(false);
-    setOpenAddEmployeeDialog(false);
-  };
-
-  const handleAddEmployeeBackDialog = () => {
-    setShowMainDialog(true);
-    setOpenAddEmployeeDialog(false);
-  };
-
+ 
   return (
     <>
     {showMainDialog && (
-    <Dialog open={open} maxWidth='md'>
+    <Dialog open={open} maxWidth='md' onClose={handleClose}>
       <DialogTitle>Edit Employee
         <Button className='addEmp-btn' style={{ marginLeft: '35rem' }}
          onClick={handleAddEmployeeClick} color='primary' variant='contained'>Add Employee</Button>
@@ -554,8 +544,8 @@ const EditEmployee1 = ({ open, handleClose }) => {
     </Dialog>
   )};
     {OpenAddEmployeeDialog && 
-      <AddEmployee1 openDialog={OpenAddEmployeeDialog} handleClose={handleAddEmployeeCloseDialog} />}
-      {/* onBack={handleEditEmployeeBackDialog } */}
+      <AddEmployee1 openDialog={open} handleClose={handleClose} />}
+     
 
    </>
     
