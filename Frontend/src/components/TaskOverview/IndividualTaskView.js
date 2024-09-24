@@ -8,6 +8,7 @@ import DeleteTaskPopup from './DeleteTaskPopup';
 import TaskCompletePopup from './TaskCompletePopup';
 import { Buffer } from 'buffer';
 import { format } from 'date-fns';
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 
 function getTaskStatusColor(status, approved) {
   if (approved === 1) {
@@ -31,7 +32,9 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
   const [timingId, setTimingId] = useState(null);  
   const [taskTimings, setTaskTimings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [taskCompletionTime, setTaskCompletionTime] = useState(null);  // New state to hold task completion time
+  const [taskCompletionTime, setTaskCompletionTime] = useState(null);  
+  const [taskCompletionLog, setTaskCompletionLog] = useState('');  
+  const [taskCompletionStatus, setTaskCompletionStatus] = useState('');  
 
   const seconds2hrmin = (ss) => {
     const h = Math.floor(ss / 3600); // Total hours
@@ -42,6 +45,8 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
 
     return `${formattedH} : ${formattedM}`;
   };
+
+  const userData = getUserDataFromToken();
 
   useEffect(() => {
     const fetchTaskDetails = async () => {
@@ -67,7 +72,9 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
         const responses = await Promise.all(formattedDates.map(formattedDate => (
           axios.post(`${process.env.REACT_APP_API_BASE_URL}/indViewPATimes`, {
             projectName: project.projectName,
-            dates: [formattedDate]
+            dates: [formattedDate],
+            role: userData.Type,
+            id: userData.id
           })
         )));
         const responseData = responses.map(response => response.data);
@@ -77,7 +84,6 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
         console.error('Failed to fetch task timings:', error);
       }
     };
-
     fetchTaskTimings();
   }, [project.projectName, dates]);
 
@@ -120,9 +126,11 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
     setDeleteTaskDialogOpen(false);
   };
 
-  const handleOpenTaskCompleteDialog = (time, timingId) => {
+  const handleOpenTaskCompleteDialog = (time, timingId, logs, Status) => {
     setTaskCompletionTime(time);
+    setTaskCompletionLog(logs);
     setTimingId(timingId);  
+    setTaskCompletionStatus(Status);
     setTaskCompleteOpen(true);
   };
   
@@ -176,7 +184,9 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
               open={taskCompleteOpen}
               task={task}
               handleClose={handleCloseTaskCompleteDialog}
-              completionTime={taskCompletionTime}  // Pass the task completion time as a prop
+              completionTime={taskCompletionTime} 
+              completionLog={taskCompletionLog} 
+              completionStatus={taskCompletionStatus} 
               timingId={timingId}
             />
           )}
@@ -250,8 +260,8 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
                     {!loading && (
                       taskTimings[i]?.map(timing => (
                         timing.taskid === task.taskId ? (
-                          <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual, timing.id)} style={{ cursor: 'pointer' }}>
-                            <span style={{ color: '#1cc88a' }}>
+                          <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual, timing.id, timing.tasklog, timing.Status)} style={{ cursor: 'pointer' }}>
+                            <span style={{ color: '#1cc88a' }}> 
                               {timing.nickname}
                             </span> : <span style={{ color: 'inherit', cursor:'default'}}>
                               {seconds2hrmin(timing.actual)}

@@ -263,6 +263,8 @@ exports.aggViewPATimes = (req, res) => {
 exports.indViewPATimes = (req, res) => {
   const projectName = req.body.projectName;
   const dates = req.body.dates;
+  const role = req.body.role; // New role parameter
+  const id = req.body.id; // New id parameter
 
   const sqlGetTaskIds = `
     SELECT id
@@ -284,15 +286,33 @@ exports.indViewPATimes = (req, res) => {
       return;
     }
 
-    const sqlGetSums = `
-      SELECT id, DATE(tasktimeemp), taskid, AssignedTo_emp as empid, timetocomplete_emp AS planned,
-             actualtimetocomplete_emp AS actual
-      FROM Taskemp
+    // Conditionally modify the WHERE clause based on role
+    let sqlGetSums = `
+      SELECT 
+    te.id, 
+    DATE(te.tasktimeemp), 
+    te.taskid, 
+    te.AssignedTo_emp AS empid, 
+    te.timetocomplete_emp AS planned, 
+    te.actualtimetocomplete_emp AS actual,
+    te.tasklog AS tasklog,
+    t.Status AS Status
+FROM 
+    Taskemp te
+JOIN 
+    Task t ON te.taskid = t.id 
       WHERE DATE(tasktimeemp) IN (?)
         AND taskid IN (?)
     `;
 
-    db.query(sqlGetSums, [dates, taskIds], (err, sumResults) => {
+    // If role is Employee, add an additional condition for AssignedTo_emp
+    const queryParams = [dates, taskIds];
+    if (role === 'Employee') {
+      sqlGetSums += ` AND AssignedTo_emp = ?`;
+      queryParams.push(id); // Add employee's id to the parameters
+    }
+
+    db.query(sqlGetSums, queryParams, (err, sumResults) => {
       if (err) {
         console.log('Error executing ind query:', err);
         res.status(500).json({ error: 'Error executing SUM query' });
@@ -506,7 +526,7 @@ exports.EmpOverviewtaskDtlsAggView = async (req, res) => {
       sql += ` AND aproved = '0'`;
     }
 
-     // Execute the final query
+    // Execute the final query
     const tasksResult = await query(sql, params);
 
     // Only send the task count in the response
