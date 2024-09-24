@@ -79,8 +79,6 @@ function EmployeeOverview() {
   const today = new Date();
 
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-  const [expandedProjects, setExpandedProjects] = useState({});
   const [dates, setDates] = useState([]);
   const [startDateIndex, setStartDateIndex] = useState(0);
 
@@ -181,10 +179,7 @@ function EmployeeOverview() {
     fetchEmployees();
   }, [settingsValue, showComplete]);
   
-  
-  
 
-  
 
   useEffect(() => {
     const initialProjectTimeDetails = {};
@@ -240,13 +235,7 @@ function EmployeeOverview() {
   }, []);
 
   
-  const handleOpenEditEmployeeDialog = () => {
-    setEditEmployeeOpen(true);
-  };
 
-  const handleCloseEditEmployeeDialog = () => {
-    setEditEmployeeOpen(false);
-  };
 
   const handleOpenLogsDialog = (employee) => {
     setSelectedEmployee(employee);
@@ -346,7 +335,6 @@ function EmployeeOverview() {
     setEnableEmployeeOpen(false);       // Close the dialog
   };
   
-
   //Setting filter Yes/No
   // Handler to open/close the SettingsDialog
   const handleOpenSettingsDialog = () => {
@@ -363,6 +351,14 @@ function EmployeeOverview() {
     setSettingsDialogOpen(false); // Close the dialog after applying settings
   };
 
+
+  const handleOpenEditEmployeeDialog = () => {
+    setEditEmployeeOpen(true);
+  };
+
+  const handleCloseEditEmployeeDialog = () => {
+    setEditEmployeeOpen(false);
+  };
   return (
     <>
       {dates.length > 0 && (

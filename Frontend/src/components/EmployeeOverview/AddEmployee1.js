@@ -16,37 +16,19 @@ import {
   FormControlLabel,
   InputAdornment,
   IconButton,
-  Table,
-  TableHead,
-  TableCell,
-  TableRow,
-  TableBody,
+ 
 } from "@material-ui/core";
 import "../Navbar/Dropdown/Manage Employee/AddEmployee.css";
 import EditEmployee1 from "./EditEmployee1";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { toast } from 'react-toastify';
 
 const AddEmployee1 = ({ openDialog, handleClose  }) => {
-  const emailRef = useRef(null);
   const [showPasswordFields, setShowPasswordFields] = useState(true);
-  const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [emailError, setemailError] = useState([]);
-  const [roleError, setRoleError] = useState("");
-  const [locationError, setLocationError] = useState("");
-
   const [OpenEditEmployeeDialog, setOpenEditEmployeeDialog] = useState(false);
   const [showMainDialog, setShowMainDialog] = useState(true);
   
-  const showMessage = (setMessage, message) => {
-    setMessage(message);
-    setTimeout(() => {
-      setMessage("");
-      if (setMessage === setSuccessMessage) handleClose();
-    }, 3000);
-  };
 
   const handleEditEmployeeClick = () => {
     setShowMainDialog(false);
@@ -199,31 +181,17 @@ const AddEmployee1 = ({ openDialog, handleClose  }) => {
 
     const emailDomain = "@protovec.com";
     if (!formData.Email.endsWith(emailDomain)) {
-      setemailError(`Email must end with ${emailDomain}`);
-      setTimeout(() => {
-        setemailError("");
-       }, 3000);
-      return;
+      toast.error(`Email must end with ${emailDomain}`);
     }
 
     const { Name, Email, Password, confirmPassword, Type, Location , Nickname } = formData;
     
     if (formData.Type === "unset") {
-      setRoleError("Role is required");
-      setTimeout(() => {
-        setRoleError("");
-       }, 3000);
-    } else {
-      setRoleError("");
-    }  
+      toast.error("Role is required");
+    }
 
     if (formData.Location === "unset") {
-      setLocationError("Location is required");
-      setTimeout(() => {
-        setLocationError("");
-       }, 3000);
-    } else {
-      setLocationError("");
+      toast.error("Location is required");
     }
 
     // Extract first name and last name from full name
@@ -247,7 +215,7 @@ const AddEmployee1 = ({ openDialog, handleClose  }) => {
     const passwordRegex =
       /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(newPassword)) {
-      setErrorMessage("Password must be in format 'Abc@123'");
+      toast.error("Password must be in format 'Abc@123'");
       return;
     }
 
@@ -272,7 +240,7 @@ const AddEmployee1 = ({ openDialog, handleClose  }) => {
         .post(`${process.env.REACT_APP_API_BASE_URL}/addemployee`, requestData)
         .then((response) => {
           if (response.status === 200) {
-            showMessage(setSuccessMessage, "Employee added successfully!");
+            toast.success("Employee added successfully!");
             setFormData({
               Name: "",
               Email: "",
@@ -287,15 +255,13 @@ const AddEmployee1 = ({ openDialog, handleClose  }) => {
           }
         })
         .catch((error) => {
-          showMessage(setErrorMessage, "Employee add failed!");
+          toast.error( "Employee add failed!");
           console.error("There was an error adding the employee!", error);
         });
     } else {
-      setErrorMessage("Please fill all the required fields correctly");
-      setTimeout(() => {
-        setErrorMessage("");
-       }, 3000);
+      toast.error("Please fill all the required fields correctly");
     }
+    handleClose(); // Close Add Employee dialog after adding
   };
 
   // Create a ref for Transition
@@ -370,7 +336,7 @@ const AddEmployee1 = ({ openDialog, handleClose  }) => {
                 required
                 type="email"
                 style={{ marginBottom: "1rem" }}
-              />{emailError && <p style={{ color: "red" }}>{emailError}</p>}
+              />
               <div className="row form-group1">
                 {/* Role Field */}
                 <div className="col-md-6">
@@ -399,7 +365,7 @@ const AddEmployee1 = ({ openDialog, handleClose  }) => {
                           <MenuItem value="Employee">Employee</MenuItem>
                         </Select>
                       </FormControl>
-                      {roleError && <p style={{ color: "red" }}>{roleError}</p>}
+                     
                     </div>
                   </div>
                 </div>
@@ -428,9 +394,7 @@ const AddEmployee1 = ({ openDialog, handleClose  }) => {
                           <MenuItem value="Ratnagiri">Ratnagiri</MenuItem>
                         </Select>
                       </FormControl>
-                      {locationError && (
-                        <p style={{ color: "red" }}>{locationError}</p>
-                      )}
+                     
                     </div>
                   </div>
                 </div>
@@ -595,20 +559,8 @@ const AddEmployee1 = ({ openDialog, handleClose  }) => {
               </div>
             </div>
           </form>
-          {errorMessage && (
-            <p
-              style={{ color: "red", marginTop: "0.5rem", textAlign: "center" }}
-            >
-              {errorMessage}
-            </p>
-          )}
-          {successMessage && (
-            <div className="text-center">
-              <p style={{ color: "green", marginTop: "0.5rem" }}>
-                {successMessage}
-              </p>
-            </div>
-          )}
+         
+          
           <hr style={{ marginTop: "1rem", marginBottom: "0" }} />
         </DialogContent>
         <DialogActions>
@@ -631,7 +583,8 @@ const AddEmployee1 = ({ openDialog, handleClose  }) => {
         </DialogActions>
       </Dialog>
       )}
-      {OpenEditEmployeeDialog && <EditEmployee1 open={OpenEditEmployeeDialog} handleClose={handleEditEmployeeCloseDialog} onBack={handleAddEmployeeBackDialog }/>}
+      {OpenEditEmployeeDialog && 
+      <EditEmployee1 open={OpenEditEmployeeDialog} handleClose={handleEditEmployeeCloseDialog} onBack={handleAddEmployeeBackDialog }/>}
 
     </>
   );

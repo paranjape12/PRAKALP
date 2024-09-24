@@ -4,7 +4,8 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, F
 import AddEmployee1 from './AddEmployee1';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import DeleteEmployeePopup from '../EmployeeOverview/DeleteEmployeePopup';
+import DeleteEmployeePopup from '../../components/EmployeeOverview/DeleteEmployeePopup';
+import { toast } from 'react-toastify';
 
 const EditEmployee1 = ({ open, handleClose }) => {
 
@@ -12,17 +13,6 @@ const EditEmployee1 = ({ open, handleClose }) => {
   const [employees, setEmployees] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [showPasswordFields, setShowPasswordFields] = useState(true);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const showMessage = (setMessage, message) => {
-    setMessage(message);
-    setTimeout(() => {
-      setMessage('');
-      if (setMessage === setSuccessMessage) handleClose();
-    }, 1500);
-  };
-
   const [loadingAccessData, setLoadingAccessData] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(0);
   const [openDeletePopup, setOpenDeletePopup] = useState(false);
@@ -183,19 +173,18 @@ const EditEmployee1 = ({ open, handleClose }) => {
     e.preventDefault();
 
     if (formData.Password !== formData.confirmPassword) {
-      setErrorMessage(`Passwords do not match`);
+      toast.error(`Passwords do not match`);
       return;
     }
 
-    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$.!%*?&])[A-Za-z\d@$!.%*?&]{8,}$/;
     if (!passwordRegex.test(formData.Password)) {
-      setErrorMessage(`Password must be in format 'Abc@123'`);
+      toast.error(`Password must be in format 'Abc@123'`);
       return;
     }
-
     const emailDomain = "@protovec.com";
     if (!formData.Email.endsWith(emailDomain)) {
-      setErrorMessage(`Email must end with ${emailDomain}`);
+      toast.error(`Email must end with ${emailDomain}`);
       return;
     }
 
@@ -222,10 +211,11 @@ const EditEmployee1 = ({ open, handleClose }) => {
 
     axios.put(`${process.env.REACT_APP_API_BASE_URL}/updateemployee`, requestData)
       .then(response => {
-        showMessage(setSuccessMessage, "Employee updated successfully!");
+        toast.success("Employee updated successfully!");
+        setTimeout(handleClose, 2500);
       })
       .catch(error => {
-        showMessage(setErrorMessage, "Employee update failed!");
+        toast.error("Employee update failed!");
         console.error('There was an error updating the employee!', error);
       });
   };
@@ -246,7 +236,6 @@ const EditEmployee1 = ({ open, handleClose }) => {
         console.error('Error fetching employees:', error);
       });
   }, []);
-
 
   const handleEmployeeDeleted = () => {
     // Fetch updated employees list
@@ -283,11 +272,33 @@ const EditEmployee1 = ({ open, handleClose }) => {
     setSelectedEmployeeId(null);
   };
 
+
+  const [OpenAddEmployeeDialog, setOpenAddEmployeeDialog] = useState(false);
+  const [showMainDialog, setShowMainDialog] = useState(true);
+  
+  const handleAddEmployeeClick = () => {
+    setShowMainDialog(false);
+    setOpenAddEmployeeDialog(true);
+  };
+
+  const handleAddEmployeeCloseDialog = () => {
+    setShowMainDialog(false);
+    setOpenAddEmployeeDialog(false);
+  };
+
+  const handleAddEmployeeBackDialog = () => {
+    setShowMainDialog(true);
+    setOpenAddEmployeeDialog(false);
+  };
+
   return (
+    <>
+    {showMainDialog && (
     <Dialog open={open} maxWidth='md'>
       <DialogTitle>Edit Employee
-        <Button className='addEmp-btn' style={{ marginLeft: '35rem' }} onClick={() => setOpenDialog(true)} color='primary' variant='contained'>Add Employee</Button>
-        <AddEmployee1 openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} />
+        <Button className='addEmp-btn' style={{ marginLeft: '35rem' }}
+         onClick={handleAddEmployeeClick} color='primary' variant='contained'>Add Employee</Button>
+        {/* <AddEmployee openDialog={openDialog} setOpenDialog={setOpenDialog} pages={pages} /> */}
         <hr style={{ marginTop: "0.3rem", marginBottom: "0" }} />
       </DialogTitle>
       <DialogContent>
@@ -522,12 +533,6 @@ const EditEmployee1 = ({ open, handleClose }) => {
             </div>
           </div>
         </form>
-        {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
-        {successMessage && (
-          <div className="text-center">
-            <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
-          </div>
-        )}
       </DialogContent>
       <DialogActions>
         <Button className='close-btn' onClick={handleClose} variant='contained'>
@@ -547,6 +552,13 @@ const EditEmployee1 = ({ open, handleClose }) => {
         onEmployeeDeleted={handleEmployeeDeleted} // Pass the callback function
       />
     </Dialog>
+  )};
+    {OpenAddEmployeeDialog && 
+      <AddEmployee1 openDialog={OpenAddEmployeeDialog} handleClose={handleAddEmployeeCloseDialog} />}
+      {/* onBack={handleEditEmployeeBackDialog } */}
+
+   </>
+    
   );
 };
 
