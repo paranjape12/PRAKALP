@@ -16,7 +16,7 @@ import {
   InputAdornment,
 } from '@mui/material';
 
-const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId }) => {
+const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId, completionLog, completionStatus }) => {
   const [taskComplete, setTaskComplete] = useState(false);
   const [taskInProgress, setTaskInProgress] = useState(false);
   const [taskNotComplete, setTaskNotComplete] = useState(false);
@@ -40,7 +40,16 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId }
       };
       seconds2hrmin(completionTime);
     }
-  }, [completionTime]);
+    if (completionLog){
+      setLog(completionLog);
+    }
+    if (completionStatus == '1'){
+      setTaskComplete(true);
+    }
+    if (completionStatus == '2'){
+      setTaskInProgress(true);
+    }
+  }, [completionTime, completionLog, completionStatus]);
 
   const theme = createTheme({
     typography: {
