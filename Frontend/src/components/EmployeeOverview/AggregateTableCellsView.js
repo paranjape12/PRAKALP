@@ -91,47 +91,94 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
 
 
     useEffect(() => {
-        axios.post(`${process.env.REACT_APP_API_BASE_URL}/emptaskDtlsAggTimes`, { empid: empId, iscomplete: isComplete })
-            .then(response => {
+        // Function to fetch time details data
+        const fetchTimeDetails = async () => {
+            try {
+                // Retrieve the filterState from localStorage
+                const filterState = JSON.parse(localStorage.getItem('filterState'));
+
+                // Check if filterState exists and has 'ev' property
+                const status = filterState?.ev;
+
+                if (!Array.isArray(status)) {
+                    console.error('Invalid status format. Expected an array.');
+                    return;
+                }
+
+                // Make the API call with the empId, isComplete, and status array
+                const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/emptaskDtlsAggTimes`, {
+                    empid: empId,
+                    iscomplete: isComplete,
+                    status
+                });
+
+                // Extract required and taken from response
                 const { required, taken } = response.data;
-                setProjectTimeDetails(prevDetails => ({ ...prevDetails, required, taken }));
-            })
-            .catch(error => {
+
+                // Update projectTimeDetails with the response data
+                setProjectTimeDetails(prevDetails => ({
+                    ...prevDetails,
+                    required,
+                    taken
+                }));
+            } catch (error) {
                 console.error('There was an error fetching the time details!', error);
-            });
+            }
+        };
+
+        fetchTimeDetails();
     }, [empId, isComplete]);
 
     useEffect(() => {
-        // Extract the first and last dates from the dates array
-        const startDate = new Date(dates[0].date).toISOString().slice(0, 10);
-        const endDate = new Date(dates[dates.length - 1].date).toISOString().slice(0, 10);
-
-        axios.get(`${process.env.REACT_APP_API_BASE_URL}/empAggtasktimes`, {
-            params: {
-                startDate: startDate,
-                endDate: endDate,
-                assignedToEmp: empId
-            }
-        })
-            .then(response => {
-
+        const fetchAggTaskTimes = async () => {
+            try {
+                // Retrieve the filterState from localStorage, similar to emptaskDtlsAggTimes
+                const filterState = JSON.parse(localStorage.getItem('filterState'));
+    
+                // Check if filterState exists and has 'ev' property
+                const status = filterState?.ev;
+    
+                if (!Array.isArray(status)) {
+                    console.error('Invalid status format. Expected an array.');
+                    return;
+                }
+    
+                // Convert dates to the required format (YYYY-MM-DD)
+                const startDate = new Date(dates[0].date).toISOString().slice(0, 10);
+                const endDate = new Date(dates[dates.length - 1].date).toISOString().slice(0, 10);
+    
+                // Make the API call to empAggtasktimes, passing the status array in params
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/empAggtasktimes`, {
+                    params: {
+                        startDate: startDate,
+                        endDate: endDate,
+                        assignedToEmp: empId,
+                        status: status // Pass status array here
+                    }
+                });
+    
+                // Process the response data
                 const data = response.data.reduce((acc, { taskDate, planned, actual }) => {
                     const dateObject = new Date(taskDate);
                     const formattedDateStr = dateObject.toLocaleDateString();
                     const [day, month, year] = formattedDateStr.split("/").map(Number);
                     const convertedDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
+    
                     acc.planned[convertedDateStr] = planned;
                     acc.actual[convertedDateStr] = actual;
                     return acc;
                 }, { planned: {}, actual: {} });
-
+    
+                // Update projectTimeDetails with the new data
                 setProjectTimeDetails(prevDetails => ({ ...prevDetails, ...data }));
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error fetching data for dates:', error);
-            });
+            }
+        };
+    
+        fetchAggTaskTimes();
     }, [empId, dates]);
+    
 
     return (
         <>
@@ -144,7 +191,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
                     </td>
                     <td style={{ display: 'flex', padding: '0', borderStyle: 'none' }}>
                         <div className="card" style={{ minWidth: '90%' }}>
-                            <div className="card-header text-light" style={{ paddingLeft: '0.3rem', paddingTop: '0', paddingBottom: '0' }}>
+                            <div className="card-header text-light" style={{ paddingTop: '0', paddingBottom: '0' }}>
                                 <div style={{ fontSize: '12.5px' }} className="m-0 font-weight-bold text-left text-dark">
                                     Total Task Assign: {totalTasks}
                                     <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time">
