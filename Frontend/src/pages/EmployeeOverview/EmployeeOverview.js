@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import AggregateTableCellsView from '../../components/EmployeeOverview/AggregateTableCellsView';
 import IndividualTableCellsView from '../../components/EmployeeOverview/IndividualTableCellsView';
 import axios from 'axios';
-import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus, faCircleInfo,faD } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus, faCircleInfo, faD } from '@fortawesome/free-solid-svg-icons';
 
 import '../../pages/TaskOverview/TaskOverview.css';
 import EditEmployee1 from '../../components/EmployeeOverview/EditEmployee1';
@@ -29,13 +29,14 @@ function EmployeeOverview() {
     return JSON.parse(storedValue) || false; // Ensure a default value
   });
 
-  
+
 
   const [showExpand, setShowExpand] = useState({});
   const [projects, setProjects] = useState([]);
   const [showTimeDetails, setShowTimeDetails] = useState(true);
   const [projectTimeDetails, setProjectTimeDetails] = useState({});
   const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
+  const [menuicons, setMenuicons] = useState(false);
   const [logsPopupOpen, setLogsPopupOpen] = useState(false);
   const [deleteEmployeeOpen, setDeleteEmployeeOpen] = useState(false);
   const [enableEmployeeOpen, setEnableEmployeeOpen] = useState(false);
@@ -45,28 +46,26 @@ function EmployeeOverview() {
   const projectRef = useRef(null);
   const taskDetailsRef = useRef(null);
   const dateRef = useRef(null);
-  
+
   const [columnWidths, setColumnWidths] = useState({
     projectWidth: 0,
     taskDetailsWidth: 0,
     dateWidth: 0,
   });
 
+  const updateColumnWidths = () => {
+    const projectWidth = projectRef.current ? projectRef.current.getBoundingClientRect().width : 0;
+    const taskDetailsWidth = taskDetailsRef.current ? taskDetailsRef.current.getBoundingClientRect().width : 0;
+    const dateWidth = dateRef.current ? dateRef.current.getBoundingClientRect().width : 0;
+
+    setColumnWidths({
+      projectWidth: projectWidth,
+      taskDetailsWidth: taskDetailsWidth,
+      dateWidth: dateWidth,
+    });
+  };
+
   useEffect(() => {
-    const updateColumnWidths = () => {
-      const projectWidth = projectRef.current ? projectRef.current.getBoundingClientRect().width : 0;
-      const taskDetailsWidth = taskDetailsRef.current ? taskDetailsRef.current.getBoundingClientRect().width : 0;
-      const dateWidth = dateRef.current ? dateRef.current.getBoundingClientRect().width : 0;
-
-      setColumnWidths({
-        projectWidth: projectWidth, 
-        taskDetailsWidth: taskDetailsWidth,
-        dateWidth: dateWidth,
-      });
-    };
-
-    // Measure widths on mount and when the window resizes
-    updateColumnWidths();
     window.addEventListener('resize', updateColumnWidths);
     return () => {
       window.removeEventListener('resize', updateColumnWidths);
@@ -109,11 +108,12 @@ function EmployeeOverview() {
       ...prevState,
       [id]: !prevState[id],
     }));
+    updateColumnWidths();
   };
 
   const seconds2hrmin = (ss) => {
-    if(ss==0){
-        return ` `;
+    if (ss == 0) {
+      return ` `;
     }
     const h = Math.floor(ss / 3600); // Total hours
     const m = Math.floor((ss % 3600) / 60); // Remaining minutes
@@ -122,7 +122,7 @@ function EmployeeOverview() {
     const formattedM = m < 10 ? '0' + m : m;
 
     return `${formattedH} : ${formattedM}`;
-};
+  };
 
   const handleTodayClick = () => {
     setStartDateIndex(0);
@@ -160,11 +160,11 @@ function EmployeeOverview() {
         const apiUrl = settingsValue === "yes"
           ? `${process.env.REACT_APP_API_BASE_URL}/allEmployeeOverview`
           : `${process.env.REACT_APP_API_BASE_URL}/empDropdown`;
-        
+
         const response = await axios.post(apiUrl, {
           token: localStorage.getItem("token"),
         });
-        
+
         if (Array.isArray(response.data)) {
           setEmployees(response.data);
         } else {
@@ -177,7 +177,7 @@ function EmployeeOverview() {
 
     fetchEmployees();
   }, [settingsValue, showComplete]);
-  
+
 
 
   useEffect(() => {
@@ -226,7 +226,7 @@ function EmployeeOverview() {
     return () => clearInterval(intervalId);
   }, []);
 
-  
+
 
 
   const handleOpenLogsDialog = (employee) => {
@@ -240,29 +240,29 @@ function EmployeeOverview() {
   };
 
 
-   // Define the callback function to handle successfully deletion
-   const handleEmployeeDeleted = () => {
+  // Define the callback function to handle successfully deletion
+  const handleEmployeeDeleted = () => {
     // Fetch updated employees list
-   
-      // Fetch employees
-      axios
-        .post(`${process.env.REACT_APP_API_BASE_URL}/empDropdown`, {
-          token: localStorage.getItem("token"),
-        })
-        .then((response) => {
-          if (Array.isArray(response.data)) {
-            setEmployees(response.data);
-          } else {
-            console.error("Error: Expected an array but got", response.data);
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching employees:", error);
-        });
+
+    // Fetch employees
+    axios
+      .post(`${process.env.REACT_APP_API_BASE_URL}/empDropdown`, {
+        token: localStorage.getItem("token"),
+      })
+      .then((response) => {
+        if (Array.isArray(response.data)) {
+          setEmployees(response.data);
+        } else {
+          console.error("Error: Expected an array but got", response.data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching employees:", error);
+      });
   };
 
-  
-// Delete employee popup
+
+  // Delete employee popup
   const handleOpenDeleteEmployeeDialog = (employeeId) => {
     setSelectedEmployeeId(employeeId);
     setDeleteEmployeeOpen(true);
@@ -290,19 +290,19 @@ function EmployeeOverview() {
         console.error('Error fetching employees:', error);
       });
   };
-  
+
 
   // Enable employee popup
   const handleOpenEnableEmployeeDialog = (employeeId) => {
     setSelectedEmployeeId(employeeId);  // Set the employee ID to enable
     setEnableEmployeeOpen(true);        // Open the dialog
   };
-  
+
   const handleCloseEnableEmployeeDialog = () => {
     setSelectedEmployeeId(null);        // Reset employee ID
     setEnableEmployeeOpen(false);       // Close the dialog
   };
-  
+
   //Setting filter Yes/No
   // Handler to open/close the SettingsDialog
   const handleOpenSettingsDialog = () => {
@@ -312,8 +312,8 @@ function EmployeeOverview() {
     setSettingsDialogOpen(false);
   };
 
-   // Handler to get settings from SettingsDialog (onApply)
-   const handleSettingsApply = (value) => {
+  // Handler to get settings from SettingsDialog (onApply)
+  const handleSettingsApply = (value) => {
     setSettingsValue(value); // Save the Yes/No value
     // console.log(settingsValue);
     setSettingsDialogOpen(false); // Close the dialog after applying settings
@@ -326,8 +326,8 @@ function EmployeeOverview() {
 
   const handleCloseEditEmployeeDialog = () => {
     setEditEmployeeOpen(false);
-  };
-  
+  };  
+
   return (
     <>
       {dates.length > 0 && (
@@ -342,7 +342,7 @@ function EmployeeOverview() {
           onOpenSettingsDialog={handleOpenSettingsDialog} // Pass open handler to Navbar
         />
       )}
-      <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed'  }}>
+      <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed' }}>
         <thead className="text-white" id="theader" style={{ fontSize: '13px' }}>
           <tr className="text-center small" style={{ position: 'sticky', top: '2.45rem', zIndex: '5' }}>
             <th style={{ width: '12%', verticalAlign: 'revert', color: 'white' }}>Employee Name</th>
@@ -387,67 +387,70 @@ function EmployeeOverview() {
         <tbody className="projectviewtbody">
           {employees.map((employee) => (
             <>
-            <tr className="text-center small" key={employee.id}>
-              <td className="p-1">
-                <div>
-                  <FontAwesomeIcon
-                    className="text-primary"
-                    icon={showExpand[employee.id] ? faMinus : faPlus}
-                    style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.3rem' }}
-                    onClick={() => handleExpandTasks(employee.id)}
-                  />
-                  {employee.disableemp === 1 ? (
-                        
-                        <img
-                        className="font-weight-bold"
-                         src={Disableemp}
-                         style={{ float: 'right', cursor: 'pointer', width:'18px', marginRight:'0.4rem' }}
-                         onClick={() => handleOpenEnableEmployeeDialog(employee.id)}
-                       />
-                      ) : (
+              <tr className="text-center small" key={employee.id}>
+                <td className="p-1">
+                  <div>
+                    <FontAwesomeIcon
+                      className="text-primary"
+                      icon={showExpand[employee.id] ? faMinus : faPlus}
+                      style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.3rem' }}
+                      onClick={() => handleExpandTasks(employee.id)}
+                    />
+                    {!showExpand[employee.id] && (
+                      <>
+                        {employee.disableemp === 1 ? (                          
+                          <img
+                            className="font-weight-bold"
+                            src={Disableemp}
+                            style={{ float: 'right', cursor: 'pointer', width: '18px', marginRight: '0.4rem' }}
+                            onClick={() => handleOpenEnableEmployeeDialog(employee.id)}
+                          />
+                        ) : (
+                          <FontAwesomeIcon
+                            icon={faTrashAlt}
+                            className="text-danger"
+                            style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }}
+                            onClick={() => handleOpenDeleteEmployeeDialog(employee.id)}
+                          />
+                        )}
                         <FontAwesomeIcon
-                          icon={faTrashAlt}
-                          className="text-danger"
+                          icon={faPencilAlt}
+                          className="text-primary"
                           style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }}
-                          onClick={() => handleOpenDeleteEmployeeDialog(employee.id)}
+                          onClick={handleOpenEditEmployeeDialog}
                         />
-                      )}
-                  <FontAwesomeIcon
-                    icon={faPencilAlt}
-                    className="text-primary"
-                    style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }}
-                    onClick={handleOpenEditEmployeeDialog}
-                  />
-                  <FontAwesomeIcon
-                    icon={faCircleInfo}
-                    className="text-primary"
-                    style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }}
-                    onClick={() => handleOpenLogsDialog(employee)}
-                  />
-                  <br />
-                  <div id="selempdrop" label="Select Employee" value={selectedEmployee} onChange={(e) => setSelectedEmployee(e.target.value)}>
-                    <span key={employee.id} value={employee.Name} style={{ fontSize: '14px' }}>
-                      {employee.Name}
-                    </span>
+                        <FontAwesomeIcon
+                          icon={faCircleInfo}
+                          className="text-primary"
+                          style={{ float: 'right', cursor: 'pointer', paddingTop: '0.2rem', paddingRight: '0.5rem' }}
+                          onClick={() => handleOpenLogsDialog(employee)}
+                        />
+                      </>
+                    )}
+                    <br />
+                    <div id="selempdrop" label="Select Employee" value={selectedEmployee} onChange={(e) => setSelectedEmployee(e.target.value)}>
+                      <span key={employee.id} value={employee.Name} style={{ fontSize: '14px' }}>
+                        {employee.Name}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </td>
-              {showExpand[employee.id] ? (
-                <IndividualTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} columnWidths={columnWidths}/>
-              ) : (
-                <AggregateTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} />
+                </td>
+                {showExpand[employee.id] ? (
+                  <IndividualTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} columnWidths={columnWidths} />
+                ) : (
+                  <AggregateTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} />
+                )}
+              </tr>
+              {logsPopupOpen && (
+                <LogsPopup
+                  open={logsPopupOpen}
+                  handleClose={handleCloseLogsDialog}
+                  employee={selectedEmployee}
+                />
               )}
-            </tr>
-            {logsPopupOpen && (
-        <LogsPopup
-          open={logsPopupOpen}
-          handleClose={handleCloseLogsDialog}
-          employee={selectedEmployee}
-        />
-      )}
             </>
           ))}
-          
+
         </tbody>
 
       </table>
@@ -456,8 +459,8 @@ function EmployeeOverview() {
           // open={editEmployeeOpen}
           open={handleOpenEditEmployeeDialog}
           handleClose={handleCloseEditEmployeeDialog}
-        />
-      )}
+        />
+      )}
 
       {deleteEmployeeOpen && (
         <DeleteEmployeePopup
@@ -468,14 +471,14 @@ function EmployeeOverview() {
 
         />
       )}
-        {enableEmployeeOpen && (
-          <EnableEmployee
-            openEnableEmp={enableEmployeeOpen}
-            CloseEnableEmp={handleCloseEnableEmployeeDialog} // Fixed prop name
-            selectedEmployeeId={selectedEmployeeId}
-            onEmployeeEnabled={handleEmployeeEnable} // Callback for updating employee list after enabling
-          />
-        )}
+      {enableEmployeeOpen && (
+        <EnableEmployee
+          openEnableEmp={enableEmployeeOpen}
+          CloseEnableEmp={handleCloseEnableEmployeeDialog} // Fixed prop name
+          selectedEmployeeId={selectedEmployeeId}
+          onEmployeeEnabled={handleEmployeeEnable} // Callback for updating employee list after enabling
+        />
+      )}
 
 
       <Footer />
