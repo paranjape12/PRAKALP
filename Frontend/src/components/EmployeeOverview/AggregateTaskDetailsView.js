@@ -156,7 +156,7 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
         <div style={{ width: '100%' }}>
             <td style={{ minWidth: `${columnWidths.taskDetailsWidth * 0.93}px`, padding: '0', border: 'none' }}>
                 <div className="card" style={{ overflow: 'hidden' }}>
-                    <div className={`text-center ${getTaskStatusColor(project.requiredTime, project.takenTime)}`} style={{ paddingRight: '4rem', paddingLeft: '0.3rem' }}>
+                    <div className={`text-center ${getTaskStatusColor(project.requiredTime, project.takenTime)}`}>
                         <div style={{ fontSize: '14px' }} className="m-0 font-weight-bold text-left text-light">
                             Total Task Assign: {taskDetails.tasks}
                             <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time">
@@ -181,7 +181,7 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
                     </div>
                 </div>
             </td>
-            <td style={{ padding: '0', width: '6.5rem' }}>
+            <td style={{ padding: '0', minWidth: `${columnWidths.taskDetailsWidth * 0.1}px` }}>
                 <div style={{ verticalAlign: 'middle', height: 'auto', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <div title='Planned Timings' style={{ padding: '0.4rem 0.4rem', display: 'block', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', borderStyle: 'none none none solid' }}>P</div>
                     <div title='Actual Timings' style={{ padding: '0.4rem 0.4rem', fontSize: '13.44px', borderStyle: 'solid none none none', borderWidth: 'thin' }}>A</div>
