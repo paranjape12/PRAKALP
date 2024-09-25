@@ -94,8 +94,8 @@ exports.deleteProject = (req, res) => {
   );
 };
 
-exports.getProjectNames = (req, res ) => {
-  const sql = 'SELECT projectName FROM projects ORDER BY `projectName` ASC'; 
+exports.getProjectNames = (req, res) => {
+  const sql = 'SELECT projectName FROM projects ORDER BY `projectName` ASC';
   db.query(sql, (err, results) => {
     if (err) {
       console.error('Error fetching project names:', err);
@@ -109,17 +109,21 @@ exports.getProjectNames = (req, res ) => {
 
 exports.empOverviewPrjIndividual = (req, res) => {
   const { employeeid, projStates } = req.body;
-  
+
   if (!employeeid) {
     return res.status(400).send('employeeid is required');
   }
 
   // projStates should be an array of statuses. If not provided, default to all valid statuses.
-  const validProjStates = projStates && projStates.length > 0 ? projStates : [0, 1, 2, 3, 4];
+  const validProjStates = projStates;
 
-  const query1 = 'SELECT DISTINCT taskid FROM `Taskemp` WHERE AssignedTo_emp = ?';
+  const query1 = `SELECT DISTINCT te.taskid 
+       FROM Taskemp te
+       JOIN Task t ON te.taskid = t.id
+       JOIN projects p ON t.projectName = p.ProjectName
+       WHERE te.AssignedTo_emp = ? AND p.Status IN (?)`;
 
-  db.query(query1, [employeeid], (err, result) => {
+  db.query(query1, [employeeid, projStates], (err, result) => {
     if (err) return res.status(500).send(err);
 
     const taskIds = result.map(row => row.taskid);
@@ -420,7 +424,7 @@ function query(sql, params) {
 // };
 
 //filter add getProjSortingAndProjects
-exports.EmpOverviewPlusMinus = async(req, res ) => {
+exports.EmpOverviewPlusMinus = async (req, res) => {
   const { empid, U_type } = req.query;
 
   if (!empid) {
@@ -458,7 +462,7 @@ exports.EmpOverviewPlusMinus = async(req, res ) => {
     let count = 0;
 
     // Call the getProjSortingAndProjects function
-    getProjSortingAndProjects(empid, projectDetailsResult, async(sortedProjects) => {
+    getProjSortingAndProjects(empid, projectDetailsResult, async (sortedProjects) => {
       for (const project of sortedProjects) {
         const projectId = project.id;
         const projectName = project.ProjectName;
@@ -553,7 +557,7 @@ exports.EmpOverviewPlusMinus = async(req, res ) => {
 };
 
 //navbar
-exports.createCopyProject = async(req, res ) => {
+exports.createCopyProject = async (req, res) => {
   const { projectName, salesOrder, taskNames, taskValues } = req.body;
 
   if (!projectName || !salesOrder) {
@@ -603,7 +607,7 @@ exports.createCopyProject = async(req, res ) => {
 };
 
 //navbar
-exports.updateProjectSorting = (req, res ) => {
+exports.updateProjectSorting = (req, res) => {
   const { token, projshowval, projshowval2, projshowval_pv } = req.body;
   if (!token) {
     return res.status(400).json({ error: 'Token is required' });
@@ -871,7 +875,7 @@ exports.projectOverview = (req, res) => {
   });
 };
 
-exports.updateProject = async(req, res ) => {
+exports.updateProject = async (req, res) => {
   const { ProjectName, Projectid, projstatus, editprojmodalisalesval } = req.body;
 
   if (!projstatus) {

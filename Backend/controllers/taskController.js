@@ -548,14 +548,23 @@ function query(sql, params) {
     });
   });
 }
+
 exports.emptaskDtlsAggTimes = async (req, res) => {
-  const { empid, iscomplete } = req.body;
+  const { empid, iscomplete, status } = req.body; // status is now an array
 
   try {
-    // Step 1: Get assigned task IDs
+    if (!Array.isArray(status) || status.length === 0) {
+      return res.status(400).send('Invalid status provided');
+    }
+
+    // Step 1: Get assigned task IDs for the projects that have a status in the provided status array
     const [taskRows] = await db.promise().query(
-      'SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?',
-      [empid]
+      `SELECT DISTINCT te.taskid 
+       FROM Taskemp te
+       JOIN Task t ON te.taskid = t.id
+       JOIN projects p ON t.projectName = p.ProjectName
+       WHERE te.AssignedTo_emp = ? AND p.Status IN (?)`, // filter by multiple project statuses using IN clause
+      [empid, status] // status array will be used in the IN clause
     );
 
     if (!Array.isArray(taskRows)) {
@@ -565,7 +574,7 @@ exports.emptaskDtlsAggTimes = async (req, res) => {
     const assignedTaskIds = taskRows.map(row => row.taskid);
 
     if (assignedTaskIds.length === 0) {
-      return res.status(200).send('No tasks found for the given employee');
+      return res.status(200).send('No tasks found for the given employee and statuses');
     }
 
     // Step 2: Get filtered task IDs based on completion status
@@ -599,8 +608,8 @@ exports.emptaskDtlsAggTimes = async (req, res) => {
 
     // Step 4: Get the actual time taken to complete
     const [actualTimeRows] = await db.promise().query(
-      'SELECT SUM(actualtimetocomplete_emp) AS taken FROM Taskemp WHERE id IN (?)',
-      [filteredTaskIds]
+      'SELECT SUM(actualtimetocomplete_emp) AS taken FROM Taskemp WHERE taskid IN (?)',
+      [filteredTaskIds] // Ensure we're using taskid here instead of id
     );
 
     if (!Array.isArray(actualTimeRows)) {
@@ -609,14 +618,16 @@ exports.emptaskDtlsAggTimes = async (req, res) => {
 
     const actualTime = actualTimeRows[0]?.taken || 0;
 
+    // Respond with the calculated times
     res.json({ required: requiredTime, taken: actualTime });
   } catch (error) {
     console.error('Database query error:', error);
     res.status(500).send('Internal server error');
   }
 };
+
 exports.empAggtasktimes = (req, res) => {
-  const { startDate, endDate, assignedToEmp } = req.query;
+  const { startDate, endDate, assignedToEmp, status } = req.query;
 
   const query = `
     WITH RECURSIVE date_range AS (
@@ -632,10 +643,13 @@ exports.empAggtasktimes = (req, res) => {
       COALESCE(SUM(te.actualtimetocomplete_emp), 0) AS actual
     FROM date_range dr
     LEFT JOIN Taskemp te ON dr.taskDate = DATE(te.tasktimeemp) AND te.AssignedTo_emp = ?
+    LEFT JOIN task t ON te.taskid = t.id
+    LEFT JOIN projects p ON t.projectName = p.ProjectName
+    WHERE p.Status IN (?)
     GROUP BY dr.taskDate;
   `;
 
-  db.query(query, [startDate, endDate, assignedToEmp], (err, results) => {
+  db.query(query, [startDate, endDate, assignedToEmp, status], (err, results) => {
     if (err) {
       console.error(err);
       res.status(500).json({ error: 'Internal Server Error' });
@@ -644,6 +658,8 @@ exports.empAggtasktimes = (req, res) => {
     }
   });
 };
+
+
 exports.empOverviewTaskDtlsIndAggView = (req, res) => {
   const assignBy = req.query.assignBy;
   const projectName = req.query.projectName;
