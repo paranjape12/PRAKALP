@@ -1,32 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import axios from "axios";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Button,
-  TextField,
-  FormControl,
-  Select,
-  MenuItem,
-  Box,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  styled,
-  Checkbox,
-  FormControlLabel,
-  FormLabel,
-  InputLabel,
-} from "@mui/material";
+import {Dialog,DialogActions,DialogContent,DialogTitle,Button,TextField,FormControl,Select, MenuItem,Box,Typography,
+  Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper, styled,Checkbox,FormControlLabel,FormLabel,InputLabel,} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import DisabledByDefaultIcon from '@mui/icons-material/DisabledByDefault';
 import { format, subDays } from "date-fns";
+
 
 const LogsPopup = ({ open, handleClose, employee }) => {
   const [fromDate, setFromDate] = useState(
@@ -55,7 +34,10 @@ const LogsPopup = ({ open, handleClose, employee }) => {
   const [tempSelectedProjects, setTempSelectedProjects] = useState([]);
   const [tempSelectedTasks, setTempSelectedTasks] = useState([]);
 
- 
+  
+
+  const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
+  const [taskDropdownOpen, setTaskDropdownOpen] = useState(false);
 
   const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
     backgroundColor: "#6c6e7e",
@@ -180,7 +162,6 @@ const LogsPopup = ({ open, handleClose, employee }) => {
     }
   };
   
-  
   const handleApply = () => {
     // Move temporary selections into the actual filter state
     setSelectedProjects(tempSelectedProjects);
@@ -193,22 +174,73 @@ const LogsPopup = ({ open, handleClose, employee }) => {
     setFilteredTasks([...new Set(filtered.map((log) => log.taskName))]);
   
     setApplyProject(true);  // Indicate that filtering has been applied
+  
+    // Close the project and task dropdowns manually
+    setProjectDropdownOpen(false); // Close the project dropdown
+    setTaskDropdownOpen(false);    // Close the task dropdown (if opened)
   };
   
-  const handleSelectAllChange = (event, type) => {
-    const checked = event.target.checked;
-    if (type === "project") {
-      setSelectAllProjects(checked);
-      setTempSelectedProjects(
-        checked ? [...new Set(logs.map((log) => log.projectName))] : []
-      );
-    } else if (type === "task") {
-      setSelectAllTasks(checked);
-      setTempSelectedTasks(
-        checked ? [...new Set(logs.map((log) => log.taskName))] : []
-      );
-    }
+  // Opening/closing the project dropdown
+  const handleProjectDropdownToggle = () => {
+    setProjectDropdownOpen((prev) => !prev);
   };
+  
+  // Opening/closing the task dropdown
+  const handleTaskDropdownToggle = () => {
+    setTaskDropdownOpen((prev) => !prev);
+  };
+
+
+// Handle 'Select All' for projects
+const handleSelectAllChange = (e, type) => {
+  if (type === "project") {
+    if (e.target.checked) {
+      const allProjects = [...new Set(logs.map((log) => log.projectName))];
+      setTempSelectedProjects(allProjects);
+      setSelectAllProjects(true);
+      filterTasks(allProjects); // Filter tasks based on all projects
+    } else {
+      setTempSelectedProjects([]);
+      setSelectAllProjects(false);
+      setFilteredTasks([]); // Clear tasks when no project is selected
+    }
+  } else if (type === "task") {
+    if (e.target.checked) {
+      setTempSelectedTasks(filteredTasks); // Select all tasks in filteredTasks
+      setSelectAllTasks(true);
+    } else {
+      setTempSelectedTasks([]);
+      setSelectAllTasks(false);
+    }
+  }
+};
+
+// Sync 'Select All' for projects
+useEffect(() => {
+  const allProjects = [...new Set(logs.map((log) => log.projectName))];
+  if (tempSelectedProjects.length === allProjects.length) {
+    setSelectAllProjects(true);
+  } else {
+    setSelectAllProjects(false);
+  }
+}, [tempSelectedProjects]);
+
+// Sync 'Select All' for tasks
+useEffect(() => {
+  if (tempSelectedTasks.length === filteredTasks.length) {
+    setSelectAllTasks(true);
+  } else {
+    setSelectAllTasks(false);
+  }
+}, [tempSelectedTasks, filteredTasks]);
+
+// Filter tasks based on selected projects
+const filterTasks = (selectedProjects) => {
+  const tasksForProjects = logs
+    .filter((log) => selectedProjects.includes(log.projectName))
+    .map((log) => log.taskName);
+  setFilteredTasks([...new Set(tasksForProjects)]);
+};
 
   const filteredLogs = logs.filter((log) => {
     const searchLowerCase = searchQuery.toLowerCase();
@@ -247,9 +279,9 @@ const LogsPopup = ({ open, handleClose, employee }) => {
         }}
       >
         {employee && employee.Name}
-        <CloseIcon
+        <DisabledByDefaultIcon
           onClick={handleClose}
-          style={{ float: "right", cursor: "pointer", color: "red" }}
+          style={{ float: "right", cursor: "pointer", color: "red",fontSize:'40px' }}
         />
         <hr style={{ padding: "0", margin: "0" }} />
       </DialogTitle>
@@ -309,125 +341,127 @@ const LogsPopup = ({ open, handleClose, employee }) => {
           )}
          {/* Project select */}
             {projectFound && (
-            <FormControl size="small" sx={{ mr: 2}}>
-              <InputLabel>Select Project</InputLabel>
-              <Select value="" 
-              displayEmpty
-              inputProps={{ "aria-label": "Select Project" }}
-                  style={{ color: "black", fontFamily: "Nunito", width: "11rem" }}
-                  MenuProps={{
-                    PaperProps: { style: { maxHeight: 250, width: '25rem' } },
-                    anchorOrigin: {
-                      vertical: "bottom",
-                      horizontal: "left", // Adjust the anchor to open from the right side
-                    },
-                    transformOrigin: {
-                      vertical: "top",
-                      horizontal: "left", // Ensures the menu opens aligned to the right
-                    },
-                    autoFocus: false, // Prevent autofocus from closing the dropdown
-                    onClose: () => {}, // Disable automatic closing on selection
-                  }}>
-                <MenuItem sx={{ padding:'0' }}dense>
-                  <FormControlLabel 
-                    control={
-                      <Checkbox
-                        checked={selectAllProjects}
-                        onChange={(e) => handleSelectAllChange(e, "project")}
-                        
-                        
-                      />
-                    }
-                    
-                    label="All"
-
-                  />
-                </MenuItem>
-                {[...new Set(logs.map((log) => log.projectName))].map(
-                  (project, index) => (
-                    <MenuItem key={index} value={project} sx={{ padding:'0' }}dense>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            name="project"
-                            checked={tempSelectedProjects.includes(project)}
-                            onChange={handleCheckboxChange}
-                            value={project}
-                           
-                          />
-                        }
-                        label={project}
-                      />
-                    </MenuItem>
-                  )
-                )}
-                <MenuItem>
-                  <Button onClick={handleApply} variant="contained" color="primary" fullWidth>
-                    Apply
-                  </Button>
-                </MenuItem>
-              </Select>
-            </FormControl>
-          )}
-         {/* Task select */}
-          {ApplyProject && (
-          <FormControl size="small" sx={{ mr: 2}}>
-            <InputLabel>Select Task</InputLabel>
+            <FormControl size="small" sx={{ mr: 2 }}>
             <Select
-              value=""
+              multiple
+              value={tempSelectedProjects}
+              open={projectDropdownOpen} // Control open state
+              onClose={() => setProjectDropdownOpen(false)} // Close event
+              onOpen={handleProjectDropdownToggle} // Toggle open/close
               displayEmpty
-              inputProps={{ "aria-label": "Select Task" }}
+              renderValue={() =>  'Select project'}
+              inputProps={{ "aria-label": "Select Project" }}
               style={{ color: "black", fontFamily: "Nunito", width: "11rem" }}
               MenuProps={{
                 PaperProps: { style: { maxHeight: 250, width: '25rem' } },
                 anchorOrigin: {
                   vertical: "bottom",
-                  horizontal: "left", // Adjust the anchor to open from the right side
+                  horizontal: "left",
                 },
                 transformOrigin: {
                   vertical: "top",
-                  horizontal: "left", // Ensures the menu opens aligned to the right
+                  horizontal: "left",
                 },
-                autoFocus: false, // Prevent autofocus from closing the dropdown
-                onClose: () => {}, // Disable automatic closing on selection
               }}
             >
-              <MenuItem >
-                <FormControlLabel
+              <MenuItem dense>
+                <FormControlLabel 
                   control={
                     <Checkbox
-                      checked={selectAllTasks}
+                      checked={selectAllProjects}
+                      onChange={(e) => handleSelectAllChange(e, "project")}
                       size="25px"
-                      onChange={(e) => handleSelectAllChange(e, "task")}
-                      defaultChecked
                     />
                   }
                   label="All"
                 />
               </MenuItem>
-              {filteredTasks.map((task, index) => (
-                <MenuItem  key={index} value={task} sx={{ textAlign: "right" }}>
+              <hr style={{margin:'0',width:'380px',color:'black',backgroundColor:'black',}}/>
+              {[...new Set(logs.map((log) => log.projectName))].map((project, index) => (
+                <MenuItem key={index} value={project} sx={{ textAlign: "right" }}dense>
                   <FormControlLabel
                     control={
                       <Checkbox
-                        name="task"
+                        name="project"
                         size="25px"
-                        checked={tempSelectedTasks.includes(task)} // Use tempSelectedTasks here
+                        checked={tempSelectedProjects.includes(project)}
                         onChange={handleCheckboxChange}
-                        value={task}
+                        value={project}
                       />
                     }
-                    label={task}
+                    label={project}
                   />
                 </MenuItem>
               ))}
               <MenuItem>
-                <Button onClick={handleApply} variant="contained" color="primary" fullWidth sx={{width:"10rem",}}>
+                <Button onClick={handleApply} variant="contained" color="primary" >
                   Apply
                 </Button>
               </MenuItem>
             </Select>
-          </FormControl>
+          </FormControl>          
+          )}
+         {/* Task select */}
+          {ApplyProject && (
+          <FormControl size="small" sx={{ mr: 2 }}>
+          <Select
+            multiple
+            value={tempSelectedTasks}
+            open={taskDropdownOpen} // Control open state
+            onClose={() => setTaskDropdownOpen(false)} // Close event
+            onOpen={handleTaskDropdownToggle} // Toggle open/close
+            displayEmpty
+            renderValue={() => 'Select Task'}
+            inputProps={{ "aria-label": "Select Task" }}
+            style={{ color: "black", fontFamily: "Nunito", width: "11rem" }}
+            MenuProps={{
+              PaperProps: { style: { maxHeight: 250, width: '25rem' } },
+              anchorOrigin: {
+                vertical: "bottom",
+                horizontal: "left",
+              },
+              transformOrigin: {
+                vertical: "top",
+                horizontal: "left",
+              },
+            }}
+          >
+            <MenuItem>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={selectAllTasks}
+                    size="25px"
+                    onChange={(e) => handleSelectAllChange(e, "task")}
+                  />
+                }
+                label="All"
+              />
+            </MenuItem>
+            <hr style={{margin:'0',width:'380px',color:'black',backgroundColor:'black',}}/>
+            {filteredTasks.map((task, index) => (
+              <MenuItem key={index} value={task} sx={{ textAlign: "right" }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="task"
+                      size="25px"
+                      checked={tempSelectedTasks.includes(task)}
+                      onChange={handleCheckboxChange}
+                      value={task}
+                    />
+                  }
+                  label={task}
+                />
+              </MenuItem>
+            ))}
+            <MenuItem> 
+              <Button onClick={handleApply} variant="contained" color="primary" >
+                Apply
+              </Button>
+            </MenuItem>
+          </Select>
+        </FormControl>
         )}
           <hr style={{ marginTop: "2rem" }} />
         </Box>
