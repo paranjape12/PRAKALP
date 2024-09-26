@@ -218,7 +218,7 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                     {taskDetails.tasks.map((task, index) => (
                         <div key={index} className="p-0" style={{ width: '100%', display: 'flex', flexDirection: 'row', border: 'none' }}>
                             {/* Task Detail Section */}
-                            <div style={{ flex: '1', display: 'flex', flexDirection: 'column', margin: '0', padding: '0' }}>
+                            <div style={{ flex: '1', display: 'flex', flexDirection: 'column', margin: '0', padding: '0', width: `${columnWidths.taskDetailsWidth * 0.9}px` }}>
                                 <div style={{ height: '2rem', display: 'flex', flexDirection: 'column', width: 'auto' }}>
                                     <div style={{ height: '1.5rem', display: 'flex', flexDirection: 'column', width: '100%', border: 'none' }}>
                                         {/* Task title in its own line */}
