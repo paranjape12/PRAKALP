@@ -425,7 +425,7 @@ function query(sql, params) {
 
 //filter add getProjSortingAndProjects
 exports.EmpOverviewPlusMinus = async (req, res) => {
-  const { empid, U_type } = req.query;
+  const { empid, U_type, status } = req.query;
 
   if (!empid) {
     return res.status(400).send('Employee ID is required');
@@ -433,7 +433,11 @@ exports.EmpOverviewPlusMinus = async (req, res) => {
 
   try {
     // Get the distinct task IDs
-    const taskIdsResult = await query(`SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`, [empid]);
+    const taskIdsResult = await query(`SELECT DISTINCT te.taskid 
+       FROM Taskemp te
+       JOIN Task t ON te.taskid = t.id
+       JOIN projects p ON t.projectName = p.ProjectName
+       WHERE te.AssignedTo_emp = ? AND p.Status IN (?)`, [empid, status]);
 
     if (!Array.isArray(taskIdsResult) || taskIdsResult.length === 0) {
       return res.status(200).send({ projectNames: [], salesOrders: [] });
@@ -470,13 +474,8 @@ exports.EmpOverviewPlusMinus = async (req, res) => {
         const proj_status = project.Status;
         const projectLastTask = project.lasttask;
 
-        let selcttask;
-        if (U_type !== 'Admin' && U_type !== 'Team Leader') {
-          selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
-        } else {
-          selcttask = `SELECT * FROM Task WHERE projectName = ?`;
-        }
-
+        let selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved FROM Taskemp te JOIN Task p ON te.taskid = p.id WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? GROUP BY te.taskid, p.TaskName ORDER BY te.taskid;`;
+        
         const taskResults = await query(selcttask, [empid, projectName]);
 
         let assigntaskpresent = taskResults.length > 0;
