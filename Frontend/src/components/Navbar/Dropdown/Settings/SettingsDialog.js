@@ -4,6 +4,7 @@ import './SettingsDialog.css';
 import { Buffer } from 'buffer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import DisabledByDefaultIcon from '@mui/icons-material/DisabledByDefault';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { getUserDataFromToken } from '../../../../utils/tokenUtils';
@@ -11,8 +12,7 @@ import { getUserDataFromToken } from '../../../../utils/tokenUtils';
 const SettingsDialog = ({ open, onClose,onApply  }) => {
     const [activeLink, setActiveLink] = useState('pv');
     const [checkedValues, setCheckedValues] = useState([0, 1, 2, 3, 4]);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
+
         
       const token = localStorage.getItem('token');
       const userData = getUserDataFromToken();
@@ -45,8 +45,6 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
     };
 
     const handleSave = () => {
-        // setSuccessMessage('');
-        // setErrorMessage('');
         const token = localStorage.getItem('token');
         const data = {
             token: token,
@@ -84,9 +82,13 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
 
     
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-            <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>Setting
-                <FontAwesomeIcon onClick={handleClose} icon={faXmark} style={{ color: 'red', marginLeft: '64rem' }} />
+        <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth >
+            <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' ,padding:'0'}}>
+                <span style={{marginLeft:'15px'}}>Setting</span>
+            <DisabledByDefaultIcon
+          onClick={handleClose}
+          style={{ float: "right", cursor: "pointer", color: "red",fontSize:'40px',}}
+        /> <hr style={{marginLeft:'0',color:'#707b7c ',backgroundColor:'#707b7c'}}/>
             </DialogTitle>
             <DialogContent>
                 <div className="modal-body">
