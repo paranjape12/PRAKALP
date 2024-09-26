@@ -92,7 +92,11 @@ function Login() {
   
         // Save filterState in localStorage
         localStorage.setItem('filterState', JSON.stringify(filterState));
-  
+
+        if (userData.Type !== "Employee") {
+          localStorage.setItem('filterStateAdmin', JSON.stringify(filterState));
+        }
+          
         // Generate and store token
         generateToken(userData);
         saveCredentials();
