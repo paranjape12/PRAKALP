@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Footer from '../../components/Footer';
 import './Profile.css';
 import axios from 'axios';
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 
 const Profile = () => {
   const [activeButton, setActiveButton] = useState(null);
@@ -20,6 +21,8 @@ const Profile = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [initialData, setInitialData] = useState({});
+  
+  const userData = getUserDataFromToken();
 
   const saveProfile = () => {
     setSuccessMessage('');
@@ -94,6 +97,10 @@ const Profile = () => {
             setSuccessMessage("User profile updated successfully !");
             setTimeout(() => {
               localStorage.removeItem('token');
+              localStorage.removeItem('filterState');
+              if (userData.Type !== "Employee") {
+                localStorage.removeItem('filterStateAdmin');
+              }
               window.location = '/';
             }, 1500);
           }
@@ -151,6 +158,10 @@ const Profile = () => {
   const handleLogout = () => {
     navigate('/');
     localStorage.removeItem('token');
+    localStorage.removeItem('filterState');
+    if (userData.Type !== "Employee") {
+      localStorage.removeItem('filterStateAdmin');
+    }
   };
 
   return (
