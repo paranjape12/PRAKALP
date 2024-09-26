@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 
 function AggregateTableCellsView({ employee, isComplete, dates }) {
     const [localShowTimeDetails, setLocalShowTimeDetails] = useState(true);
@@ -21,6 +22,7 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
         e.stopPropagation();
         setLocalShowTimeDetails(prev => !prev);
     };
+    const userData = getUserDataFromToken();
 
     const seconds2dayhrmin = (ss) => {
         if (ss === 0) {
@@ -39,8 +41,9 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
     };
 
     useEffect(() => {
-        // Retrieve filterState from localStorage and extract `ev`
-        const filterState = JSON.parse(localStorage.getItem('filterState'));
+        const filterState = JSON.parse(localStorage.getItem(
+            userData.Type === "Employee" ? 'filterState' : 'filterStateAdmin'
+        ));
         const projStates = filterState?.ev; // Default to [1,2,3,4] if ev is not found
 
         axios.post(`${process.env.REACT_APP_API_BASE_URL}/empOverviewPrjIndividual`, {
@@ -63,8 +66,9 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
         // Function to fetch tasks data
         const fetchTasksData = async () => {
             try {
-                // Retrieve the filterState from localStorage
-                const filterState = JSON.parse(localStorage.getItem('filterState'));
+                const filterState = JSON.parse(localStorage.getItem(
+                    userData.Type === "Employee" ? 'filterState' : 'filterStateAdmin'
+                ));
 
                 // Check if filterState exists and has 'ev' property
                 const status = filterState?.ev;
@@ -94,8 +98,9 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
         // Function to fetch time details data
         const fetchTimeDetails = async () => {
             try {
-                // Retrieve the filterState from localStorage
-                const filterState = JSON.parse(localStorage.getItem('filterState'));
+                const filterState = JSON.parse(localStorage.getItem(
+                    userData.Type === "Employee" ? 'filterState' : 'filterStateAdmin'
+                ));
 
                 // Check if filterState exists and has 'ev' property
                 const status = filterState?.ev;
@@ -132,8 +137,9 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
     useEffect(() => {
         const fetchAggTaskTimes = async () => {
             try {
-                // Retrieve the filterState from localStorage, similar to emptaskDtlsAggTimes
-                const filterState = JSON.parse(localStorage.getItem('filterState'));
+                const filterState = JSON.parse(localStorage.getItem(
+                    userData.Type === "Employee" ? 'filterState' : 'filterStateAdmin'
+                ));
     
                 // Check if filterState exists and has 'ev' property
                 const status = filterState?.ev;
