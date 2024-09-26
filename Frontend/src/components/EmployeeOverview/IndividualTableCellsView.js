@@ -44,7 +44,7 @@ function GradientCircularProgress() {
     );
 }
 
-function IndividualTableCellsView({ employee, isComplete, dates, columnWidths  }) {
+function IndividualTableCellsView({ employee, isComplete, dates, columnWidths }) {
     const [localShowTimeDetails, setLocalShowTimeDetails] = useState(true);
     const [totalTasks, setTotalTasks] = useState(0);
     const [projects, setProjects] = useState([]);
@@ -64,8 +64,12 @@ function IndividualTableCellsView({ employee, isComplete, dates, columnWidths  }
             setProjects(cachedProjects[empId]);
         } else {
             try {
+                const filterState = JSON.parse(localStorage.getItem(
+                    userData.Type === "Employee" ? 'filterState' : 'filterStateAdmin'
+                ));
+                const projStates = filterState?.ev;                
                 const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/EmpOverviewPlusMinus`, {
-                    params: { empid: empId, U_type: empType }
+                    params: { empid: empId, U_type: empType, status: projStates }
                 });
                 setProjects(response.data);
                 setLoading(false);
@@ -180,7 +184,7 @@ function IndividualTableCellsView({ employee, isComplete, dates, columnWidths  }
                     projects.map((project) => (
                         <React.Fragment key={project.projectId}>
                             <tr>
-                                <td style={{ fontSize: '13.5px', padding: '0', backgroundColor: getBackgroundColor(project.proj_status), minWidth: `${(columnWidths.projectWidth/16)*0.98}rem` }}>
+                                <td style={{ fontSize: '13.5px', padding: '0', backgroundColor: getBackgroundColor(project.proj_status), minWidth: `${(columnWidths.projectWidth / 16) * 0.98}rem` }}>
                                     <div className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', paddingLeft: '0.5rem', fontSize: '13.44px' }}>
                                         {project.assigntaskpresent && (
                                             <FontAwesomeIcon
@@ -205,7 +209,7 @@ function IndividualTableCellsView({ employee, isComplete, dates, columnWidths  }
                                 </td>
                                 {expandedProjects[project.projectId] === 'individual' ? (
                                     <IndividualTaskDetailsView dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
-                                        seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} columnWidths={columnWidths}/>
+                                        seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} columnWidths={columnWidths} />
                                 ) : (
                                     <AggregateTaskDetailsView columnWidths={columnWidths} dates={dates} localShowTimeDetails={localShowTimeDetails} handleToggleShowTimeComplete={handleToggleShowTimeComplete}
                                         seconds2dayhrmin={seconds2dayhrmin} project={project} employee={employee} />

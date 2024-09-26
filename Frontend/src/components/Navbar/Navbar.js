@@ -10,6 +10,7 @@ import AssignTaskDialog from '../Navbar/Dropdown/Assign Task/AssignTask';
 import Profile from '../../pages/Profile/Profile';
 import SettingsDialog from '../Navbar/Dropdown/Settings/SettingsDialog';
 import AddEmployee from '../Navbar/Dropdown/Manage Employee/AddEmployee';
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 
 
 function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, settingsDialogOpen, onOpenSettingsDialog, onSettingsClose, onSettingsApply }) {
@@ -91,6 +92,10 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
     navigate('/');
     localStorage.removeItem('token');
     localStorage.removeItem('filterState');
+    const userData = getUserDataFromToken();
+    if (userData.Type !== "Employee") {
+      localStorage.removeItem('filterStateAdmin');
+    }
   };
 
 

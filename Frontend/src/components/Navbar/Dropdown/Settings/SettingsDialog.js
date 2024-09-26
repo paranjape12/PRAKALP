@@ -58,6 +58,9 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
                     const filterState = JSON.parse(localStorage.getItem('filterState')) || {};
                     filterState[activeLink] = checkedValues;
                     localStorage.setItem('filterState', JSON.stringify(filterState));
+                    if (userData.Type !== 'Employee') {
+                        localStorage.setItem('filterStateAdmin', JSON.stringify(filterState));
+                    }
                     setTimeout(() => toast.success('Projects sorted successfully !'), 1700);
                     setTimeout(onClose, 2500);
                 }
