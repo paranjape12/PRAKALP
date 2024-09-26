@@ -66,7 +66,7 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
     const decrypToken = getUserDataFromToken();
 
     useEffect(() => {
-        const assignBy = decrypToken.id;
+        const assignBy = employee.id;
         const projectName = project.projectName;
         const startDate = dates[0]?.ymdDate;
         const userRole = decrypToken.Type;
