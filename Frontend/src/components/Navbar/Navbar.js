@@ -92,8 +92,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
     navigate('/');
     localStorage.removeItem('token');
     localStorage.removeItem('filterState');
-    const userData = getUserDataFromToken();
-    if (userData.Type !== "Employee") {
+    if (localStorage.getItem('filterStateAdmin')) {
       localStorage.removeItem('filterStateAdmin');
     }
   };
