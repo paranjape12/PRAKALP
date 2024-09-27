@@ -100,7 +100,7 @@
   display: none; /* Hidden by default */
   position: absolute;
   background-color: #f9f9f9;
-  min-width: 180px;
+  min-width: 140px;
   border-radius: 2px;
   z-index: 200;
   right: 0;
@@ -116,7 +116,7 @@
   /* Green background color */
   color: black;
   /* White text color */
-  padding: 11px;
+  padding: 7px;
   border: 0px;
   text-align: center;
   font-size: 14px;
@@ -134,7 +134,7 @@
   background: rgb(206, 223, 233);
   /* Darker green on hover */
   width: 100%; 
-  height: 50px;
+  height: 45px;
   text-align: center;
   color:#0b0c0c;
   border-radius: 1px;
