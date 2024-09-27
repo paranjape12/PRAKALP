@@ -6,7 +6,7 @@ import Footer from '../../components/Footer';
 import './Profile.css';
 import axios from 'axios';
 import { getUserDataFromToken } from '../../utils/tokenUtils';
-
+import { toast } from 'react-toastify';
 const Profile = () => {
   const [activeButton, setActiveButton] = useState(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -18,15 +18,11 @@ const Profile = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [location, setLocation] = useState('');
   const [emailuse, setEmailuse] = useState(null);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [initialData, setInitialData] = useState({});
   
   const userData = getUserDataFromToken();
 
   const saveProfile = () => {
-    setSuccessMessage('');
-    setErrorMessage('');
     const token = localStorage.getItem('token');
     const decodedData = JSON.parse(atob(token));
 
@@ -39,27 +35,27 @@ const Profile = () => {
       const emailDomain = email.split('@')[1];
 
       if (name === '' || email === '' || (emailuse === 0 && (password === '' || confirmPassword === ''))) {
-        setErrorMessage("Please enter all fields.");
+        toast.error("Please enter all fields.");
         return;
       }
       if (!EmailRegex.test(email)) {
-        setErrorMessage("Please Enter Valid Email Format<br> eg.Abc@protovec.com");
+        toast.error("Please Enter Valid Email Format<br> eg.Abc@protovec.com");
         return;
       }
       if (emailuse === 0 && !PassRegex.test(password)) {
-        setErrorMessage("Password format mismatch. Expected form eg. Abcd@123 <br>1. Atleast one capital letter. <br>2. Password must contain a special character (@, $, !, &, etc).<br>3. Password length must be greater than 8 characters.");
+        toast.error("Password format mismatch. Expected form eg. Abcd@123 <br>1. Atleast one capital letter. <br>2. Password must contain a special character (@, $, !, &, etc).<br>3. Password length must be greater than 8 characters.");
         return;
       }
       if (emailuse === 0 && confirmPassword !== password) {
-        setErrorMessage("Password and confirm password fields did not match.");
+        toast.error("Password and confirm password fields did not match.");
         return;
       }
       if (location === "Select Location") {
-        setErrorMessage("Please select a location.");
+        toast.error("Please select a location.");
         return;
       }
       if (emailDomain !== 'protovec.com') {
-        setErrorMessage("Please Enter Company Provided Email");
+        toast.error("Please Enter Company Provided Email");
         return;
       }
 
@@ -70,7 +66,7 @@ const Profile = () => {
         initialData.location === location &&
         (emailuse === 1 || initialData.password === password)
       ) {
-        setErrorMessage("User already exists");
+        toast.error("User already exists");
         return;
       }
 
@@ -94,7 +90,7 @@ const Profile = () => {
         .then(response => {
           console.log(response.data);
           if (response.data === 'Success') {
-            setSuccessMessage("User profile updated successfully !");
+            toast.success("User profile updated successfully !");
             setTimeout(() => {
               localStorage.removeItem('token');
               localStorage.removeItem('filterState');
@@ -105,7 +101,7 @@ const Profile = () => {
             }, 1500);
           }
           if (response.data === 'User exists') {
-            setErrorMessage("User already exists !");
+            toast.error("User already exists !");
           }
         })
         .catch(error => {
@@ -278,14 +274,6 @@ const Profile = () => {
                     <option value="Mumbai">Mumbai</option>
                     <option value="Ratnagiri">Ratnagiri</option>
                   </select>
-                </div>
-                <div className="message-container">
-                  {errorMessage.split('<br>').map((line, index) => (
-                    <div className="text-center" key={index}>
-                      <p style={{ color: 'red', margin: '0' }}>{line}</p>
-                    </div>
-                  ))}
-                  {successMessage && <div className="success-message" style={{ textAlign: 'center', color: 'green', marginTop: '0.5rem', marginBottom: '0.5rem' }}>{successMessage}</div>}
                 </div>
                 <div className="modal-footer">
                   <button type="button" id="save" onClick={saveProfile} className="btn btn-success">Save</button>
