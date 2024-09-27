@@ -45,7 +45,6 @@ function CreateCopyProject({ open, onClose, onBack }) {
     }
   };
 
- 
 
   //Save button
   const handleSubmit = async (event) => {
@@ -138,6 +137,7 @@ function CreateCopyProject({ open, onClose, onBack }) {
           Back
         </Button>
       </DialogTitle>
+      <hr style={{margin:'0',color:'#b2babb',backgroundColor:'#b2babb'}} />
       <DialogContent>
         <div className='row'>
           <div className='col-md-6'>
@@ -171,7 +171,7 @@ function CreateCopyProject({ open, onClose, onBack }) {
           </div>
           <div className='col-md-6'>
             <div className="col-12 col-md-12">
-            <FormControl style={{ marginTop: '2rem', marginRight: '3rem' }}>
+            <FormControl style={{ marginTop: '0.5rem', marginRight: '3rem' }}>
             <InputLabel style={{color:'black'}}>Select Project</InputLabel>
             <Select
               label="Select Project"

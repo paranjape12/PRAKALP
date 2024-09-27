@@ -62,13 +62,15 @@ function AddNewProject({open,onClose}) {
   return (
     <>
       {showMainDialog && (
-        <Dialog open={open} onClose={onClose}>
+        <Dialog open={open} onClose={onClose}  PaperProps={{
+        }}>
           <DialogTitle style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df',fontWeight:'700', fontSize:'30px'}}>
             Add New Project
-            <Button onClick={handleCreateCopyProjectClick} style={{ float: 'right', backgroundColor: '#858796', color: 'white', fontFamily: 'Nunito', textTransform: 'capitalize', marginLeft:'10rem' }} color="primary">
+            <Button onClick={handleCreateCopyProjectClick} style={{ float:'right', backgroundColor: '#858796',color: 'white', fontFamily: 'Nunito', textTransform: 'capitalize', marginLeft:'5rem'}}>
               Create Copy Project
             </Button>
           </DialogTitle>
+          <hr style={{margin:'0',color:'#b2babb',backgroundColor:'#b2babb',}} />
           <DialogContent>
             <InputLabel style={{ fontFamily: 'Nunito', color:'black', fontWeight:'700', fontSize:'18px' }}>Sales Order</InputLabel>
             <TextField

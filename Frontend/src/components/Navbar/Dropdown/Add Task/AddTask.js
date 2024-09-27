@@ -125,10 +125,11 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
     <ThemeProvider theme={theme}>
     <Dialog open={open} onClose={handleClose} aria-labelledby="addnewTitle" maxWidth='lg'>
       <DialogTitle id="addnewtask" style={{ textAlign: 'left', fontFamily: 'Nunito', color: '#4e73df', fontWeight: '700', fontSize: '30px' }}>
-        Add New Task</DialogTitle>
+        Add New Task
+        </DialogTitle><hr style={{margin:'0',color:'#b2babb',backgroundColor:'#b2babb',}} />
       <DialogContent>
         <div>
-          <FormControl style={{ marginTop: '1rem', marginRight: '3rem' }}>
+          <FormControl style={{  marginRight: '3rem' }}>
             <InputLabel >Select Project</InputLabel>
             <Select
               label="Select Project"
@@ -153,7 +154,7 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
               ))}
             </Select>
           </FormControl>
-          <FormControl style={{ marginTop: '1rem' }}>
+          <FormControl >
             <InputLabel >Select Employee</InputLabel>
             <Select
               id="selempdrop"
