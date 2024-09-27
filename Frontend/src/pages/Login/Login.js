@@ -93,7 +93,7 @@ function Login() {
         // Save filterState in localStorage
         localStorage.setItem('filterState', JSON.stringify(filterState));
 
-        if (userData.Type !== "Employee") {
+        if (userData[0].Type !== "Employee") {
           localStorage.setItem('filterStateAdmin', JSON.stringify(filterState));
         }
           
