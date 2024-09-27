@@ -94,9 +94,9 @@ const Profile = () => {
             setTimeout(() => {
               localStorage.removeItem('token');
               localStorage.removeItem('filterState');
-              if (userData.Type !== "Employee") {
+              if (localStorage.getItem('filterStateAdmin')) {
                 localStorage.removeItem('filterStateAdmin');
-              }
+              } 
               window.location = '/';
             }, 1500);
           }
@@ -134,13 +134,12 @@ const Profile = () => {
   }, []);
 
   const handleProfileButtonClick = () => {
+    console.log(showProfileDropdown);    
     setShowProfileDropdown(!showProfileDropdown);
   };
 
   const handleButtonClick = (buttonName) => {
     setActiveButton(buttonName);
-    setShowProfileDropdown(false);
-
     if (buttonName === 'home') {
       navigate('/task');
     }
@@ -155,7 +154,7 @@ const Profile = () => {
     navigate('/');
     localStorage.removeItem('token');
     localStorage.removeItem('filterState');
-    if (userData.Type !== "Employee") {
+    if (localStorage.getItem('filterStateAdmin')) {
       localStorage.removeItem('filterStateAdmin');
     }
   };
@@ -172,7 +171,7 @@ const Profile = () => {
           <button className={activeButton === 'home' ? 'home_bg active' : 'home_bg'} onClick={() => handleButtonClick('home')}>
             <FontAwesomeIcon icon={faHouse} style={{ fontSize: '1.6rem' }} color='white' />
           </button>
-          <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
+          <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() =>  handleProfileButtonClick() }>
             <FontAwesomeIcon icon={faCircleUser} style={{ fontSize: '1.7rem' }} color='white' />
             {showProfileDropdown && (
               <div className="dropdown-content">
