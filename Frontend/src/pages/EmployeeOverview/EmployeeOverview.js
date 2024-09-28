@@ -46,6 +46,11 @@ function EmployeeOverview() {
   const projectRef = useRef(null);
   const taskDetailsRef = useRef(null);
   const dateRef = useRef(null);
+  const [projectsCount, setProjectsCount] = useState({});
+
+  const handleProjectsCountUpdate = (employeeId, count) => {
+    setProjectsCount(prev => ({ ...prev, [employeeId]: count }));
+  };
 
   const [columnWidths, setColumnWidths] = useState({
     projectWidth: 0,
@@ -326,7 +331,7 @@ function EmployeeOverview() {
 
   const handleCloseEditEmployeeDialog = () => {
     setEditEmployeeOpen(false);
-  };  
+  };
 
   return (
     <>
@@ -390,15 +395,16 @@ function EmployeeOverview() {
               <tr className="text-center small" key={employee.id}>
                 <td className="p-1">
                   <div>
-                    <FontAwesomeIcon
-                      className="text-primary"
-                      icon={showExpand[employee.id] ? faMinus : faPlus}
-                      style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.3rem' }}
-                      onClick={() => handleExpandTasks(employee.id)}
-                    />
+                    {projectsCount[employee.id] > 0 && (
+                      <FontAwesomeIcon
+                        className="text-primary"
+                        icon={showExpand[employee.id] ? faMinus : faPlus} // Replace with appropriate icon
+                        style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.3rem' }}
+                      />
+                    )}
                     {!showExpand[employee.id] && (
                       <>
-                        {employee.disableemp === 1 ? (                          
+                        {employee.disableemp === 1 ? (
                           <img
                             className="font-weight-bold"
                             src={Disableemp}
@@ -438,7 +444,7 @@ function EmployeeOverview() {
                 {showExpand[employee.id] ? (
                   <IndividualTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} columnWidths={columnWidths} />
                 ) : (
-                  <AggregateTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} />
+                  <AggregateTableCellsView onProjectsCountUpdate={handleProjectsCountUpdate} seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} />
                 )}
               </tr>
               {logsPopupOpen && (
