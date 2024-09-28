@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer';
 import Disableemp from "../../assets/images/icons/letter-d.png";
@@ -48,9 +48,13 @@ function EmployeeOverview() {
   const dateRef = useRef(null);
   const [projectsCount, setProjectsCount] = useState({});
 
-  const handleProjectsCountUpdate = (employeeId, count) => {
-    setProjectsCount(prev => ({ ...prev, [employeeId]: count }));
-  };
+  const onProjectsCountUpdate = useCallback((empId, projectsCount) => {
+    setProjectsCount((prevState) => ({
+        ...prevState,
+        [empId]: projectsCount,
+    }));
+}, []); 
+
 
   const [columnWidths, setColumnWidths] = useState({
     projectWidth: 0,
@@ -400,6 +404,7 @@ function EmployeeOverview() {
                         className="text-primary"
                         icon={showExpand[employee.id] ? faMinus : faPlus} // Replace with appropriate icon
                         style={{ float: 'left', cursor: 'pointer', paddingTop: '0.2rem', paddingLeft: '0.3rem' }}
+                        onClick={() => handleExpandTasks(employee.id)}
                       />
                     )}
                     {!showExpand[employee.id] && (
@@ -444,7 +449,7 @@ function EmployeeOverview() {
                 {showExpand[employee.id] ? (
                   <IndividualTableCellsView seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} columnWidths={columnWidths} />
                 ) : (
-                  <AggregateTableCellsView onProjectsCountUpdate={handleProjectsCountUpdate} seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} />
+                  <AggregateTableCellsView onProjectsCountUpdate={onProjectsCountUpdate} seconds2hrmin={seconds2hrmin} employee={employee} isComplete={showComplete} dates={dates} />
                 )}
               </tr>
               {logsPopupOpen && (
