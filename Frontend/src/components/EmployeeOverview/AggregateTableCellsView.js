@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { getUserDataFromToken } from '../../utils/tokenUtils';
 
-function AggregateTableCellsView({ employee, isComplete, dates }) {
+function AggregateTableCellsView({ employee, isComplete, dates, onProjectsCountUpdate }) {
     const [localShowTimeDetails, setLocalShowTimeDetails] = useState(true);
     const [projectsCount, setProjectsCount] = useState(0);
     const [totalTasks, setTotalTasks] = useState(0);
@@ -48,18 +48,17 @@ function AggregateTableCellsView({ employee, isComplete, dates }) {
 
         axios.post(`${process.env.REACT_APP_API_BASE_URL}/empOverviewPrjIndividual`, {
             employeeid: empId,
-            projStates // Pass projStates as an additional parameter
+            projStates // Assuming projStates is defined earlier
         })
             .then(response => {
-                const { projectsCount, totalTasks, approvedTaskCount } = response.data;
+                const { projectsCount } = response.data;
                 setProjectsCount(projectsCount);
-                setCompletedTasks(approvedTaskCount);
-                setAverageCompletedTasks(totalTasks ? (approvedTaskCount / totalTasks) * 100 : 0);
+                onProjectsCountUpdate(empId, projectsCount); // Update parent state
             })
             .catch(error => {
                 console.error('There was an error fetching the data!', error);
             });
-    }, [empId]);
+    }, [employee.id, onProjectsCountUpdate]);
 
 
     useEffect(() => {
