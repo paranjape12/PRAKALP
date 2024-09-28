@@ -8,7 +8,7 @@ import axios from 'axios';
 import { getUserDataFromToken } from '../../utils/tokenUtils';
 import { toast } from 'react-toastify';
 import LogoutPopup from '../../components/Navbar/Dropdown/Logout/LogoutPopup'
-
+import Dropdown from 'react-bootstrap/Dropdown';
 
 const Profile = () => {
   const [activeButton, setActiveButton] = useState(null);
@@ -173,6 +173,7 @@ const Profile = () => {
             My Profile
           </div>
         </div>
+
         <div className='dropdown'>
           <button className={activeButton === 'home' ? 'home_bg active' : 'home_bg'} onClick={() => handleButtonClick('home')}>
             <FontAwesomeIcon icon={faHouse} style={{ fontSize: '1.6rem' }} color='white' />
@@ -180,13 +181,16 @@ const Profile = () => {
           <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() =>  handleProfileButtonClick() }>
             <FontAwesomeIcon icon={faCircleUser} style={{ fontSize: '1.7rem' }} color='white' />
             {showProfileDropdown && (
-              <div className="dropdown-content">
+              <div className="dropdown-profile-content" style={{marginTop:'15px'}}>
                 <div>
-                  <div><button><Link to="/profile" style={{ textDecoration: 'none', color: 'black' }}>
+                  <div>
+                    <button ><Link to="/profile" style={{ textDecoration: 'none', color: 'black' }}>
                     <FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile
                   </Link></button>
-                  </div>
-                  <div onClick={() => handleOpenlogoutPopup()}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
+                  </div>      
+                  <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
+                  <div onClick={() => handleOpenlogoutPopup()}>
+                    <button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
                 </div>
               </div>
             )}
