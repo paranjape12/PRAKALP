@@ -76,6 +76,8 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
     setAssignTaskDialogOpen(false);
   };
 
+  const userdata = getUserDataFromToken();
+
   const handleMenuButtonClick = () => {
     setShowMenuDropdown(!showMenuDropdown);
     setShowSettingsDropdown(false);
@@ -157,6 +159,7 @@ const handleOpenlogoutPopup = () => {
           ) : (
             <div className="placeholder-class"></div>
           )}
+          {userdata.accessdetails && (
           <div className='dropdown'>
             <button className={activeButton === 'menu' ? 'home_bg active' : 'home_bg'} onClick={() => { handleMenuButtonClick('menu'); }}>
               <FontAwesomeIcon icon={faBars} style={{ fontSize: '1.6rem' }} color='white' />
@@ -255,6 +258,7 @@ const handleOpenlogoutPopup = () => {
               </div>
             )}
           </div>
+          )}
 
           <div className='dropdown'>
             <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
