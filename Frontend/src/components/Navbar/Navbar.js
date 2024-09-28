@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate, useLocation, Link, } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear, faSquarePlus, faUser, faUsers, faBars, faCircleUser, faDiagramProject, faRightFromBracket, faHouse } from '@fortawesome/free-solid-svg-icons';
@@ -7,11 +6,10 @@ import './Navbar.css';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask'
 import AddNewProject from '../Navbar/Dropdown/Add Project/AddNewProject';
 import AssignTaskDialog from '../Navbar/Dropdown/Assign Task/AssignTask';
-import Profile from '../../pages/Profile/Profile';
 import SettingsDialog from '../Navbar/Dropdown/Settings/SettingsDialog';
 import AddEmployee from '../Navbar/Dropdown/Manage Employee/AddEmployee';
-import { getUserDataFromToken } from '../../utils/tokenUtils';
 import LogoutPopup from '../../components/Navbar/Dropdown/Logout/LogoutPopup'
+import { getUserDataFromToken } from '../../utils/tokenUtils';
 
 function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, settingsDialogOpen, onOpenSettingsDialog, onSettingsClose, onSettingsApply }) {
   const [activeButton, setActiveButton] = useState(null);
@@ -35,18 +33,6 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
     { PageName: 'Task' },
     // Add more pages as needed
   ];
-
-  // useEffect(() => {
-  //   // Fetch pages
-  //   axios.get(`${process.env.REACT_APP_API_BASE_URL}/pages')
-  // .then(response => {
-  //   console.log('Pages fetched successfully:', response.data);
-  // })
-  // .catch(error => {
-  //   console.error('There was an error fetching the pages!', error);
-  // });
-
-  // }, []);
 
   const handleOpenAddProjectDialog = () => {
     setAddProjectDialogOpen(true);
@@ -165,8 +151,8 @@ const handleOpenlogoutPopup = () => {
               <FontAwesomeIcon icon={faBars} style={{ fontSize: '1.6rem' }} color='white' />
             </button>
             {showMenuDropdown && (
-              <div className={`dropdown-content ${showMenuDropdown ? 'show' : ''}`} style={{ borderRadius: '10px' }}>
-                <div>
+              <div className={`dropdown-navbar-content  ${showMenuDropdown ? 'show' : ''}`} style={{marginTop:'15px'}}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} >
                   <button
                     className='dropdown-item d-flex align-items-center'
                     onClick={handleOpenAddProjectDialog}
@@ -174,7 +160,7 @@ const handleOpenlogoutPopup = () => {
                   >
                     <div className='mr-3'>
                       <div className='icon-circle bg-primary'>
-                        <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white", }} />
+                        <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white" }} />
                       </div>
                     </div>
                     <div>
@@ -183,6 +169,8 @@ const handleOpenlogoutPopup = () => {
                   </button>
                   <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} />
                 </div>
+                <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
+
                 <div>
                   <button
                     className='dropdown-item d-flex align-items-center'
@@ -195,11 +183,13 @@ const handleOpenlogoutPopup = () => {
                       </div>
                     </div>
                     <div>
-                      Manage Employee
+                      Manage<br></br> 
+                      Employee
                     </div>
                   </button>
                   <AddEmployee openDialog={addEmployeeDialogOpen} handleClose={handleCloseAddEmployeeDialog} pages={pages} />
                 </div>
+                <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
 
                 <div>
                   <button
@@ -218,6 +208,8 @@ const handleOpenlogoutPopup = () => {
                   </button>
                   <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />
                 </div>
+                <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
+
                 <div>
                   <button
                     className='dropdown-item d-flex align-items-center'
@@ -235,6 +227,7 @@ const handleOpenlogoutPopup = () => {
                   </button>
                   <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} />
                 </div>
+                <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
 
                 <div>
                   <button
@@ -264,14 +257,17 @@ const handleOpenlogoutPopup = () => {
             <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
               <FontAwesomeIcon icon={faCircleUser} size='2x' color='white' />
               {showProfileDropdown && (
-                <div className={`dropdown-content ${showProfileDropdown ? 'show' : ''}`}>
+                <div className={`dropdown-profile-content  ${showProfileDropdown ? 'show' : ''}`}style={{marginTop:'15px'}}>
                   <div>
                     <div><button><Link to="/profile" style={{ textDecoration: 'none', color: 'black' }}>
                       <FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile
                     </Link></button>
                     </div>
+                    
+                    <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
 
-                    <div onClick={handleOpenlogoutPopup}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
+                    <div onClick={handleOpenlogoutPopup}>
+                      <button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
                   </div>
                 </div>
               )}

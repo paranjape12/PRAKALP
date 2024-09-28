@@ -63,10 +63,7 @@
   background-color: antiquewhite;
   align-items: center;
 }
-.icon-circle {
-  border-radius: 50%;
-  padding: 10px;
-}
+
 
 .home_bg {
   border: 0px;
@@ -96,49 +93,62 @@
   display: inline-block;
 }
 
-.dropdown-content {
+
+
+/* Show dropdown content when state is active */
+.dropdown-navbar-content.show {
+  display: block;
+}
+
+.dropdown-navbar-content {
   display: none; /* Hidden by default */
   position: absolute;
   background-color: #f9f9f9;
-  min-width: 140px;
-  border-radius: 2px;
+  min-width:  200px;
+  border-radius: 5px;
   z-index: 200;
+  right: 0;
+  align-items: center;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  margin: 0;
+  padding: 0;
   right: 0;
 }
 
-/* Show dropdown content when state is active */
-.dropdown-content.show {
-  display: block;
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Align items to the left */
+  padding: 6px 10px; /* Add padding for better spacing */
+  width: 100%;
+  text-align: left;
 }
 
-.dropdown-content button {
-  background-color: white;
-  /* Green background color */
-  color: black;
-  /* White text color */
-  padding: 7px;
-  border: 0px;
-  text-align: center;
-  font-size: 14px;
-  text-decoration: none;
-  display: block;
-   width: 100%; 
-  cursor: pointer;
-  /* transition: background-color 0.3s; */
-  margin: 0;
-  /* Add this line to reset margin */
-  
+.dropdown-item .mr-3 {
+  margin-right: 10px; /* Adjust icon-text spacing */
 }
 
-.dropdown-content button:hover {
+.dropdown-item .icon-circle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px; /* Size for the icon container */
+  height: 40px;
+  border-radius: 50%;
+}
+
+.dropdown-item div {
+  display: inline-block;
+}
+
+.dropdown-item div:last-child {
+  margin-left: 10px;
+}
+
+.dropdown-item:hover {
   background: rgb(206, 223, 233);
-  /* Darker green on hover */
-  width: 100%; 
-  height: 45px;
-  text-align: center;
-  color:#0b0c0c;
-  border-radius: 1px;
-  
+  color: black;
+  border-radius: 5px;
 }
 
 .dialog-container {
@@ -151,6 +161,18 @@
   justify-content: center;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.5); /* semi-transparent background to dim the rest of the page */
+}
+/* Remove border and outline for the dropdown button on click */
+.home_bg:focus,
+.home_bg:active {
+  outline: none;
+  border: none;
+}
+
+.dropdown-item:focus,
+.dropdown-item:active {
+  outline: none;
+  border: none;
 }
 
 .dialog-content {
