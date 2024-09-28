@@ -25,9 +25,7 @@ function LogoutPopup({open,handleClose}) {
         <Typography variant="h6" component="div" color="#b2babb" sx={{ fontWeight: 'bold' }}>
          Ready to Leave?
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
-          <CloseIcon />
-        </IconButton>
+          <CloseIcon edge="end" color="inherit" onClick={handleClose} aria-label="close"/>
       </DialogTitle>
        <hr style={{margin:'0',color:'#b2babb',backgroundColor:'#b2babb',}} />
       <DialogContent>
