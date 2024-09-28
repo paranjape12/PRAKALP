@@ -65,15 +65,14 @@ function DeleteEmployeePopup({ open, handleClose,selectedEmployeeId, onEmployeeD
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} aria-labelledby="delete-employee-title">
-      <DialogTitle id="delete-employee-title" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Dialog open={open} onClose={handleClose} aria-labelledby="delete-employee-title" maxWidth={'xs'}>
+      <DialogTitle id="delete-employee-title" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',padding:'12px' }}>
         <Typography variant="h6" component="div" color="error" sx={{ fontWeight: 'bold' }}>
           Disable Employee
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
-          <CloseIcon />
-        </IconButton>
+          <CloseIcon edge="end" color="inherit" onClick={handleClose} aria-label="close" />
       </DialogTitle>
+      <hr style={{margin:'0',color:'#b2babb',backgroundColor:'#b2babb',}} />
 
       <DialogContent>
         <input type="hidden" id="deleteproidinput" />
@@ -81,6 +80,7 @@ function DeleteEmployeePopup({ open, handleClose,selectedEmployeeId, onEmployeeD
           Are you sure you want to disable this Employee?
       </Typography>
       </DialogContent>
+      <hr style={{margin:'0',color:'#b2babb',backgroundColor:'#b2babb',}} />
       <DialogActions>
         <Button style={{ backgroundColor: 'gray', color: 'white' }} onClick={handleClose}>
           Cancel
