@@ -103,9 +103,43 @@ exports.register = (req, res) => {
 exports.getLogin = (req, res) => {
   const { email, pass, rememberMe } = req.body;
 
-  const selectlogin = `SELECT * FROM Logincrd WHERE Email=? AND Password=?`;
+  const selectlogin = `SELECT 
+        Logincrd.id, 
+        Logincrd.Name, 
+        Logincrd.Nickname, 
+        Logincrd.Email, 
+        Logincrd.Password, 
+        Logincrd.Type, 
+        Logincrd.Location, 
+        Logincrd.loginusinggmail, 
+        Logincrd.disableemp, 
+        Logincrd.projsorting, 
+        Logincrd.projsorting2, 
+        Logincrd.projsorting_pv, 
+        GROUP_CONCAT(CONCAT(EmpAcess.AcessTo, ' : ', EmpAcess.acesstype) ORDER BY EmpAcess.id DESC SEPARATOR ', ') AS accessdetails 
+    FROM 
+        Logincrd 
+    LEFT JOIN (
+        SELECT Empid, AcessTo, acesstype, id 
+        FROM EmpAcess 
+        WHERE Empid = (
+            SELECT id 
+            FROM Logincrd 
+            WHERE Email = ? AND Password = ?
+        )
+        ORDER BY id DESC 
+        LIMIT 3
+    ) AS EmpAcess ON EmpAcess.Empid = Logincrd.id 
+    WHERE 
+        Logincrd.Email = ? 
+        AND Logincrd.Password = ? 
+    GROUP BY 
+        Logincrd.id 
+    ORDER BY 
+        Logincrd.id DESC 
+    LIMIT 1`;
 
-  db.query(selectlogin, [email, pass], (err, result) => {
+  db.query(selectlogin, [email, pass, email, pass], (err, result) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Error');
