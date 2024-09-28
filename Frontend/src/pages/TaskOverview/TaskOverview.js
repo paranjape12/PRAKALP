@@ -209,35 +209,31 @@ function TaskOverview() {
           is_complete: showComplete ? '1' : '0',
         }),
       });
-    
-      // Check the content type to determine if the response is JSON or text
+
       const contentType = response.headers.get('Content-Type');
-    
+
       let data;
       if (contentType && contentType.includes('application/json')) {
-        // If it's JSON, parse it
         data = await response.json();
       } else {
-        // Otherwise, treat it as plain text
         data = await response.text();
       }
-    
+
       // Handle "No Task Assign" case
-      if (typeof data === 'string' && data === 'No Task Assign') {
-        setNoTaskMessage(data); // Set the message when no task is assigned
+      if (data.message === 'No Task Assign') {
+        setNoTaskMessage(data.message); // Set the message when no task is assigned
         setProjects([]); // Clear projects
       } else {
         setProjects(data); // If valid data, update projects
         setNoTaskMessage(''); // Clear any previous message
       }
-    
+
       setLoading(false);
     } catch (error) {
       console.error('Error:', error);
       setLoading(false); // Stop loading in case of an error
     }
   };
-  
 
   useEffect(() => {
     fetchProjects();
@@ -456,12 +452,12 @@ function TaskOverview() {
             <tbody id="projectviewtbody">
               {noTaskMessage ? (
                 <tr>
-                  <td colSpan="12" className="text-center" style={{ fontSize: '16px', fontWeight:'400' }}>
+                  <td colSpan="12" className="text-center" style={{ fontSize: '16px', fontWeight: '400' }}>
                     {noTaskMessage}
                   </td>
                 </tr>
               ) : (
-                projects.map((project, index) => (
+                projects.length > 0 && projects.map((project, index) => (
                   <tr key={index}>
                     <td className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', padding: '0 0 0 0.5rem', fontSize: '13.44px' }}>
                       {project.assigntaskpresent && (

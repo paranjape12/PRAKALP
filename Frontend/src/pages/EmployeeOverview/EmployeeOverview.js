@@ -210,20 +210,18 @@ function EmployeeOverview() {
           is_complete: showComplete ? '1' : '0',
         }),
       });
-    
-      // Check the content type to determine if the response is JSON or text
+
       const contentType = response.headers.get('Content-Type');
-    
+
       let data;
       if (contentType && contentType.includes('application/json')) {
-        // If it's JSON, parse it
         data = await response.json();
       } else {
-        // Otherwise, treat it as plain text
         data = await response.text();
       }
-    
-      if (typeof data === 'string' && data === 'No Task Assign') {
+
+      // Handle "No Task Assign" case
+      if (data.message === 'No Task Assign') {
         setProjects([]); // Clear projects
       } else {
         setProjects(data); // If valid data, update projects

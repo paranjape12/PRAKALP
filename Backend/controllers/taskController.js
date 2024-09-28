@@ -105,8 +105,10 @@ exports.taskOverview = (req, res) => {
 
     if (taskCount === 0) {
       return res.status(200).send({ message: 'No Task Assign' }); // If no task assigned
-    }
+    } 
 
+
+    if (taskCount > 0) {
     // Proceed with the regular flow if tasks are assigned
     const selectTaskEmpQuery = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`;
     db.query(selectTaskEmpQuery, [u_id], (err, taskResults) => {
@@ -250,7 +252,7 @@ exports.taskOverview = (req, res) => {
           });
         });
       });
-    }
+    }}
   });
 };
 
