@@ -11,7 +11,7 @@ import Profile from '../../pages/Profile/Profile';
 import SettingsDialog from '../Navbar/Dropdown/Settings/SettingsDialog';
 import AddEmployee from '../Navbar/Dropdown/Manage Employee/AddEmployee';
 import { getUserDataFromToken } from '../../utils/tokenUtils';
-
+import LogoutPopup from '../../components/Navbar/Dropdown/Logout/LogoutPopup'
 
 function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, settingsDialogOpen, onOpenSettingsDialog, onSettingsClose, onSettingsApply }) {
   const [activeButton, setActiveButton] = useState(null);
@@ -24,6 +24,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
   const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
   const [addEmployeeDialogOpen, setAddEmployeeDialogOpen] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
+  const [logoutPopupOpen, setLogoutPopupOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,8 +76,6 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
     setAssignTaskDialogOpen(false);
   };
 
-
-
   const handleMenuButtonClick = () => {
     setShowMenuDropdown(!showMenuDropdown);
     setShowSettingsDropdown(false);
@@ -88,16 +87,14 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
     setShowMenuDropdown(false);
   };
 
-  const handleLogout = () => {
-    navigate('/');
-    localStorage.removeItem('token');
-    localStorage.removeItem('filterState');
-    if (localStorage.getItem('filterStateAdmin')) {
-      localStorage.removeItem('filterStateAdmin');
-    }
+
+const handleOpenlogoutPopup = () => {
+    setLogoutPopupOpen(true);
   };
 
-
+  const handleCloselogoutPopup = () => {
+    setLogoutPopupOpen(false);
+  };
   const background = isPopupVisible ? 'blurred-background' : '';
 
   return (
@@ -270,7 +267,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
                     </Link></button>
                     </div>
 
-                    <div onClick={handleLogout}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
+                    <div onClick={handleOpenlogoutPopup}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
                   </div>
                 </div>
               )}
@@ -278,7 +275,15 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
           </div>
         </div>
       </div>
+      {logoutPopupOpen && (
+        <LogoutPopup
+          open={logoutPopupOpen}
+          handleClose={handleCloselogoutPopup}
+
+        />
+        )}
     </div>
+    
   );
 }
 export default Navbar;

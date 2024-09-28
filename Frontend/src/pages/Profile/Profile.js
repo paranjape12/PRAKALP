@@ -7,6 +7,9 @@ import './Profile.css';
 import axios from 'axios';
 import { getUserDataFromToken } from '../../utils/tokenUtils';
 import { toast } from 'react-toastify';
+import LogoutPopup from '../../components/Navbar/Dropdown/Logout/LogoutPopup'
+
+
 const Profile = () => {
   const [activeButton, setActiveButton] = useState(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -19,6 +22,8 @@ const Profile = () => {
   const [location, setLocation] = useState('');
   const [emailuse, setEmailuse] = useState(null);
   const [initialData, setInitialData] = useState({});
+  const [logoutPopupOpen, setLogoutPopupOpen] = useState(false);
+  
   
   const userData = getUserDataFromToken();
 
@@ -150,13 +155,14 @@ const Profile = () => {
   };
   const passwordIcon = showPassword ? faEyeSlash : faEye;
 
-  const handleLogout = () => {
-    navigate('/');
-    localStorage.removeItem('token');
-    localStorage.removeItem('filterState');
-    if (localStorage.getItem('filterStateAdmin')) {
-      localStorage.removeItem('filterStateAdmin');
-    }
+
+
+  const handleOpenlogoutPopup = () => {
+    setLogoutPopupOpen(true);
+  };
+
+  const handleCloselogoutPopup = () => {
+    setLogoutPopupOpen(false);
   };
 
   return (
@@ -180,7 +186,7 @@ const Profile = () => {
                     <FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile
                   </Link></button>
                   </div>
-                  <div onClick={handleLogout}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
+                  <div onClick={() => handleOpenlogoutPopup()}><button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
                 </div>
               </div>
             )}
@@ -282,6 +288,12 @@ const Profile = () => {
           </div>
         </div>
       </div>
+      {logoutPopupOpen && (
+      <LogoutPopup
+        open={logoutPopupOpen}
+        handleClose={handleCloselogoutPopup}
+      />
+    )}
       <Footer />
     </div>
   );
