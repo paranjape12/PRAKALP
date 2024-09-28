@@ -84,6 +84,7 @@ function TaskOverview() {
   const [loading, setLoading] = useState(true);
   const [showMask, setShowMask] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [noTaskMessage, setNoTaskMessage] = useState('');
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false); // Manage dialog open/close
 
 
@@ -201,25 +202,42 @@ function TaskOverview() {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/taskOverview`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           token: localStorage.getItem('token'),
           is_complete: showComplete ? '1' : '0',
-        })
+        }),
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProjects(data);
-        setLoading(false);
+    
+      // Check the content type to determine if the response is JSON or text
+      const contentType = response.headers.get('Content-Type');
+    
+      let data;
+      if (contentType && contentType.includes('application/json')) {
+        // If it's JSON, parse it
+        data = await response.json();
       } else {
-        console.error('Failed to fetch projects');
+        // Otherwise, treat it as plain text
+        data = await response.text();
       }
+    
+      // Handle "No Task Assign" case
+      if (typeof data === 'string' && data === 'No Task Assign') {
+        setNoTaskMessage(data); // Set the message when no task is assigned
+        setProjects([]); // Clear projects
+      } else {
+        setProjects(data); // If valid data, update projects
+        setNoTaskMessage(''); // Clear any previous message
+      }
+    
+      setLoading(false);
     } catch (error) {
       console.error('Error:', error);
+      setLoading(false); // Stop loading in case of an error
     }
   };
+  
 
   useEffect(() => {
     fetchProjects();
@@ -436,64 +454,73 @@ function TaskOverview() {
               </tr>
             </thead>
             <tbody id="projectviewtbody">
-              {projects.map((project, index) => (
-                <tr key={index}>
-                  <td className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', padding: '0 0 0 0.5rem', fontSize: '13.44px' }}>
-                    {project.assigntaskpresent && (
-                      <FontAwesomeIcon
-                        icon={expandedProjects[project.projectId] ? faMinus : faPlus}
-                        style={{ cursor: 'pointer' }}
-                        title='Expand/Collapse Tasks'
-                        onClick={() => handleExpandTasks(project.projectId)}
-                      />
-                    )}
-                    [{project.projectSalesOrder}]
-                    {userData.Type !== "Employee" && (
-                    <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
-                      <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
-                    </a>
-                    )}
-                    <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.projectId} name={project.projectName} value={project.proj_status} onClick={() => handleOpenEditProjectDialog(project)}>
-                      <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
-                    </a>
-                    <br />
-                    {project.projectName}
+              {noTaskMessage ? (
+                <tr>
+                  <td colSpan="12" className="text-center" style={{ fontSize: '16px', fontWeight:'400' }}>
+                    {noTaskMessage}
                   </td>
-                  {project.assigntaskpresent && (
-                    <>
-                      {expandedProjects[project.projectId] ? (
-                        project.tasks
-                          // Filter out tasks with approved value equal to 1 if showComplete is false
-                          .filter(task => showComplete || task.taskAproved !== 1)
-                          .map(task => (
-                            <IndividualTaskView
-                              key={task.taskId}
-                              project={project}
-                              task={task}
-                              dates={dates}
-                              toggleShowTimeComplete={toggleShowTimeComplete}
-                              seconds2dayhrmin={seconds2dayhrmin}
-                              tableWidth={tableWidth}
-                            />
-                          ))
-                      ) : (
-                        <AggregateTaskView
-                          project={project}
-                          dates={dates}
-                          toggleShowTimeComplete={() => toggleShowTimeComplete(project.projectId)}
-                          seconds2dayhrmin={seconds2dayhrmin}
-                          showComplete={showComplete}
+                </tr>
+              ) : (
+                projects.map((project, index) => (
+                  <tr key={index}>
+                    <td className="text-left" style={{ backgroundColor: getBackgroundColor(project.proj_status), color: 'black', padding: '0 0 0 0.5rem', fontSize: '13.44px' }}>
+                      {project.assigntaskpresent && (
+                        <FontAwesomeIcon
+                          icon={expandedProjects[project.projectId] ? faMinus : faPlus}
+                          style={{ cursor: 'pointer' }}
+                          title='Expand/Collapse Tasks'
+                          onClick={() => handleExpandTasks(project.projectId)}
                         />
                       )}
-                    </>
-                  )}
-                  {!project.assigntaskpresent && (
-                    <td title='Create new Task' className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'none' }} onClick={() => handleOpenAddTaskModal(project.projectName)} colSpan="9">
-                      No Task Found.
+                      [{project.projectSalesOrder}]
+                      {userData.Type !== "Employee" && (
+                        <a className="deleteproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Delete project" name={project.proid} onClick={() => handleOpenDeleteProjectDialog(project.projectId, project.projectName)}>
+                          <FontAwesomeIcon icon={faTrashAlt} className="text-danger" />
+                        </a>
+                      )}
+                      <a className="editproj p-1" style={{ float: 'right', cursor: 'pointer' }} title="Edit project" id={project.projectId} name={project.projectName} value={project.proj_status} onClick={() => handleOpenEditProjectDialog(project)}>
+                        <FontAwesomeIcon icon={faPencilAlt} className="text-primary" />
+                      </a>
+                      <br />
+                      {project.projectName}
                     </td>
-                  )}
-                </tr>
-              ))}
+                    {project.assigntaskpresent && (
+                      <>
+                        {expandedProjects[project.projectId] ? (
+                          project.tasks
+                            // Filter out tasks with approved value equal to 1 if showComplete is false
+                            .filter(task => showComplete || task.taskAproved !== 1)
+                            .map(task => (
+                              <IndividualTaskView
+                                key={task.taskId}
+                                project={project}
+                                task={task}
+                                dates={dates}
+                                toggleShowTimeComplete={toggleShowTimeComplete}
+                                seconds2dayhrmin={seconds2dayhrmin}
+                                tableWidth={tableWidth}
+                              />
+                            ))
+                        ) : (
+                          <AggregateTaskView
+                            project={project}
+                            dates={dates}
+                            toggleShowTimeComplete={() => toggleShowTimeComplete(project.projectId)}
+                            seconds2dayhrmin={seconds2dayhrmin}
+                            showComplete={showComplete}
+                          />
+                        )}
+                      </>
+                    )}
+                    {!project.assigntaskpresent && (
+                      <td title='Create new Task' className="text-center addtask" name={project.projectName} style={{ fontSize: '13.44px', verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'none' }} onClick={() => handleOpenAddTaskModal(project.projectName)} colSpan="9">
+                        No Task Found.
+                      </td>
+                    )}
+                  </tr>
+                ))
+              )
+              }
             </tbody>
           </table>
           {showAddTaskModal && (

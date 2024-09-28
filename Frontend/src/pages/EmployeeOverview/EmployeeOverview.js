@@ -201,24 +201,35 @@ function EmployeeOverview() {
   const fetchProjects = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/taskOverview`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          token: localStorage.getItem("token"),
-          is_complete: showComplete ? "1" : "0",
+          token: localStorage.getItem('token'),
+          is_complete: showComplete ? '1' : '0',
         }),
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProjects(data);
+    
+      // Check the content type to determine if the response is JSON or text
+      const contentType = response.headers.get('Content-Type');
+    
+      let data;
+      if (contentType && contentType.includes('application/json')) {
+        // If it's JSON, parse it
+        data = await response.json();
       } else {
-        console.error("Failed to fetch projects");
+        // Otherwise, treat it as plain text
+        data = await response.text();
+      }
+    
+      if (typeof data === 'string' && data === 'No Task Assign') {
+        setProjects([]); // Clear projects
+      } else {
+        setProjects(data); // If valid data, update projects
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error:', error);
     }
   };
 
