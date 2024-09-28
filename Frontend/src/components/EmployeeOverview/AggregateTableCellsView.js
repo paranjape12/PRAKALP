@@ -51,8 +51,10 @@ function AggregateTableCellsView({ employee, isComplete, dates, onProjectsCountU
             projStates // Assuming projStates is defined earlier
         })
             .then(response => {
-                const { projectsCount } = response.data;
+                const { projectsCount, totalTasks, approvedTaskCount } = response.data;
                 setProjectsCount(projectsCount);
+                setCompletedTasks(approvedTaskCount);
+                setAverageCompletedTasks(totalTasks ? (approvedTaskCount / totalTasks) * 100 : 0);
                 onProjectsCountUpdate(empId, projectsCount); // Update parent state
             })
             .catch(error => {
