@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { format } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask';
-import { Buffer } from 'buffer';
-import Skeleton from '@mui/material/Skeleton'; // Import Skeleton from Material-UI
 import { getUserDataFromToken } from '../../utils/tokenUtils';
 
 const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2dayhrmin, showComplete }) => {
@@ -103,7 +100,7 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
 
   return (
     <>
-      <td style={{ width: '15rem', verticalAlign: 'unset', paddingBottom: 'auto', display: 'flex', alignItems: 'center', border: 'none' }} className="p-0">
+      <td style={{ width: '100%', verticalAlign: 'unset', paddingBottom: 'auto', display: 'flex', alignItems: 'center', border: 'none' }} className="p-0">
         <div className="card" style={{ flex: '1', height: '100%' }}>
           <div className="card-header p-0">
             <h6 className={`m-0 text-center font-weight-bold text-white ${getTaskStatusColor(project.requiredTime, project.takenTime)}`} style={{ fontSize: '11px', paddingTop: '0.1rem' }}>
