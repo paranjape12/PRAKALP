@@ -67,7 +67,7 @@ function IndividualTableCellsView({ employee, isComplete, dates, columnWidths })
                 const filterState = JSON.parse(localStorage.getItem(
                     userData.Type === "Employee" ? 'filterState' : 'filterStateAdmin'
                 ));
-                const projStates = filterState?.ev;                
+                const projStates = filterState?.ev;
                 const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/EmpOverviewPlusMinus`, {
                     params: { empid: empId, U_type: empType, status: projStates }
                 });
@@ -82,10 +82,6 @@ function IndividualTableCellsView({ employee, isComplete, dates, columnWidths })
 
     useEffect(() => {
         fetchProjects();
-        const intervalId = setInterval(fetchProjects, 4000);
-
-        // Cleanup on component unmount
-        return () => clearInterval(intervalId);
     }, [empId, cachedProjects, empType]);
 
     const handleExpandTasks = (projectId) => {

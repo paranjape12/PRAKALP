@@ -235,18 +235,6 @@ function EmployeeOverview() {
     fetchProjects();
   }, [showComplete]);
 
-  // Fetch projects every 4 seconds to update colors
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      fetchProjects();
-    }, 4000);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
-
-
-
   const handleOpenLogsDialog = (employee) => {
     setSelectedEmployee(employee);
     setLogsPopupOpen(true);
