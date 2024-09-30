@@ -91,7 +91,7 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
             <DisabledByDefaultIcon
           onClick={handleClose}
           style={{ float: "right", cursor: "pointer", color: "red",fontSize:'40px',}}
-        /> <hr style={{marginLeft:'0',color:'#707b7c ',backgroundColor:'#707b7c'}}/>
+        /> <hr style={{marginLeft:'0',color:'#e5e8e8 ',backgroundColor:'#e5e8e8'}}/>
             </DialogTitle>
             <DialogContent>
                 <div className="modal-body">
