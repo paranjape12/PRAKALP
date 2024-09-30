@@ -191,15 +191,17 @@ function AggregateTableCellsView({ employee, isComplete, dates, onProjectsCountU
         <>
             {projectsCount > 0 && (
                 <>
-                    <td style={{ fontSize: '13.5px', padding: '0.2rem' }}>
+                    <td style={{ fontSize: '13.5px', padding: '0.2rem', }}>
+                       <div className="card text-light font-weight-bold " style={{backgroundColor: '#6c3483'}} >
                         <div>Total Projects Assigned: {projectsCount}</div>
                         <div>Completed Tasks: {completedTasks}</div>
                         <div>Average Completed Tasks: {averageCompletedTasks.toFixed(0)} %</div>
+                        </div>
                     </td>
                     <td style={{ display: 'flex', padding: '0', borderStyle: 'none' }}>
                         <div className="card" style={{ minWidth: '90%' }}>
-                            <div className="card-header text-light" style={{ paddingTop: '0', paddingBottom: '0' }}>
-                                <div style={{ fontSize: '12.5px' }} className="m-0 font-weight-bold text-left text-dark">
+                            <div className="card-header text-light" style={{ paddingTop: '0', paddingBottom: '0', backgroundColor: '#6c3483' }}>
+                                <div style={{ fontSize: '12.5px', }} className="m-0 font-weight-bold text-left text-light">
                                     Total Task Assign: {totalTasks}
                                     <a className="show p-0" style={{ float: 'right' }} title="Show/Hide Time">
                                         <div className="taskEye" style={{ position: 'absolute', right: '0.5rem' }}>

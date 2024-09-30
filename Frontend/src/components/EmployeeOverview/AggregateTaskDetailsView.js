@@ -86,64 +86,6 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
         }
     }
 
-    const handleOpenEditProjectDialog = (project) => {
-        setSelectedProject({
-            salesOrder: project.projectSalesOrder,
-            projectName: project.projectName,
-            projectStatus: project.proj_status,
-            projectId: project.projectId,
-        });
-        setEditProjectDialogOpen(true);
-    };
-
-    const handleCloseEditProjectDialog = () => {
-        setEditProjectDialogOpen(false);
-        setSelectedProject(null);
-    };
-
-    const handleSaveEditProject = async (updatedProject) => {
-        try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_BASE_URL}/updateProject`,
-                {
-                    ProjectName: updatedProject.projectName,
-                    Projectid: updatedProject.projectId,
-                    projstatus: updatedProject.projectStatus,
-                    editprojmodalisalesval: updatedProject.salesOrder,
-                }
-            );
-
-            if (response.data === "Success") {
-                setProjects((prevProjects) =>
-                    prevProjects.map((proj) =>
-                        proj.projectSalesOrder === updatedProject.salesOrder
-                            ? {
-                                ...proj,
-                                projectName: updatedProject.projectName,
-                                proj_status: updatedProject.projectStatus,
-                            }
-                            : proj
-                    )
-                );
-            } else {
-                console.error("Failed to update project:", response.data);
-            }
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    };
-
-    const handleOpenDeleteProjectDialog = (projectId, projectName) => {
-        setSelectedProjectId(projectId);
-        setDeleteProjectDialogOpen(true);
-        setProjectName(projectName);
-    };
-
-    const handleCloseDeleteProjectDialog = () => {
-        setSelectedProjectId(null);
-        setDeleteProjectDialogOpen(false);
-    };
-
     const handleOpenAddTaskDialog = () => {
         setAddTaskDialogOpen(true);
     };
