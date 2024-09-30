@@ -22,14 +22,14 @@ function LogoutPopup({open,handleClose}) {
    <>
    <Dialog open={open} onClose={handleClose} aria-labelledby="logout" maxWidth={'xs'}> 
       <DialogTitle id="logout" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" component="div" color="#b2babb" sx={{ fontWeight: 'bold' }}>
+        <Typography variant="h6" component="div" color=" #e74c3c" sx={{ fontWeight: 'bold' }}>
          Ready to Leave?
         </Typography>
           <CloseIcon edge="end" color="inherit" onClick={handleClose} aria-label="close"/>
       </DialogTitle>
        <hr style={{margin:'0',color:'#b2babb',backgroundColor:'#b2babb',}} />
       <DialogContent>
-        <Typography variant="body1" color={'#b2babb'}>
+        <Typography variant="body1" color={'#707b7c'}>
         Select "Logout" below if you are ready to end your current session.
       </Typography>
       </DialogContent>
