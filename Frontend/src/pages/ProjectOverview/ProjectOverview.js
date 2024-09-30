@@ -11,7 +11,7 @@ import { getUserDataFromToken } from '../../utils/tokenUtils';
 import EditProjectPopup from "../../components/TaskOverview/EditProjectPopup";
 import DeleteProjectPopup from "../../components/TaskOverview/DeleteProjectPopup";
 
-const ProjectOverview = () => {
+const ProjectOverview = (project,employee) => {
   const today = new Date();
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -39,8 +39,9 @@ const ProjectOverview = () => {
   const [totalCMPNosSum, setTotalCMPNosSum] = useState(0);
   const [totalCMPPlannedSum, setTotalCMPPlannedSum] = useState(0);
   const [totalCMPActualSum,setTotalCMPActualSum]= useState(0);
-  //const [projectTimeDetails, setProjectTimeDetails] = useState({ planned: {}, actual: {} });
-
+  const [projectTimeDetails, setProjectTimeDetails] = useState({});
+  const decrypToken = getUserDataFromToken();
+  const [taskDetails, setTaskDetails] = useState({ tasks: 0, required: 0, taken: 0 });
 
   const navigate = useNavigate();
 
@@ -58,8 +59,10 @@ const ProjectOverview = () => {
       const newDate = new Date(
         currentDate.setDate(currentDate.getDate() + startIndex + i)
       );
+      const formattedDate = newDate.toISOString().slice(0, 10);
       newDates.push({
         date: newDate,
+        ymdDate: formattedDate,
         dateString: newDate.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
@@ -112,7 +115,49 @@ const ProjectOverview = () => {
         return `${formattedHours.toFixed(1)}`; // Return as decimal
     }
 };
+const fetchTaskDetails = async (assignBy, projectName) => {
+  try {
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/empOverviewTaskDtlsIndAggView`, {
+          params: { assignBy, projectName }
+      });
+      setTaskDetails(response.data);
+  } catch (error) {
+      console.error('Error fetching task details:', error);
+  }
+};
 
+
+const fetchProjectTimeDetails = async (projectName, userId, startDate, userRole, userNickname) => {
+  try {
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/empOverviewIndAggPATimes`, {
+          params: { projectName, userId, startDate, userRole, userNickname }
+      });
+
+      const updatedProjectTimeDetails = { planned: {}, actual: {}, projectName: response.data.data[0]?.projectName || '' };
+      response.data.data.forEach(row => {
+          updatedProjectTimeDetails.planned[row.taskDate] = row.planned || 0;
+          updatedProjectTimeDetails.actual[row.taskDate] = row.actual || 0;
+      });
+
+      // Set 3-specific time details
+      setProjectTimeDetails(prevState => ({
+          ...prevState,
+          [project.projectId]: updatedProjectTimeDetails,
+      }));
+  } catch (error) {
+      console.error('Error fetching project time details:', error);
+  }
+};
+
+useEffect(() => {
+  const assignBy = employee.id;
+  const projectName = project.projectName;
+  const startDate = dates[0]?.ymdDate;
+  const userRole = decrypToken.Type;
+  const userNickname = decrypToken.Nickname;
+  fetchTaskDetails(assignBy, projectName);
+  fetchProjectTimeDetails(projectName, assignBy, startDate, userRole, userNickname);
+}, [employee.id, project.projectName, dates]);
 
 const handleOpenSettingsDialog = () => {
   setSettingsDialogOpen(true);
@@ -505,7 +550,63 @@ const handleCloseSettingsDialog = () => {
                             <td style={{padding:'0', textAlign:'center',verticalAlign:'middle',background:'#c6e6eb'}}>{seconds2hrmin(CMPactual)}</td>
 
 
-                            <td>1</td>
+                            {dates.map((date, i) => (
+                              <>
+                              <td  key={i} style={{
+                                            cursor: 'pointer',
+                                            backgroundColor: '#858796',
+                                            textAlign: 'center',
+                                            height: '2rem',
+                                            verticalAlign: 'middle',
+                                        }}>{seconds2hrmin(projectTimeDetails[project.projectId]?.planned[date.ymdDate] || 0)}</td>
+
+                              <td key={i} style={{ borderStyle: 'solid none none none',
+                                            textAlign: 'center',
+                                            height: '2rem',
+                                            verticalAlign: 'middle',
+                                            borderWidth: 'thin',}}>
+                                             {seconds2hrmin(projectTimeDetails[project.projectId]?.actual[date.ymdDate] || 0)}</td>
+                               
+                               
+                                {/* <td key={i} style={{ padding: '0', fontSize: '15px',  overflow: 'hidden' }}>
+                                    <div
+                                        title='Create New Task'
+                                        style={{
+                                            cursor: 'pointer',
+                                            paddingTop: '0.2rem',
+                                            
+                                            display: 'block',
+                                            backgroundColor: 'gray',
+                                            color: 'white',
+                                            border: 'none',
+                                            textAlign: 'center',
+                                            height: '2rem',
+                                            verticalAlign: 'middle',
+                                        }}
+                                        
+                                    >
+                                        {seconds2hrmin(projectTimeDetails[project.projectId]?.planned[date.ymdDate] || 0)}
+                                    </div>
+                                    <div
+                                        style={{
+                                            paddingTop: '0.2rem',
+                                            
+                                            display: 'block',
+                                            borderStyle: 'solid none none none',
+                                            textAlign: 'center',
+                                            height: '2rem',
+                                            verticalAlign: 'middle',
+                                            borderWidth: 'thin',
+                                        }}
+                                    >
+                                        {seconds2hrmin(projectTimeDetails[project.projectId]?.actual[date.ymdDate] || 0)}
+                                    </div>
+                                </td> */}
+                                </>
+                            ))}
+
+
+                            {/* <td>1</td>
                             <td>1</td>
                             <td>2</td>
                             <td>2</td>
@@ -518,7 +619,7 @@ const handleCloseSettingsDialog = () => {
                             <td>6</td>
                             <td>6</td>
                             <td>7</td>
-                            <td>7</td>
+                            <td>7</td> */}
                             {/* <td
                               className="text-center addtask"
                               style={{ fontSize: "13.44px", verticalAlign: "middle" }}
