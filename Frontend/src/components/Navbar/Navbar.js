@@ -35,6 +35,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
   ];
 
   const handleOpenAddProjectDialog = () => {
+    setShowMenuDropdown(!showMenuDropdown);
     setAddProjectDialogOpen(true);
   };
   const handleCloseAddProjectDialog = () => {
@@ -42,6 +43,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
   };
 
   const handleOpenAddEmployeeDialog = () => {
+    setShowMenuDropdown(!showMenuDropdown);
     setAddEmployeeDialogOpen(true);
   };
   const handleCloseAddEmployeeDialog = () => {
@@ -49,13 +51,17 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
   };
 
   const handleOpenAddTaskDialog = () => {
+    setShowMenuDropdown(!showMenuDropdown);
     setAddTaskDialogOpen(true);
   };
   const handleCloseAddTaskDialog = () => {
     setAddTaskDialogOpen(false);
   };
-
+  const handleOpenSettingsDialog = () => {
+    setShowMenuDropdown(!showMenuDropdown);
+  };
   const handleOpenAssignTaskDialog = () => {
+    setShowMenuDropdown(!showMenuDropdown);
     setAssignTaskDialogOpen(true);
   };
   const handleCloseAssignTaskDialog = () => {
@@ -76,7 +82,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
   };
 
 
-const handleOpenlogoutPopup = () => {
+  const handleOpenlogoutPopup = () => {
     setLogoutPopupOpen(true);
   };
 
@@ -146,125 +152,125 @@ const handleOpenlogoutPopup = () => {
             <div className="placeholder-class"></div>
           )}
           {userdata.accessdetails && (
-          <div className='dropdown'>
-            <button className={activeButton === 'menu' ? 'home_bg active' : 'home_bg'} onClick={() => { handleMenuButtonClick('menu'); }}>
-              <FontAwesomeIcon icon={faBars} style={{ fontSize: '1.6rem' }} color='white' />
-            </button>
-            {showMenuDropdown && (
-              <div className={`dropdown-navbar-content  ${showMenuDropdown ? 'show' : ''}`} style={{marginTop:'15px'}}>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} >
-                  <button
-                    className='dropdown-item d-flex align-items-center'
-                    onClick={handleOpenAddProjectDialog}
-                    title="Add Project"
-                  >
-                    <div className='mr-3'>
-                      <div className='icon-circle bg-primary'>
-                        <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white" }} />
+            <div className='dropdown'>
+              <button className={activeButton === 'menu' ? 'home_bg active' : 'home_bg'} onClick={() => { handleMenuButtonClick('menu'); }}>
+                <FontAwesomeIcon icon={faBars} style={{ fontSize: '1.6rem' }} color='white' />
+              </button>
+              {showMenuDropdown && (
+                <div className={`dropdown-navbar-content  ${showMenuDropdown ? 'show' : ''}`} style={{ marginTop: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} >
+                    <button
+                      className='dropdown-item d-flex align-items-center'
+                      onClick={handleOpenAddProjectDialog}
+                      title="Add Project"
+                    >
+                      <div className='mr-3'>
+                        <div className='icon-circle bg-primary'>
+                          <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white" }} />
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      Add Project
-                    </div>
-                  </button>
-                  <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} />
-                </div>
-                <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
+                      <div>
+                        Add Project
+                      </div>
+                    </button>
+                  </div>
+                  <hr style={{ margin: '0', color: '#e5e8e8', backgroundColor: '#e5e8e8', }} />
 
-                <div>
-                  <button
-                    className='dropdown-item d-flex align-items-center'
-                    onClick={handleOpenAddEmployeeDialog}
-                    title="Add Project"
-                  >
-                    <div className='mr-3'>
-                      <div className='icon-circle bg-success'>
-                        <FontAwesomeIcon icon={faUsers} style={{ color: "white", }} />
+                  <div>
+                    <button
+                      className='dropdown-item d-flex align-items-center'
+                      onClick={handleOpenAddEmployeeDialog}
+                      title="Add Project"
+                    >
+                      <div className='mr-3'>
+                        <div className='icon-circle bg-success'>
+                          <FontAwesomeIcon icon={faUsers} style={{ color: "white", }} />
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      Manage<br></br> 
-                      Employee
-                    </div>
-                  </button>
-                  <AddEmployee openDialog={addEmployeeDialogOpen} handleClose={handleCloseAddEmployeeDialog} pages={pages} />
-                </div>
-                <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
+                      <div>
+                        Manage<br></br>
+                        Employee
+                      </div>
+                    </button>
+                  </div>
+                  <hr style={{ margin: '0', color: '#e5e8e8', backgroundColor: '#e5e8e8', }} />
 
-                <div>
-                  <button
-                    className='dropdown-item d-flex align-items-center'
-                    onClick={handleOpenAddTaskDialog}
-                    title="Add Project"
-                  >
-                    <div className='mr-3'>
-                      <div className='icon-circle bg-warning'>
-                        <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white", }} />
+                  <div>
+                    <button
+                      className='dropdown-item d-flex align-items-center'
+                      onClick={handleOpenAddTaskDialog}
+                      title="Add Project"
+                    >
+                      <div className='mr-3'>
+                        <div className='icon-circle bg-warning'>
+                          <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white", }} />
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      Add Task
-                    </div>
-                  </button>
-                  <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />
-                </div>
-                <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
+                      <div>
+                        Add Task
+                      </div>
+                    </button>
+                  </div>
+                  <hr style={{ margin: '0', color: '#e5e8e8', backgroundColor: '#e5e8e8', }} />
 
-                <div>
-                  <button
-                    className='dropdown-item d-flex align-items-center'
-                    onClick={handleOpenAssignTaskDialog}
-                    title="Add Project"
-                  >
-                    <div className='mr-3'>
-                      <div className='icon-circle bg-warning'>
-                        <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white", }} />
+                  <div>
+                    <button
+                      className='dropdown-item d-flex align-items-center'
+                      onClick={handleOpenAssignTaskDialog}
+                      title="Add Project"
+                    >
+                      <div className='mr-3'>
+                        <div className='icon-circle bg-warning'>
+                          <FontAwesomeIcon icon={faSquarePlus} style={{ color: "white", }} />
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      Assign Task
-                    </div>
-                  </button>
-                  <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} />
-                </div>
-                <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
+                      <div>
+                        Assign Task
+                      </div>
+                    </button>
+                  </div>
+                  <hr style={{ margin: '0', color: '#e5e8e8', backgroundColor: '#e5e8e8', }} />
 
-                <div>
-                  <button
-                    className="dropdown-item d-flex align-items-center"
-                    onClick={onOpenSettingsDialog}
-                    title="Add Project"
-                  >
-                    <div className="mr-3">
-                      <div className="icon-circle bg-secondary">
-                        <FontAwesomeIcon icon={faGear} style={{ color: "white", }} />
+                  <div onClick={handleOpenSettingsDialog}>
+                    <button
+                      className="dropdown-item d-flex align-items-center"
+                      onClick={onOpenSettingsDialog}
+                      title="Add Project"
+                    >
+                      <div className="mr-3">
+                        <div className="icon-circle bg-secondary">
+                          <FontAwesomeIcon icon={faGear} style={{ color: "white", }} />
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      Setting
-                    </div>
-                  </button>
-                  <SettingsDialog open={settingsDialogOpen} onClose={onSettingsClose}
-                    onApply={onSettingsApply}  // Pass apply handler to SettingsDialog
-                  />
+                      <div>
+                        Setting
+                      </div>
+                    </button>
+
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+
+              <AddEmployee openDialog={addEmployeeDialogOpen} handleClose={handleCloseAddEmployeeDialog} />
+              <SettingsDialog open={settingsDialogOpen} onClose={onSettingsClose} onApply={onSettingsApply} />
+              <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} />
+              <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} />
+              <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />
+            </div>
           )}
 
           <div className='dropdown'>
             <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => { handleProfileButtonClick('profile'); }}>
               <FontAwesomeIcon icon={faCircleUser} size='2x' color='white' />
               {showProfileDropdown && (
-                <div className={`dropdown-profile-content  ${showProfileDropdown ? 'show' : ''}`}style={{marginTop:'15px'}}>
+                <div className={`dropdown-profile-content  ${showProfileDropdown ? 'show' : ''}`} style={{ marginTop: '15px' }}>
                   <div>
                     <div><button><Link to="/profile" style={{ textDecoration: 'none', color: 'black' }}>
                       <FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile
                     </Link></button>
                     </div>
-                    
-                    <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
+
+                    <hr style={{ margin: '0', color: '#e5e8e8', backgroundColor: '#e5e8e8', }} />
 
                     <div onClick={handleOpenlogoutPopup}>
                       <button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
@@ -281,9 +287,9 @@ const handleOpenlogoutPopup = () => {
           handleClose={handleCloselogoutPopup}
 
         />
-        )}
+      )}
     </div>
-    
+
   );
 }
 export default Navbar;
