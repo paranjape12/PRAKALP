@@ -413,8 +413,8 @@ function TaskOverview() {
           <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed' }}>
             <thead className="text-white" id="theader" style={{ fontSize: '13px' }}>
               <tr className="text-center small" style={{ position: 'sticky', top: '2.4rem', zIndex: '5' }}>
-                <th style={{ width: '20rem', verticalAlign: 'revert', color: 'white' }}>Projects</th>
-                <th style={{ width: '15rem', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
+                <th style={{ width: '25%', verticalAlign: 'revert', color: 'white' }}>Projects</th>
+                <th style={{ width: '25%', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                     <span style={{ textAlign: 'center' }}>Task Details</span>
                     <div className="taskEye" title='Show/Hide Approved Task(s)' style={{ position: 'absolute', right: '1rem' }}>
