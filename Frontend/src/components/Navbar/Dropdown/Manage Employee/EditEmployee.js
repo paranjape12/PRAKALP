@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, FormControl, InputLabel, Select, MenuItem, Checkbox, FormControlLabel, InputAdornment, IconButton, } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, FormControl, InputLabel, Select, MenuItem, Checkbox, FormControlLabel, InputAdornment, IconButton, } from '@mui/material';
 import AddEmployee from './AddEmployee';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
@@ -409,7 +409,7 @@ const EditEmployee = ({ open, handleClose }) => {
                     checked={formData.loginusinggmail}
                     onChange={handleChange}
                     name="loginusinggmail"
-                    color="blue"
+                    color="default"
                   />
                 }
                 label="Use Email For Login"
@@ -530,7 +530,7 @@ const EditEmployee = ({ open, handleClose }) => {
         <Button className='close-btn' onClick={handleClose} variant='contained'>
           Close
         </Button>
-        <Button className='close-btn' onClick={() => handleOpenDeletePopup(formData.id)} color="danger" variant='contained'>
+        <Button className='close-btn' onClick={() => handleOpenDeletePopup(formData.id)} color="error" variant='contained'>
           Remove
         </Button>
         <Button className='save-btn' onClick={handleSubmit} variant='contained' color='primary'>

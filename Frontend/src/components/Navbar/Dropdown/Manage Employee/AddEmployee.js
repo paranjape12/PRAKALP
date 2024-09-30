@@ -17,7 +17,7 @@ import {
   InputAdornment,
   IconButton,
   
-} from "@material-ui/core";
+} from "@mui/material";
 import "./AddEmployee.css";
 import EditEmployee from "./EditEmployee";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -292,7 +292,7 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
           Add New Employee
           <Button
             className="editEmp-btn"
-            style={{ marginLeft: "35rem" }}
+            style={{ marginLeft: "27rem" }}
             onClick={handleEditEmployeeClick}
             color="primary"
             variant="contained"
@@ -415,7 +415,7 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
                       checked={formData.loginusinggmail}
                       onChange={handleChange}
                       name="loginusinggmail"
-                      color="blue"
+                      color="default"
                     />
                   }
                   label="Use Email For Login"
@@ -573,7 +573,7 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
           <Button
             className="close-btn"
             onClick={handleClose}
-            color="danger"
+            color="error"
             variant="contained"
           >
             Close
