@@ -682,7 +682,7 @@ exports.empAggtasktimes = (req, res) => {
       COALESCE(SUM(te.actualtimetocomplete_emp), 0) AS actual
     FROM date_range dr
     LEFT JOIN Taskemp te ON dr.taskDate = DATE(te.tasktimeemp) AND te.AssignedTo_emp = ?
-    LEFT JOIN task t ON te.taskid = t.id
+    LEFT JOIN Task t ON te.taskid = t.id
     LEFT JOIN projects p ON t.projectName = p.ProjectName
     WHERE p.Status IN (?)
     GROUP BY dr.taskDate;
