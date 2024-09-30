@@ -8,7 +8,6 @@ import axios from 'axios';
 import { getUserDataFromToken } from '../../utils/tokenUtils';
 import { toast } from 'react-toastify';
 import LogoutPopup from '../../components/Navbar/Dropdown/Logout/LogoutPopup'
-import Dropdown from 'react-bootstrap/Dropdown';
 
 const Profile = () => {
   const [activeButton, setActiveButton] = useState(null);
