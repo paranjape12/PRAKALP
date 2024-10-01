@@ -9,16 +9,10 @@ const client = new OAuth2Client(process.env.NODE_APP_GOOGLE_CLIENT_ID);
 
 // Google OAuth2 Callback Route
 exports.googlelogin = async (req, res) => {
-  const { token } = req.query;
+  const { token } = req.query; // Now the token is actually the email
 
   try {
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.NODE_APP_GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
-    const { email } = payload;
+    const email = token; // Directly use token as the email
 
     // Check if user exists in database
     const selectlogin = `SELECT * FROM Logincrd WHERE Email=?`;
@@ -40,9 +34,10 @@ exports.googlelogin = async (req, res) => {
       res.send({ message: 'Success', result: result });
     });
   } catch (error) {
-    res.status(401).send('Error: Invalid Google token');
+    res.status(401).send('Error: Invalid token');
   }
 };
+
 
 exports.register = (req, res) => {
   const { email, fname, lname, slectedval, passwd } = req.body;
