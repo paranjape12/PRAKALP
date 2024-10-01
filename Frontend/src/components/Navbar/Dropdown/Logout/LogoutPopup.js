@@ -10,12 +10,12 @@ import { toast } from 'react-toastify';
 function LogoutPopup({open,handleClose}) {
   const navigate = useNavigate();
   const handleLogout = () => {
-    navigate('/');
     localStorage.removeItem('token');
     localStorage.removeItem('filterState');
     if (localStorage.getItem('filterStateAdmin')) {
       localStorage.removeItem('filterStateAdmin');
     }
+    window.location.href = 'https://prakalp2.mydashboard.site/index.php';
   };
 
   return (
