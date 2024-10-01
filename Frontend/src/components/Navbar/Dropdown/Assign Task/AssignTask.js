@@ -164,11 +164,12 @@ const AssignTaskDialog = ({ open, onClose }) => {
               </Select>
             </FormControl>
             {selectedProject && (
-              <FormControl style={{ marginTop: '1rem', marginRight: '3rem', marginBottom: '1rem' }}>
+              <FormControl style={{  marginRight: '3rem', marginBottom: '1rem' }}>
                 <InputLabel>Select Task</InputLabel>
                 <Select
                   label="Select Task"
                   id="taskdrop"
+                  size='small'
                   value={selectedTask}
                   onChange={(e) => setSelectedTask(e.target.value)}
                 >
