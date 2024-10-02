@@ -16,11 +16,12 @@ const showMessage = (setMessage, message) => {
 };
 
 const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName }) => {
-
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false); // New state to track deletion in progress
 
   const handleDelete = async () => {
+    setIsDeleting(true); // Set to true when delete starts
     try {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/deleteProject`, {
         method: 'POST',
@@ -34,7 +35,7 @@ const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName 
         const data = await response.json();
         if (data.message === 'Success') {
           showMessage(setSuccessMessage, "Project deleted Successfully !");
-          setTimeout(handleClose, 2000);
+          setTimeout(handleClose, 1000);
         } else {
           showMessage(setErrorMessage, "Could not delete the project !");
           setTimeout(handleClose, 1500);
@@ -67,12 +68,16 @@ const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName 
           )}
         </DialogContent>
         <DialogActions>
-          <Button style={{ backgroundColor: 'gray', color: 'white' }} onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button style={{ backgroundColor: 'red', color: 'white' }} onClick={handleDelete} >
-            Yes
-          </Button>
+          {!isDeleting && ( // Conditionally render buttons only if not deleting
+            <>
+              <Button style={{ backgroundColor: 'gray', color: 'white' }} onClick={handleClose}>
+                Cancel
+              </Button>
+              <Button style={{ backgroundColor: 'red', color: 'white' }} onClick={handleDelete}>
+                Yes
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
     </ThemeProvider>
