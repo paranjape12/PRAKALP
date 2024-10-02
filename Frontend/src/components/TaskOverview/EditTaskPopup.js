@@ -7,6 +7,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { toast } from 'react-toastify';
 
 const theme = createTheme({
   typography: {
@@ -71,8 +72,7 @@ const EditTaskPopup = ({ open, handleClose, projectDetails }) => {
   };
 
   const handleSave = async () => {
-    setSuccessMessage('');
-    setErrorMessage('');
+   
 
     const taskData = {
       projectName,
@@ -86,13 +86,13 @@ const EditTaskPopup = ({ open, handleClose, projectDetails }) => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/saveEditTask`, taskData);
       if (response.data === 'Success') {
-        showMessage(setSuccessMessage, 'Task saved successfully!');
+        toast.success('Task saved successfully!');
       } else {
-        showMessage(setErrorMessage, `Failed to save task: ${response.data}`);
+        toast.error(`Failed to save task: ${response.data}`);
       }
     } catch (error) {
       console.error('Error saving task:', error);
-      showMessage(setErrorMessage, `Error saving task: ${error.response ? error.response.data : error.message}`);
+      toast.error(`Error saving task: ${error.response ? error.response.data : error.message}`);
     }
   };
 
@@ -197,8 +197,6 @@ const EditTaskPopup = ({ open, handleClose, projectDetails }) => {
               }
             }}
           />
-          {errorMessage && <Typography color="error" align="center">{errorMessage}</Typography>}
-          {successMessage && <Typography color="green" align="center">{successMessage}</Typography>}
         </DialogContent>
         <DialogActions style={{ padding: '8px 24px' }}>
           <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={handleClose}>

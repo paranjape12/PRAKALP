@@ -4,6 +4,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const theme = createTheme({
   typography: {
@@ -12,16 +13,8 @@ const theme = createTheme({
 });
 
 const DeleteTaskPopup = ({ open, handleClose, task }) => {
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
 
-  const showMessage = (setMessage, message) => {
-    setMessage(message);
-    setTimeout(() => {
-      setMessage('');
-      if (setMessage === setSuccessMessage) handleClose();
-    }, 1500);
-  };
+  
 
   const handleDelete = async () => {
     try {
@@ -29,17 +22,17 @@ const DeleteTaskPopup = ({ open, handleClose, task }) => {
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/deleteTask`, { taskId: task.taskId, token });
       
       if (response.data === 'Success') {
-        showMessage(setSuccessMessage, 'Task deleted successfully.');
+        toast.success('Task deleted successfully.');
         setTimeout(() => {
           handleClose();
           // Optionally, trigger a refresh of the task list or redirect the user
         }, 1500);
       } else {
-        showMessage(setErrorMessage, 'Error deleting task.');
+        toast.error('Error deleting task.');
       }
     } catch (error) {
       console.error('Failed to delete task:', error);
-      showMessage(setErrorMessage, 'Failed to delete task.');
+      toast.error('Failed to delete task.');
     }
   };
 
@@ -52,12 +45,6 @@ const DeleteTaskPopup = ({ open, handleClose, task }) => {
         <DialogContent>
         <div style={{ textAlign: 'center' }}>Are you sure you want to permanently remove the task</div>
         <div style={{ fontWeight: '700', textAlign: 'center' }}>"{task.taskName || task.TaskName}" ?</div>
-          {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
-          {successMessage && (
-            <div className="text-center">
-              <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
-            </div>
-          )}
         </DialogContent>
         <DialogActions>
           <Button style={{ backgroundColor: 'gray', color: 'white' }} onClick={handleClose}>

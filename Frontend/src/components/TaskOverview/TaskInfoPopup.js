@@ -18,7 +18,6 @@ const TaskInfoDialog = ({ open, project, task, taskDetails, handleClose }) => {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('');
   const [filteredTaskDetails, setFilteredTaskDetails] = useState([]);
-  const [userName, setUserName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   const seconds2hrmin = (ss) => {

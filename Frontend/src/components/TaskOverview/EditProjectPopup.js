@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControlLabel, Checkbox, Button, Grid, Box, Typography } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { toast } from 'react-toastify';
 
 const theme = createTheme({
   typography: {
@@ -21,10 +22,7 @@ const EditProjectPopup = ({ open, handleClose, projectDetails, onSave }) => {
     complete: false,
   });
 
-  const showMessage = (setMessage, message) => {
-    setMessage(message);
-    setTimeout(() => setMessage(''), 1500);
-  };
+ 
 
 
 
@@ -77,15 +75,15 @@ const EditProjectPopup = ({ open, handleClose, projectDetails, onSave }) => {
 
     // Validation checks
     if (!projectName || !salesOrder) {
-      showMessage(setErrorMessage, "Please enter all credentials.");
+      toast.error("Please enter all credentials.");
       return;
     }
     if (salesOrder.charAt(0) !== '2' && salesOrder.charAt(0) !== 'I') {
-      showMessage(setErrorMessage, "Please enter project sales order with the first letter must be '2' or 'I'.");
+      toast.error("Please enter project sales order with the first letter must be '2' or 'I'.");
       return;
     }
     if (salesOrder.length !== 6) {
-      showMessage(setErrorMessage, "Sales order length must be equal to 6 characters.");
+      toast.error("Sales order length must be equal to 6 characters.");
       return;
     }
     // Check if project details are unchanged
@@ -99,7 +97,7 @@ const EditProjectPopup = ({ open, handleClose, projectDetails, onSave }) => {
         complete: projectDetails.projectStatus === 4,
       })
     ) {
-      showMessage(setErrorMessage, "Project details are unchanged.");
+      toast.error("Project details are unchanged.");
       return;
     }
 
@@ -119,12 +117,12 @@ const EditProjectPopup = ({ open, handleClose, projectDetails, onSave }) => {
             projectStatus,
             salesOrder
           });
-          showMessage(setSuccessMessage, "Project updated Successfully !");
+          toast.success("Project updated Successfully !");
           setTimeout(handleClose, 2000);
         }
       })
       .catch((error) => {
-        showMessage(setErrorMessage, "Could not update the project !");
+        toast.error("Could not update the project !");
         setTimeout(handleClose, 2000);
         console.error('Error:', error);
       });
@@ -265,13 +263,6 @@ const EditProjectPopup = ({ open, handleClose, projectDetails, onSave }) => {
               </Grid>
             </Grid>
           </Grid>
-
-          {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
-          {successMessage && (
-            <div className="text-center">
-              <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
-            </div>
-          )}
         </DialogContent>
         <DialogActions>
           <Button style={{ fontFamily: 'Nunito', backgroundColor: 'red', color: 'white' }} onClick={handleClose} color="primary">

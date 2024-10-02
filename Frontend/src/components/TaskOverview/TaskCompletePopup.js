@@ -15,6 +15,7 @@ import {
   InputLabel,
   InputAdornment,
 } from '@mui/material';
+import { toast } from 'react-toastify';
 
 const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId, completionLog, completionStatus }) => {
   const [taskComplete, setTaskComplete] = useState(false);
@@ -23,8 +24,6 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId, 
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [log, setLog] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     if (completionTime) {
@@ -76,9 +75,7 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId, 
   };
 
   const handleSaveClick = async () => {
-    setErrorMessage('');
-    setSuccessMessage('');
-
+  
     const token = localStorage.getItem('token');
     const taskCompleteData = {
       id: timingId,
@@ -93,22 +90,22 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId, 
     };    
 
     if ((hours === '' && minutes === '') || (hours == 0 && minutes == 0) || hours > 8 || minutes > 59) {
-      setErrorMessage("Please cpheck time format (hr less than 8 and min less than 59)");
+      toast.error("Please cpheck time format (hr less than 8 and min less than 59)");
       return;
     } else if (log === '') {
-      setErrorMessage("Please enter log with no special character");
+      toast.error("Please enter log with no special character");
       return;
     } else {
       try {
         const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/completeTask`, taskCompleteData);
         if (response.data === 'Success') {
-          setSuccessMessage('Task timimg changed successfully.')
+          toast.success('Task timimg changed successfully.')
           setTimeout(handleClose, 2500);
         } else {
-          setErrorMessage('Error saving task data');
+          toast.error('Error saving task data');
         }
       } catch (error) {
-        setErrorMessage('Error saving task data');
+        toast.error('Error saving task data');
       }
     }
   };
@@ -256,8 +253,6 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId, 
                 sx={{ fontFamily: 'Nunito, sans-serif' }}
               />
             </Grid>
-            {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
-            {successMessage && <p style={{ color: 'green', marginTop: '0.5rem', textAlign: 'center' }}>{successMessage}</p>}
           </Grid>
         </DialogContent>
         <DialogActions>

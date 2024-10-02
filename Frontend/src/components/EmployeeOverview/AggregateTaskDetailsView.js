@@ -7,13 +7,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import AddTaskModal from '../Navbar/Dropdown/Add Task/AddTask';
 
 function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetails, handleToggleShowTimeComplete, seconds2dayhrmin, columnWidths }) {
-    const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
-    const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
     const [addTaskDialogOpen, setAddTaskDialogOpen] = useState(false);
-    const [selectedProjectId, setSelectedProjectId] = useState(null);
-    const [selectedProject, setSelectedProject] = useState(null);
-    const [projectName, setProjectName] = useState(null);
-    const [projects, setProjects] = useState(null);
     const [projectTimeDetails, setProjectTimeDetails] = useState({});
     const [taskDetails, setTaskDetails] = useState({ tasks: 0, required: 0, taken: 0 });
 

@@ -3,6 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { toast } from 'react-toastify';
 
 const theme = createTheme({
   typography: {
@@ -10,14 +11,9 @@ const theme = createTheme({
   },
 });
 
-const showMessage = (setMessage, message) => {
-  setMessage(message);
-  setTimeout(() => setMessage(''), 1500);
-};
+
 
 const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName }) => {
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [isDeleting, setIsDeleting] = useState(false); // New state to track deletion in progress
 
   const handleDelete = async () => {
@@ -34,19 +30,19 @@ const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName 
       if (response.ok) {
         const data = await response.json();
         if (data.message === 'Success') {
-          showMessage(setSuccessMessage, "Project deleted Successfully !");
+          toast.success("Project deleted Successfully !");
           setTimeout(handleClose, 1000);
         } else {
-          showMessage(setErrorMessage, "Could not delete the project !");
+          toast.error("Could not delete the project !");
           setTimeout(handleClose, 1500);
         }
       } else {
-        showMessage(setErrorMessage, "Could not delete the project !");
+        toast.error("Could not delete the project !");
         setTimeout(handleClose, 1500);
       }
     } catch (error) {
       console.error('Error:', error);
-      showMessage(setErrorMessage, "Could not delete the project !");
+      toast.error("Could not delete the project !");
       setTimeout(handleClose, 1500);
     }
   };
@@ -60,12 +56,6 @@ const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName 
         <DialogContent>
           <div style={{ textAlign: 'center' }}>Are you sure you want to permanently remove the project</div>
           <div style={{ fontWeight: '700', textAlign: 'center' }}>"{projectName}" ?</div>
-          {errorMessage && <p style={{ color: 'red', marginTop: '0.5rem', textAlign: 'center' }}>{errorMessage}</p>}
-          {successMessage && (
-            <div className="text-center">
-              <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMessage}</p>
-            </div>
-          )}
         </DialogContent>
         <DialogActions>
           {!isDeleting && ( // Conditionally render buttons only if not deleting
