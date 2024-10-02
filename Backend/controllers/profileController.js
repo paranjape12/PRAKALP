@@ -15,9 +15,42 @@ exports.googlelogin = async (req, res) => {
     const email = token; // Directly use token as the email
 
     // Check if user exists in database
-    const selectlogin = `SELECT * FROM Logincrd WHERE Email=?`;
+    const selectlogin = `SELECT 
+        Logincrd.id, 
+        Logincrd.Name, 
+        Logincrd.Nickname, 
+        Logincrd.Email, 
+        Logincrd.Password, 
+        Logincrd.Type, 
+        Logincrd.Location, 
+        Logincrd.loginusinggmail, 
+        Logincrd.disableemp, 
+        Logincrd.projsorting, 
+        Logincrd.projsorting2, 
+        Logincrd.projsorting_pv, 
+        GROUP_CONCAT(CONCAT(EmpAcess.AcessTo, ' : ', EmpAcess.acesstype) ORDER BY EmpAcess.id DESC SEPARATOR ', ') AS accessdetails 
+    FROM 
+        Logincrd 
+    LEFT JOIN (
+        SELECT Empid, AcessTo, acesstype, id 
+        FROM EmpAcess 
+        WHERE Empid = (
+            SELECT id 
+            FROM Logincrd 
+            WHERE Email = ?
+        )
+        ORDER BY id DESC 
+        LIMIT 3
+    ) AS EmpAcess ON EmpAcess.Empid = Logincrd.id 
+    WHERE 
+        Logincrd.Email = ? 
+    GROUP BY 
+        Logincrd.id 
+    ORDER BY 
+        Logincrd.id DESC 
+    LIMIT 1`;
 
-    db.query(selectlogin, [email], (err, result) => {
+    db.query(selectlogin, [email,email], (err, result) => {
       if (err) {
         console.error(err);
         res.status(500).send('Error');
