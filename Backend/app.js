@@ -13,4 +13,8 @@ app.use('/api', profileRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', projectRoutes);
 
+app.get('/', (req, res) => {
+    res.json({ status: 'Active', timestamp: new Date().toLocaleString() });
+});
+
 module.exports = app;
