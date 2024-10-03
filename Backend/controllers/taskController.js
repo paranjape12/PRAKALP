@@ -2,7 +2,7 @@ const db = require('../config/db');
 const decryptToken = require('../middleware/decryptToken');
 
 exports.createTask = (req, res) => {
-  const { ProjectName, TaskName, Empname, islasttask, taskdetails, hr, min, assignDate, hrAssign, minAssign, token } = req.body;
+  const { ProjectName, TaskName, Empname, islasttask, taskdetails, hr, min, assignDate, hrAssign, minAssign, AssignTo, token } = req.body;
   const userData = decryptToken(token);
   const AssignBy = userData.id;
   const taskcompletedat = (parseInt(hr) * 3600) + (parseInt(min) * 60);
@@ -59,7 +59,7 @@ exports.createTask = (req, res) => {
           } else {
             if (Empname !== 'Selectedemp') {
               let insertTaskEmpSql = `INSERT INTO Taskemp (taskid, tasktimeemp, AssignedTo_emp, timetocomplete_emp) VALUES (?, ?, ?, ?)`;
-              db.query(insertTaskEmpSql, [taskId, assignDate, AssignBy, taskcompleteat_assign], (err, result) => {
+              db.query(insertTaskEmpSql, [taskId, assignDate, AssignTo, taskcompleteat_assign], (err, result) => {
                 if (err) {
                   console.error('Error inserting task employee:', err);
                   res.status(500).send('Error');
