@@ -553,7 +553,10 @@ exports.deleteEmployee = (req, res) => {
   const query1 = 'SELECT DISTINCT taskid FROM `Taskemp` WHERE AssignedTo_emp = ?';
 
   db.query(query1, [empid], (err, result) => {
-    if (err) return res.status(500).send(err);
+    if (err) {
+      console.error('Error fetching tasks:', err);
+      return res.status(500).send(err);
+    }
 
     const taskIds = result.map(row => row.taskid);
 
@@ -567,42 +570,26 @@ exports.deleteEmployee = (req, res) => {
         return res.status(404).json({ message: 'Employee not found' });
       }
 
-      db.beginTransaction(error => {
+      // Update employee's disableemp status to 1 (disable the employee)
+      db.query('UPDATE `Logincrd` SET `disableemp` = 1 WHERE `id` = ?', [empid], error => {
         if (error) {
-          console.error('Error starting transaction: ' + error);
-          return res.status(500).json({ message: 'Error starting transaction' });
+          console.error('Error disabling employee:', error);
+          return res.status(500).json({ message: 'Error disabling employee' });
         }
 
-        // Instead of deleting the employee, update the `disableemp` field to 1
-        db.query('UPDATE `Logincrd` SET `disableemp` = 1 WHERE `id` = ?', [empid], error => {
-          if (error) {
-            return db.rollback(() => {
-              console.error('Error disabling employee: ' + error);
-              res.status(500).json({ message: 'Error disabling employee' });
-            });
-          }
-
-          // Commit the transaction after updating the employee's status
-          db.commit(error => {
-            if (error) {
-              return db.rollback(() => {
-                console.error('Error committing transaction: ' + error);
-                res.status(500).json({ message: 'Error committing transaction' });
-              });
-            }
-
-            res.status(200).json({ message: 'Success, employee disabled' });
-          });
-        });
+        // At this point, the employee has been successfully disabled
+        res.status(200).json({ message: 'Success, employee disabled' });
       });
     });
   });
 };
 
+
 // EnableEmployee
 exports.enableEmployee = (req, res) => {
   const empid = req.body.empid;
 
+  // First, fetch the employee record
   db.query('SELECT * FROM `Logincrd` WHERE `id` = ?', [empid], (error, results) => {
     if (error) {
       console.error('Error fetching employee: ' + error);
@@ -617,34 +604,17 @@ exports.enableEmployee = (req, res) => {
       return res.status(400).json({ message: 'Employee is already enabled' });
     }
 
-    db.beginTransaction(error => {
+    // If employee exists and is disabled, update the `disableemp` field to 0
+    db.query('UPDATE `Logincrd` SET `disableemp` = 0 WHERE `id` = ?', [empid], (error, updateResults) => {
       if (error) {
-        console.error('Error starting transaction: ' + error);
-        return res.status(500).json({ message: 'Error starting transaction' });
+        console.error('Error enabling employee: ' + error);
+        return res.status(500).json({ message: 'Error enabling employee' });
       }
 
-      // Update the `disableemp` field to 0 to enable the employee
-      db.query('UPDATE `Logincrd` SET `disableemp` = 0 WHERE `id` = ?', [empid], error => {
-        if (error) {
-          return db.rollback(() => {
-            console.error('Error enabling employee: ' + error);
-            res.status(500).json({ message: 'Error enabling employee' });
-          });
-        }
-
-        // Commit the transaction after updating the employee's status
-        db.commit(error => {
-          if (error) {
-            return db.rollback(() => {
-              console.error('Error committing transaction: ' + error);
-              res.status(500).json({ message: 'Error committing transaction' });
-            });
-          }
-
-          res.status(200).json({ message: 'Success, employee enabled' });
-        });
-      });
+      // If the update was successful, send a success response
+      res.status(200).json({ message: 'Success, employee enabled' });
     });
   });
 };
+
 

@@ -33,66 +33,47 @@ exports.deleteProject = (req, res) => {
 
       const proname = results[0].ProjectName;
 
-      // Delete project and associated tasks
-      db.beginTransaction(error => {
-        if (error) {
-          console.error('Error starting transaction: ' + error);
-          return res.status(500).json({ message: 'Error starting transaction' });
-        }
-
-        db.query(
-          'DELETE FROM `projects` WHERE `id` = ?',
-          [projid],
-          error => {
-            if (error) {
-              return db.rollback(() => {
-                console.error('Error deleting project: ' + error);
-                res.status(500).json({ message: 'Error deleting project' });
-              });
-            }
-
-            db.query(
-              'DELETE FROM `Task` WHERE `projectName` = ?',
-              [proname],
-              error => {
-                if (error) {
-                  return db.rollback(() => {
-                    console.error('Error deleting tasks: ' + error);
-                    res.status(500).json({ message: 'Error deleting tasks' });
-                  });
-                }
-
-                db.query(
-                  'DELETE FROM `Taskemp` WHERE `taskid` IN (SELECT DISTINCT `id` FROM `Task` WHERE `projectName` = ?)',
-                  [proname],
-                  error => {
-                    if (error) {
-                      return db.rollback(() => {
-                        console.error('Error deleting task employees: ' + error);
-                        res.status(500).json({ message: 'Error deleting task employees' });
-                      });
-                    }
-
-                    db.commit(error => {
-                      if (error) {
-                        return db.rollback(() => {
-                          console.error('Error committing transaction: ' + error);
-                          res.status(500).json({ message: 'Error committing transaction' });
-                        });
-                      }
-
-                      res.status(200).send({ message: 'Success' });
-                    });
-                  }
-                );
-              }
-            );
+      // First delete tasks related to the project
+      db.query(
+        'DELETE FROM `Taskemp` WHERE `taskid` IN (SELECT DISTINCT `id` FROM `Task` WHERE `projectName` = ?)',
+        [proname],
+        (error) => {
+          if (error) {
+            console.error('Error deleting task employees: ' + error);
+            return res.status(500).json({ message: 'Error deleting task employees' });
           }
-        );
-      });
+
+          // Then delete tasks associated with the project
+          db.query(
+            'DELETE FROM `Task` WHERE `projectName` = ?',
+            [proname],
+            (error) => {
+              if (error) {
+                console.error('Error deleting tasks: ' + error);
+                return res.status(500).json({ message: 'Error deleting tasks' });
+              }
+
+              // Finally delete the project itself
+              db.query(
+                'DELETE FROM `projects` WHERE `id` = ?',
+                [projid],
+                (error) => {
+                  if (error) {
+                    console.error('Error deleting project: ' + error);
+                    return res.status(500).json({ message: 'Error deleting project' });
+                  }
+
+                  res.status(200).json({ message: 'Success' });
+                }
+              );
+            }
+          );
+        }
+      );
     }
   );
 };
+
 
 exports.getProjectNames = (req, res) => {
   const sql = 'SELECT projectName FROM projects ORDER BY `projectName` ASC';

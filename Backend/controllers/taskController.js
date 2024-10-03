@@ -1375,6 +1375,7 @@ exports.empOverviewIndIndPATimes = (req, res) => {
     });
   });
 };
+
 exports.deleteTask = (req, res) => {
   const { taskId } = req.body;
 
@@ -1385,38 +1386,24 @@ exports.deleteTask = (req, res) => {
   const deleteTaskQuery = 'DELETE FROM `Task` WHERE id = ?';
   const deleteTaskEmpQuery = 'DELETE FROM `Taskemp` WHERE taskid = ?';
 
-  db.beginTransaction((err) => {
+  // First, delete from Taskemp table
+  db.query(deleteTaskEmpQuery, [taskId], (err, result) => {
     if (err) {
-      return res.status(500).send('Error starting delete operation.');
+      return res.status(500).send('Error deleting from Taskemp table.');
     }
 
+    // Then, delete from Task table
     db.query(deleteTaskQuery, [taskId], (err, result) => {
-      if (
-        err) {
-        return db.rollback(() => {
-          res.status(500).send('Error deleting from Task table.');
-        });
+      if (err) {
+        return res.status(500).send('Error deleting from Task table.');
       }
 
-      db.query(deleteTaskEmpQuery, [taskId], (err, result) => {
-        if (err) {
-          return db.rollback(() => {
-            res.status(500).send('Error deleting from Taskemp table.');
-          });
-        }
-
-        db.commit((err) => {
-          if (err) {
-            return db.rollback(() => {
-              res.status(500).send('Error committing transaction');
-            });
-          }
-          res.send('Success');
-        });
-      });
+      // If both operations succeed, send success response
+      res.send('Success');
     });
   });
 };
+
 exports.saveEditTask = (req, res) => {
   const {
     projectName,
