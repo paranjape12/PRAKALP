@@ -14,7 +14,24 @@ app.use('/api', taskRoutes);
 app.use('/api', projectRoutes);
 
 app.get('/', (req, res) => {
-    res.json({ status: 'Active', timestamp: new Date().toLocaleString() });
+    const options = {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true,
+        timeZone: 'Asia/Kolkata'
+    };
+
+    const timestamp = new Date().toLocaleString('en-GB', options);
+
+    res.json({
+        status: 'Active',
+        timestamp: timestamp
+    });
 });
+
 
 module.exports = app;
