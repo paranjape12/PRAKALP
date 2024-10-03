@@ -85,31 +85,39 @@ exports.taskOverview = (req, res) => {
   }
 
   const userData = decryptToken(token);
-  const U_type = userData.Type; // Assuming U_type can determine the role
+  const U_type = userData.Type; 
   const u_id = userData.id;
   let arrselectemptask = [];
 
-  // SQL to check if the user has any assigned tasks
-  const taskCountQuery = `SELECT COUNT(*) AS taskCount FROM Task t 
-                          JOIN Taskemp te ON t.id = te.taskid 
-                          WHERE (t.AssignBy = ? OR t.statusBy = ?) 
-                          AND te.AssignedTo_emp = ?`;
+  if (U_type === 'Admin') {
+    taskCount = 1; 
+    proceedWithTasks();
+  } else {
+    // SQL to check if the user has any assigned tasks
+    const taskCountQuery = `SELECT COUNT(*) AS taskCount FROM Task t 
+                            JOIN Taskemp te ON t.id = te.taskid 
+                            WHERE (t.AssignBy = ? OR t.statusBy = ?) 
+                            OR te.AssignedTo_emp = ?`;
 
-  db.query(taskCountQuery, [u_id, u_id, u_id], (err, countResults) => {
-    if (err) {
-      console.error('Error executing task count query:', err.stack);
-      return res.status(500).send('Database query error');
-    }
+    db.query(taskCountQuery, [u_id, u_id, u_id], (err, countResults) => {
+      if (err) {
+        console.error('Error executing task count query:', err.stack);
+        return res.status(500).send('Database query error');
+      }
 
-    const taskCount = countResults[0].taskCount;
+      const taskCount = countResults[0].taskCount;
 
-    if (taskCount === 0) {
-      return res.status(200).send({ message: 'No Task Assign' }); // If no task assigned
-    } 
+      if (taskCount === 0) {
+        return res.status(200).send({ message: 'No Task Assign' }); // If no task assigned
+      }
+      
+      if (taskCount > 0) {
+        proceedWithTasks();
+      }
+    });
+  }
 
-
-    if (taskCount > 0) {
-    // Proceed with the regular flow if tasks are assigned
+  function proceedWithTasks() {
     const selectTaskEmpQuery = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`;
     db.query(selectTaskEmpQuery, [u_id], (err, taskResults) => {
       if (err) {
@@ -121,140 +129,141 @@ exports.taskOverview = (req, res) => {
 
       getProjSortingAndProjects();
     });
+  }
 
-    function getProjSortingAndProjects() {
-      const loginQuerySort = `SELECT projsorting FROM Logincrd WHERE id = ?`;
-      db.query(loginQuerySort, [u_id], (err, loginResults) => {
+  function getProjSortingAndProjects() {
+    const loginQuerySort = `SELECT projsorting FROM Logincrd WHERE id = ?`;
+    db.query(loginQuerySort, [u_id], (err, loginResults) => {
+      if (err) {
+        console.error('Error executing login query:', err.stack);
+        return res.status(500).send('Database query error');
+      }
+
+      const proj_sort_str = loginResults.length > 0 ? loginResults[0].projsorting : '';
+      const proj_sort = proj_sort_str ? proj_sort_str.split(' ') : [];
+
+      let selectProjectQuery;
+      if (proj_sort_str === '') {
+        selectProjectQuery = `SELECT * FROM projects`;
+      } else {
+        const sort_Status = proj_sort.map(status => `'${status}'`).join(',');
+        selectProjectQuery = `SELECT * FROM projects WHERE Status IN (${sort_Status})`;
+      }
+
+      db.query(selectProjectQuery, (err, projectResults) => {
         if (err) {
-          console.error('Error executing login query:', err.stack);
+          console.error('Error executing project query:', err.stack);
           return res.status(500).send('Database query error');
         }
 
-        const proj_sort_str = loginResults.length > 0 ? loginResults[0].projsorting : '';
-        const proj_sort = proj_sort_str ? proj_sort_str.split(' ') : [];
+        let response = [];
+        let count = 0;
+        projectResults.forEach(project => {
+          const projectId = project.id;
+          const projectName = project.ProjectName;
+          const projectSalesOrder = project.sales_order;
+          const proj_status = project.Status;
+          const projectLastTask = project.lasttask;
 
-        let selectProjectQuery;
-        if (proj_sort_str === '') {
-          selectProjectQuery = `SELECT * FROM projects`;
-        } else {
-          const sort_Status = proj_sort.map(status => `'${status}'`).join(',');
-          selectProjectQuery = `SELECT * FROM projects WHERE Status IN (${sort_Status})`;
-        }
+          let selcttask;
+          let queryParams;
 
-        db.query(selectProjectQuery, (err, projectResults) => {
-          if (err) {
-            console.error('Error executing project query:', err.stack);
-            return res.status(500).send('Database query error');
+          // Determine the logic based on role (Admin/Team Leader vs. Employee)
+          if (U_type === 'Admin' || U_type === 'Team Leader') {
+            // Admin/Team Leader logic
+            selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved 
+                        FROM Taskemp te 
+                        JOIN Task p ON te.taskid = p.id 
+                        WHERE p.ProjectName = ? 
+                        GROUP BY te.taskid, p.TaskName 
+                        ORDER BY te.taskid;`;
+            queryParams = [projectName]; // Only project name is needed for Admin/Team Leader
+          } else {
+            // Employee logic
+            selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved 
+                        FROM Taskemp te 
+                        JOIN Task p ON te.taskid = p.id 
+                        WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? 
+                        GROUP BY te.taskid, p.TaskName 
+                        ORDER BY te.taskid;`;
+            queryParams = [u_id, projectName]; // Both user ID and project name are needed for Employees
           }
 
-          let response = [];
-          let count = 0;
-          projectResults.forEach(project => {
-            const projectId = project.id;
-            const projectName = project.ProjectName;
-            const projectSalesOrder = project.sales_order;
-            const proj_status = project.Status;
-            const projectLastTask = project.lasttask;
-
-            let selcttask;
-            let queryParams;
-
-            // Determine the logic based on role (Admin/Team Leader vs. Employee)
-            if (U_type === 'Admin' || U_type === 'Team Leader') {
-              // Admin/Team Leader logic
-              selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved 
-                          FROM Taskemp te 
-                          JOIN Task p ON te.taskid = p.id 
-                          WHERE p.ProjectName = ? 
-                          GROUP BY te.taskid, p.TaskName 
-                          ORDER BY te.taskid;`;
-              queryParams = [projectName]; // Only project name is needed for Admin/Team Leader
-            } else {
-              // Employee logic
-              selcttask = `SELECT te.id, te.taskid, p.TaskName, te.timetocomplete_emp, p.timetocomplete, SUM(te.actualtimetocomplete_emp) AS total_actual_time, p.taskDetails, p.Status, p.aproved 
-                          FROM Taskemp te 
-                          JOIN Task p ON te.taskid = p.id 
-                          WHERE te.AssignedTo_emp = ? AND p.ProjectName = ? 
-                          GROUP BY te.taskid, p.TaskName 
-                          ORDER BY te.taskid;`;
-              queryParams = [u_id, projectName]; // Both user ID and project name are needed for Employees
+          db.query(selcttask, queryParams, (err, taskResults) => {
+            if (err) {
+              console.error('Error executing task query:', err.stack);
+              return res.status(500).send('Database query error');
             }
 
-            db.query(selcttask, queryParams, (err, taskResults) => {
+            let assigntaskpresent = taskResults.length > 0;
+            let noofassigntasks = taskResults.length;
+            // Prepare task details for each task
+            const tasks = taskResults.map(task => ({
+              taskId: task.taskid,
+              taskempId: task.id,
+              taskName: task.TaskName,
+              taskGivenTime: task.timetocomplete_emp,
+              taskRequiredTime: task.timetocomplete,
+              taskActualTime: task.total_actual_time,
+              taskDetails: task.taskDetails,
+              taskStatus: task.Status,
+              taskAproved: task.aproved
+            }));
+
+            // Adjust timeQuery based on role
+            let timeQuery;
+            let timeQueryParams;
+
+            if (U_type === 'Admin' || U_type === 'Team Leader') {
+              // Admin/Team Leader logic
+              timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken 
+                          FROM Taskemp te 
+                          JOIN Task p ON te.taskid = p.id 
+                          WHERE p.ProjectName = ?`;
+              timeQueryParams = [projectName]; // Only project name is needed for Admin/Team Leader
+            } else {
+              // Employee logic
+              timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken 
+                          FROM Taskemp te 
+                          JOIN Task p ON te.taskid = p.id 
+                          WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
+              timeQueryParams = [u_id, projectName]; // Both user ID and project name are needed for Employees
+            }
+
+            db.query(timeQuery, timeQueryParams, (err, timeResults) => {
               if (err) {
-                console.error('Error executing task query:', err.stack);
+                console.error('Error executing time query:', err.stack);
                 return res.status(500).send('Database query error');
               }
 
-              let assigntaskpresent = taskResults.length > 0;
-              let noofassigntasks = taskResults.length;
-              // Prepare task details for each task
-              const tasks = taskResults.map(task => ({
-                taskId: task.taskid,
-                taskempId: task.id,
-                taskName: task.TaskName,
-                taskGivenTime: task.timetocomplete_emp,
-                taskRequiredTime: task.timetocomplete,
-                taskActualTime: task.total_actual_time,
-                taskDetails: task.taskDetails,
-                taskStatus: task.Status,
-                taskAproved: task.aproved
-              }));
+              const requiredTime = timeResults[0].required || 0;
+              const takenTime = timeResults[0].taken || 0;
 
-              // Adjust timeQuery based on role
-              let timeQuery;
-              let timeQueryParams;
-
-              if (U_type === 'Admin' || U_type === 'Team Leader') {
-                // Admin/Team Leader logic
-                timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken 
-                            FROM Taskemp te 
-                            JOIN Task p ON te.taskid = p.id 
-                            WHERE p.ProjectName = ?`;
-                timeQueryParams = [projectName]; // Only project name is needed for Admin/Team Leader
-              } else {
-                // Employee logic
-                timeQuery = `SELECT sum(p.timetocomplete) as required, sum(te.actualtimetocomplete_emp) as taken 
-                            FROM Taskemp te 
-                            JOIN Task p ON te.taskid = p.id 
-                            WHERE te.AssignedTo_emp = ? AND p.ProjectName = ?`;
-                timeQueryParams = [u_id, projectName]; // Both user ID and project name are needed for Employees
-              }
-
-              db.query(timeQuery, timeQueryParams, (err, timeResults) => {
-                if (err) {
-                  console.error('Error executing time query:', err.stack);
-                  return res.status(500).send('Database query error');
-                }
-
-                const requiredTime = timeResults[0].required || 0;
-                const takenTime = timeResults[0].taken || 0;
-
-                response.push({
-                  projectId,
-                  projectName,
-                  projectSalesOrder,
-                  assigntaskpresent,
-                  noofassigntasks,
-                  proj_status,
-                  projectLastTask,
-                  requiredTime,
-                  takenTime,
-                  tasks
-                });
-
-                count++;
-                if (count === projectResults.length) {
-                  res.json(response);
-                }
+              response.push({
+                projectId,
+                projectName,
+                projectSalesOrder,
+                assigntaskpresent,
+                noofassigntasks,
+                proj_status,
+                projectLastTask,
+                requiredTime,
+                takenTime,
+                tasks
               });
+
+              count++;
+              if (count === projectResults.length) {
+                res.json(response);
+              }
             });
           });
         });
       });
-    }}
-  });
+    });
+  }
 };
+
 
 exports.aggViewPATimes = (req, res) => {
   const projectName = req.body.projectName;
