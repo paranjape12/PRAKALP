@@ -20,7 +20,7 @@ function getTaskStatusColor(status, approved) {
   }
 }
 
-const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seconds2dayhrmin, tableWidth  }) => {
+const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seconds2dayhrmin, tableWidth, taskDetailsWidth }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(false);
   const [taskInfoDialogOpen, setTaskInfoDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState({});
@@ -29,12 +29,12 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
   const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false);
   const [taskDetails, setTaskDetails] = useState(null);
   const [taskCompleteOpen, setTaskCompleteOpen] = useState(false);
-  const [timingId, setTimingId] = useState(null);  
+  const [timingId, setTimingId] = useState(null);
   const [taskTimings, setTaskTimings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [taskCompletionTime, setTaskCompletionTime] = useState(null);  
-  const [taskCompletionLog, setTaskCompletionLog] = useState('');  
-  const [taskCompletionStatus, setTaskCompletionStatus] = useState('');  
+  const [taskCompletionTime, setTaskCompletionTime] = useState(null);
+  const [taskCompletionLog, setTaskCompletionLog] = useState('');
+  const [taskCompletionStatus, setTaskCompletionStatus] = useState('');
 
   const seconds2hrmin = (ss) => {
     const h = Math.floor(ss / 3600); // Total hours
@@ -129,12 +129,12 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
   const handleOpenTaskCompleteDialog = (time, timingId, logs, Status) => {
     setTaskCompletionTime(time);
     setTaskCompletionLog(logs);
-    setTimingId(timingId);  
+    setTimingId(timingId);
     setTaskCompletionStatus(Status);
     setTaskCompleteOpen(true);
   };
-  
-  
+
+
 
   const handleCloseTaskCompleteDialog = () => {
     setTaskCompleteOpen(false);
@@ -144,9 +144,16 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
     <div className="task-container" style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="p-0" style={{ width: '100%', verticalAlign: 'top', height: '100%', display: 'flex', border: 'none' }}>
         <div className="card" style={{ flex: '1', height: '2rem', display: 'flex', flexDirection: 'column', width: '11rem', marginLeft: '0' }}>
-          <div style={{ height: '5rem', width: '13.2rem', border: 'none' }}>
-            <h6 className={`m-0 py-1 text-center font-weight-bold text-white ${getTaskStatusColor(task.taskStatus, task.taskApproved)}`} style={{ marginTop: '0.5rem', fontSize: '11px' }}>
-              {task.taskName}
+          <div style={{ height: '5rem', width: `${taskDetailsWidth * 0.89}px`, border: 'none' }}>
+            <h6 className={`m-0 py-1 text-center font-weight-bold text-white ${getTaskStatusColor(task.taskStatus, task.taskApproved)}`}
+            style={{
+              marginTop: '0.5rem',
+              fontSize: '11px',
+              whiteSpace: 'nowrap', 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis'
+            }}>
+              {task.taskName.length > 39 ? `${task.taskName.slice(0, 39)}...` : task.taskName}
             </h6>
             <FontAwesomeIcon icon={faTrashAlt} title='Delete Task' style={{ float: 'right', cursor: 'pointer', color: 'red', paddingTop: '0.2rem', paddingLeft: '0.5rem', paddingRight: '0.4rem' }} onClick={handleOpenDeleteTaskDialog} />
             <FontAwesomeIcon icon={faPencilAlt} title='Edit Task' style={{ float: 'right', cursor: 'pointer', color: '#4e73df', paddingTop: '0.2rem', paddingLeft: '0.5rem' }} onClick={handleOpenEditTaskDialog} />
@@ -184,9 +191,9 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
               open={taskCompleteOpen}
               task={task}
               handleClose={handleCloseTaskCompleteDialog}
-              completionTime={taskCompletionTime} 
-              completionLog={taskCompletionLog} 
-              completionStatus={taskCompletionStatus} 
+              completionTime={taskCompletionTime}
+              completionLog={taskCompletionLog}
+              completionStatus={taskCompletionStatus}
               timingId={timingId}
             />
           )}
@@ -200,7 +207,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
           )}
         </div>
 
-        <div style={{ flex: 1, marginLeft: '13.2rem' }}> {/* Adjust margin as needed */}
+        <div style={{ flex: 1, marginLeft: `${([taskDetailsWidth] - taskDetailsWidth * 0.11)}px` }}> {/* Adjust margin as needed */}
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <tbody>
               <tr>
@@ -237,7 +244,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
               <tr>
                 <td title='Actual Timings' style={{ padding: '0.6rem 0.5rem', fontSize: '13.44px' }}>A</td>
                 {dates.map((date, i) => (
-                  <td key={i} style={{ width: `${100 / dates.length}%`, minWidth: tableWidth , backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px', position: 'relative' }}>
+                  <td key={i} style={{ width: `${100 / dates.length}%`, minWidth: tableWidth, backgroundColor: 'white', border: '1px solid gray', textAlign: 'center', fontWeight: '800', fontSize: '13px', position: 'relative' }}>
                     {loading && (
                       <div style={{
                         position: 'absolute',
@@ -261,9 +268,9 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
                       taskTimings[i]?.map(timing => (
                         timing.taskid === task.taskId ? (
                           <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual, timing.id, timing.tasklog, timing.Status)} style={{ cursor: 'pointer' }}>
-                            <span style={{ color: '#1cc88a' }}> 
+                            <span style={{ color: '#1cc88a' }}>
                               {timing.nickname}
-                            </span> : <span style={{ color: 'inherit', cursor:'default'}}>
+                            </span> : <span style={{ color: 'inherit', cursor: 'default' }}>
                               {seconds2hrmin(timing.actual)}
                             </span>
                           </span>

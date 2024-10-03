@@ -222,9 +222,16 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                                 <div style={{ height: '2rem', display: 'flex', flexDirection: 'column', width: 'auto' }}>
                                     <div style={{ height: '1.5rem', display: 'flex', flexDirection: 'column', width: '100%', border: 'none' }}>
                                         {/* Task title in its own line */}
-                                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                                            <h6 className={`m-0 py-1 text-center font-weight-bold text-white ${getTaskStatusColor(task.Status, task.aproved)}`} style={{ width:'100%',fontSize: '11px', margin: '0' }}>
-                                                {task.TaskName}
+                                        <div className={`m-0 p-0 text-center font-weight-bold text-white ${getTaskStatusColor(task.taskStatus, task.taskApproved)}`} style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                            <h6 
+                                                style={{
+                                                    fontSize: '11px',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    margin: '0.2rem'
+                                                }}>
+                                                {task.TaskName.length > 39 ? `${task.TaskName.slice(0, 39)}...` : task.TaskName}
                                             </h6>
                                         </div>
 
@@ -252,7 +259,7 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
 
                                     {/* Show Time Details */}
                                     {localShowTimeDetails && (
-                                        <div className="card-body text-left" style={{ padding: '0', fontSize: '11px', marginTop: '1rem', marginLeft:'0.3rem'}}>
+                                        <div className="card-body text-left" style={{ padding: '0', fontSize: '11px', marginTop: '1rem', marginLeft: '0.3rem' }}>
                                             R: {seconds2dayhrmin(task.timetocomplete || 0)}
                                             <br />
                                             T: {seconds2dayhrmin(taskDetails.taskemps.find(emp => Number(emp.taskid) === task.id)?.actual || 0)}
@@ -268,7 +275,7 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                                     <tr>
                                         <td title="Planned Timings" style={{ padding: '0.5rem', backgroundColor: 'gray', color: 'white', fontSize: '13.44px', border: 'none' }}>P</td>
                                         {dates.map((date, i) => (
-                                            <td key={i} onClick={handleOpenAssignTaskDialog} title="Assign New Task" style={{ cursor: 'pointer', minWidth: `${(columnWidths.dateWidth / 16)}rem`, padding:'0.5rem', backgroundColor: 'gray', color: 'white', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
+                                            <td key={i} onClick={handleOpenAssignTaskDialog} title="Assign New Task" style={{ cursor: 'pointer', minWidth: `${(columnWidths.dateWidth / 16)}rem`, padding: '0.5rem', backgroundColor: 'gray', color: 'white', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
                                                 {loading ? '' : (
                                                     taskTimings.filter(timing => timing.taskDate === date.ymdDate && timing.taskid === task.id).map(timing => (
                                                         <span key={timing.taskid} style={{ fontWeight: '700' }}>{employee.Nickname} : {seconds2hrmin(timing.planned || 0)}</span>
@@ -282,7 +289,7 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                                     <tr>
                                         <td title="Actual Timings" style={{ padding: '0.5rem', fontSize: '13.44px' }}>A</td>
                                         {dates.map((date, i) => (
-                                            <td key={i} style={{ minWidth: `${(columnWidths.dateWidth / 16)}rem`, backgroundColor: 'white', border: '1px solid gray', padding:'0.5rem', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
+                                            <td key={i} style={{ minWidth: `${(columnWidths.dateWidth / 16)}rem`, backgroundColor: 'white', border: '1px solid gray', padding: '0.5rem', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}>
                                                 {loading ? '' : (
                                                     taskTimings.filter(timing => timing.taskDate === date.ymdDate && timing.taskid === task.id).map(timing => (
                                                         <><span key={timing.id} style={{ fontWeight: '700', color: '#1cc88a', cursor: 'pointer' }} onClick={() => handleOpenTaskCompleteDialog(timing.actual, timing.id)}>
