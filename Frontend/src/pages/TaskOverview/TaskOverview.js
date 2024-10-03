@@ -71,6 +71,7 @@ function TaskOverview() {
     return storedValue ? JSON.parse(storedValue) : true;
   });
   const [showTimeComplete, setShowTimeComplete] = useState(true);
+  const [taskDetailsWidth, setTaskDetailsWidth] = useState(0);
   const [expandedProjects, setExpandedProjects] = useState({});
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
@@ -169,6 +170,7 @@ function TaskOverview() {
       ...prevState,
       [projectId]: !prevState[projectId],
     }));
+    updateTableWidth();
   };
 
   const handleTodayClick = () => {
@@ -234,21 +236,6 @@ function TaskOverview() {
       setLoading(false); // Stop loading in case of an error
     }
   };
-
-  useEffect(() => {
-    fetchProjects();
-  }, [showComplete]);
-
-
-  // Fetch projects every 4 second to update colors
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      fetchProjects();
-    }, 4000);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
 
 
   const handleOpenEditProjectDialog = (project) => {
@@ -334,15 +321,19 @@ function TaskOverview() {
 
   const [tableWidth, setTableWidth] = useState(0);
   const tableRef = useRef(null);
+  const taskDetailsRef = useRef(null);
+
+  const updateTableWidth = () => {
+    if (tableRef.current) {
+      setTableWidth(tableRef.current.getBoundingClientRect().width);
+    }
+    if (taskDetailsRef.current) {
+      setTaskDetailsWidth(taskDetailsRef.current.getBoundingClientRect().width);
+    }
+  };
 
   useEffect(() => {
-    const updateTableWidth = () => {
-      if (tableRef.current) {
-        setTableWidth(tableRef.current.getBoundingClientRect().width);
-      }
-    };
-
-    // Set initial width
+   // Set initial width
     updateTableWidth();
 
     // Add resize event listener
@@ -353,16 +344,6 @@ function TaskOverview() {
       window.removeEventListener('resize', updateTableWidth);
     };
   }, []);
-
-  useEffect(() => {
-    const updateTableWidth = () => {
-      if (tableRef.current) {
-        setTableWidth(tableRef.current.getBoundingClientRect().width);
-      }
-    };
-
-    updateTableWidth();
-  }, [projects, dates, expandedProjects]);
 
   const userData = getUserDataFromToken();
 
@@ -414,7 +395,7 @@ function TaskOverview() {
             <thead className="text-white" id="theader" style={{ fontSize: '13px' }}>
               <tr className="text-center small" style={{ position: 'sticky', top: '2.4rem', zIndex: '5' }}>
                 <th style={{ width: '25%', verticalAlign: 'revert', color: 'white' }}>Projects</th>
-                <th style={{ width: '25%', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
+                <th ref={taskDetailsRef} style={{ width: '25%', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                     <span style={{ textAlign: 'center' }}>Task Details</span>
                     <div className="taskEye" title='Show/Hide Approved Task(s)' style={{ position: 'absolute', right: '1rem' }}>
@@ -495,6 +476,7 @@ function TaskOverview() {
                                 toggleShowTimeComplete={toggleShowTimeComplete}
                                 seconds2dayhrmin={seconds2dayhrmin}
                                 tableWidth={tableWidth}
+                                taskDetailsWidth={taskDetailsWidth}
                               />
                             ))
                         ) : (
