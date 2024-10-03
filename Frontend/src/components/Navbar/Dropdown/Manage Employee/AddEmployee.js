@@ -30,7 +30,6 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
   const [emailError, setemailError] = useState([]);
   const [roleError, setRoleError] = useState("");
   const [locationError, setLocationError] = useState("");
-
   const [OpenEditEmployeeDialog, setOpenEditEmployeeDialog] = useState(false);
   const [showMainDialog, setShowMainDialog] = useState(true);
   
@@ -44,6 +43,7 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
   const handleEditEmployeeCloseDialog = () => {
     setShowMainDialog(false);
     setOpenEditEmployeeDialog(false);
+    handleClose();
   };
 
   const handleAddEmployeeBackDialog = () => {
