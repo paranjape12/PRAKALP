@@ -16,6 +16,7 @@ import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus } from '@fo
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
 import { getUserDataFromToken } from '../../utils/tokenUtils';
+import Filter from "../../assets/images/icons/Funnel.svg";
 
 const today = new Date();
 
@@ -437,6 +438,12 @@ function TaskOverview() {
                 <th ref={taskDetailsRef} style={{ width: '25%', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                     <span style={{ textAlign: 'center' }}>Task Details</span>
+                    <div className='filter'style={{ position: 'absolute', right:'2.5rem'}}> 
+                              <img style={{  height: '1.4rem' }}
+                                  className="Filter"
+                                  src={Filter}
+                                  alt="Filter"
+                                /></div>
                     <div className="taskEye" title='Show/Hide Approved Task(s)' style={{ position: 'absolute', right: '1rem' }}>
                       <FontAwesomeIcon
                         icon={showComplete ? faEye : faEyeSlash}
