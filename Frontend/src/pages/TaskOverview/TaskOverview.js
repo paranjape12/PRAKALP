@@ -16,7 +16,7 @@ import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus } from '@fo
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
 import { getUserDataFromToken } from '../../utils/tokenUtils';
-import Filter from "../../assets/images/icons/Funnel.svg";
+
 
 const today = new Date();
 
@@ -81,7 +81,6 @@ function TaskOverview() {
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [filterOptions, setFilterOptions] = useState({ amc: false, internal: false });
   const [projects, setProjects] = useState([]);
   const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
   const [filterProjectDialogOpen, setFilterProjectDialogOpen] = useState(false);
@@ -94,6 +93,7 @@ function TaskOverview() {
   const [progress, setProgress] = useState(0);
   const [noTaskMessage, setNoTaskMessage] = useState('');
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false); // Manage dialog open/close
+  const [filterOptions, setFilterOptions] = useState({ amc: false, internal: false, lessThanTenTasks: false });
 
 
   useEffect(() => {
@@ -206,15 +206,14 @@ function TaskOverview() {
     setShowAddTaskModal(false);
   };
 
-  const fetchProjects = async (filters = { amc: false, internal: false }) => {
+  const fetchProjects = async (filters = { amc: false, internal: false, lessThanTenTasks: false }) => {
 
-    // Check if filters are being applied
-    if (filters.amc || filters.internal) {
+    if (filters.amc || filters.internal || filters.lessThanTenTasks) {
       setIsFunnelFilled(true); // Set to true if any filter is being used
     } else {
       setIsFunnelFilled(false); // Set to false if no filters are applied
     }
-
+  
     try {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/taskOverview`, {
         method: 'POST',
@@ -223,37 +222,41 @@ function TaskOverview() {
         },
         body: JSON.stringify({
           token: localStorage.getItem('token'),
-          is_complete: '0', // Or your dynamic value
-          amc: filters.amc, // Pass the AMC filter value
-          internal: filters.internal, // Pass the Internal filter value
+          is_complete: '0',
+          amc: filters.amc,
+          internal: filters.internal,
         }),
       });
-
+  
       const contentType = response.headers.get('Content-Type');
-
       let data;
       if (contentType && contentType.includes('application/json')) {
         data = await response.json();
       } else {
         data = await response.text();
       }
-
-      // Handle "No Task Assign" case
+  
       if (data.message === 'No Task Assign') {
-        setNoTaskMessage(data.message); // Set the message when no task is assigned
-        setProjects([]); // Clear projects
+        setNoTaskMessage(data.message);
+        setProjects([]);
       } else {
-        setProjects(data); // If valid data, update projects
-        setNoTaskMessage(''); // Clear any previous message
+        let filteredProjects = data;
+  
+        // Apply filter for less than 10 tasks
+        if (filters.lessThanTenTasks) {
+          filteredProjects = filteredProjects.filter(project => project.tasks.length < 10);
+        }
+  
+        setProjects(filteredProjects);
+        setNoTaskMessage('');
       }
-
+  
       setLoading(false);
     } catch (error) {
       console.error('Error:', error);
-      setLoading(false); // Stop loading in case of an error
+      setLoading(false);
     }
   };
-
 
   const handleOpenEditProjectDialog = (project) => {
     setSelectedProject({
@@ -381,11 +384,10 @@ function TaskOverview() {
     setIsFunnelFilled(!isFunnelFilled); 
   };
 
-
-  const handleFilterSave = (newFilterOptions) => {
-    setLoading(true); // Show loading state when fetching data
-    setFilterOptions(newFilterOptions); // Update filter options state
-    fetchProjects(newFilterOptions); // Fetch projects with the new filter options
+const handleFilterSave = (newFilterOptions) => {
+  setLoading(true);
+  setFilterOptions(newFilterOptions);
+  fetchProjects(newFilterOptions);
 };
 
 
@@ -438,12 +440,6 @@ function TaskOverview() {
                 <th ref={taskDetailsRef} style={{ width: '25%', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                     <span style={{ textAlign: 'center' }}>Task Details</span>
-                    <div className='filter'style={{ position: 'absolute', right:'2.5rem'}}> 
-                              <img style={{  height: '1.4rem' }}
-                                  className="Filter"
-                                  src={Filter}
-                                  alt="Filter"
-                                /></div>
                     <div className="taskEye" title='Show/Hide Approved Task(s)' style={{ position: 'absolute', right: '1rem' }}>
                       <FontAwesomeIcon
                         icon={showComplete ? faEye : faEyeSlash}
@@ -571,7 +567,13 @@ function TaskOverview() {
             />
           )}
           {filterProjectDialogOpen && (
-            <ProjectFilter setFilterOptions={setFilterOptions} filterOptions={filterOptions} open={filterProjectDialogOpen} onClose={handleCloseFilterProjectDialog} onSave={handleFilterSave} />
+            <ProjectFilter
+              setFilterOptions={setFilterOptions}
+              filterOptions={filterOptions}
+              open={filterProjectDialogOpen}
+              onClose={handleCloseFilterProjectDialog}
+              onSave={handleFilterSave}
+            />
           )}
           <Footer />
         </>

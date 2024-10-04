@@ -5,6 +5,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, FormContro
 const ProjectFilter = ({ open, onClose, onSave, filterOptions, setFilterOptions }) => {
     const [amcChecked, setAmcChecked] = useState(filterOptions.amc);
     const [internalChecked, setInternalChecked] = useState(filterOptions.internal);
+    const [lessThanTenTasksChecked, setLessThanTenTasksChecked] = useState(filterOptions.lessThanTenTasks);
 
     const theme = createTheme({
         typography: {
@@ -16,6 +17,7 @@ const ProjectFilter = ({ open, onClose, onSave, filterOptions, setFilterOptions 
     useEffect(() => {
         setAmcChecked(filterOptions.amc);
         setInternalChecked(filterOptions.internal);
+        setLessThanTenTasksChecked(filterOptions.lessThanTenTasks);
     }, [filterOptions]);
 
     const handleCheckboxChange = (event) => {
@@ -55,6 +57,16 @@ const ProjectFilter = ({ open, onClose, onSave, filterOptions, setFilterOptions 
                             />
                         }
                         label="Internal"
+                    />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={filterOptions.lessThanTenTasks}
+                                onChange={handleCheckboxChange}
+                                name="lessThanTenTasks"
+                            />
+                        }
+                        label="Less than 10 tasks"
                     />
                 </DialogContent>
                 <DialogActions>
