@@ -16,40 +16,43 @@ import {
   FormControlLabel,
   InputAdornment,
   IconButton,
-  
+
+
 } from "@mui/material";
+import { toast } from "react-toastify";
 import "./AddEmployee.css";
 import EditEmployee from "./EditEmployee";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import { toast } from 'react-toastify';
+import { useSelector } from "react-redux";
+import { closeAddProjectModal, setAddProjectModal, openAddProjectModal } from '../../../../services/redux/AddEmployeeSlice';
+import { useDispatch } from "react-redux";
 
-const AddEmployee = ({ openDialog, handleClose  }) => {
-  
+const AddEmployee = ({handleCloseModalForTemplate} ) => {
+
+  const dispatch = useDispatch();
+
   const [showPasswordFields, setShowPasswordFields] = useState(true);
-  const [emailError, setemailError] = useState([]);
   const [roleError, setRoleError] = useState("");
   const [locationError, setLocationError] = useState("");
-  const [OpenEditEmployeeDialog, setOpenEditEmployeeDialog] = useState(false);
-  const [showMainDialog, setShowMainDialog] = useState(true);
+  const [editEmployeeModal, setEditEmployeeModal] = useState(false);
+
+
+  const handleCloseEditEmployeeModal = () => {
+    setEditEmployeeModal(false);
+  }
   
- 
+  const handleOpenEditEmployeeModal = () => {
+    dispatch(closeAddProjectModal(false));
+    setEditEmployeeModal(true);
+  }
 
-  const handleEditEmployeeClick = () => {
-    setShowMainDialog(false);
-    setOpenEditEmployeeDialog(true);
-  };
+  const addEmployeeModal = useSelector((state) => state.addEmployee.addEmployeeModal);
 
-  const handleEditEmployeeCloseDialog = () => {
-    setShowMainDialog(false);
-    setOpenEditEmployeeDialog(false);
-    handleClose();
-  };
 
-  const handleAddEmployeeBackDialog = () => {
-    setShowMainDialog(true);
-    setOpenEditEmployeeDialog(false);
-  };
+  const handleOpenAddEmployeeModal = () => {
+    dispatch(openAddProjectModal(true));
+  }
 
   const [formData, setFormData] = useState({
     Name: "",
@@ -134,7 +137,7 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
   };
 
   // Validation function
-  const valid = (Name, Email, Password, confirmPassword, Type, Location,Nickname) => {
+  const valid = (Name, Email, Password, confirmPassword, Type, Location, Nickname) => {
     // Check if all fields are filled
     if (
       !Name ||
@@ -143,7 +146,7 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
       (!confirmPassword && !formData.loginusinggmail) ||
       Type === "unset" ||
       Location === "unset" ||
-      !Nickname 
+      !Nickname
     ) {
       return false;
     }
@@ -191,13 +194,13 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
       return;
     }
 
-    const { Name, Email, Password, confirmPassword, Type, Location , Nickname } = formData;
-    
+    const { Name, Email, Password, confirmPassword, Type, Location, Nickname } = formData;
+
     if (formData.Type === "unset") {
       toast.error("Role is required");
     } else {
       setRoleError("");
-    }  
+    }
 
     if (formData.Location === "unset") {
       toast.error("Location is required");
@@ -233,7 +236,7 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
       Email: formData.Email,
       Password: encodedPassword,
       Type: formData.Type,
-      Location:formData.Location ,
+      Location: formData.Location,
       loginusinggmail: formData.loginusinggmail,
       Name: formData.Name,
       Nickname: formData.Nickname,
@@ -247,7 +250,6 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
         .then((response) => {
           if (response.status === 200) {
             toast.success("Employee added successfully!");
-            setTimeout(handleClose, 2500);
             setFormData({
               Name: "",
               Email: "",
@@ -270,9 +272,6 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
     }
   };
 
-
- 
-
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => {
@@ -280,22 +279,35 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
   };
 
 
+  const handleCloseAddEmployee = () => {
+
+    dispatch(closeAddProjectModal(false));
+
+  }
+
+
+  console.log('editEmployee Modal', editEmployeeModal);
+
+
+
+
+
   return (
     <>
-     {showMainDialog && (
       <Dialog
-        open={openDialog}
-        onClose={handleClose}
         maxWidth="md"
+        open={addEmployeeModal}
+        onClose={handleCloseAddEmployee}
       >
         <DialogTitle>
           Add New Employee
           <Button
+            onClick={handleOpenEditEmployeeModal}
             className="editEmp-btn"
             style={{ marginLeft: "27rem" }}
-            onClick={handleEditEmployeeClick}
             color="primary"
             variant="contained"
+
           >
             Edit Employee
           </Button>
@@ -342,7 +354,7 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
                 required
                 type="email"
                 style={{ marginBottom: "1rem" }}
-              />{emailError && <p style={{ color: "red" }}>{emailError}</p>}
+              />
               <div className="row form-group1">
                 {/* Role Field */}
                 <div className="col-md-6">
@@ -572,9 +584,9 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
         <DialogActions>
           <Button
             className="close-btn"
-            onClick={handleClose}
             color="error"
             variant="contained"
+            onClick={handleCloseAddEmployee}
           >
             Close
           </Button>
@@ -588,11 +600,14 @@ const AddEmployee = ({ openDialog, handleClose  }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      )}
-      {OpenEditEmployeeDialog && <EditEmployee open={OpenEditEmployeeDialog} handleClose={handleEditEmployeeCloseDialog} onBack={handleAddEmployeeBackDialog }/>}
 
+      {
+        editEmployeeModal &&
+        <EditEmployee openEditEmployeeModal={editEmployeeModal} handleCloseEditEmployeeModal={handleCloseEditEmployeeModal} />
+      }
     </>
   );
 };
 
 export default AddEmployee;
+  

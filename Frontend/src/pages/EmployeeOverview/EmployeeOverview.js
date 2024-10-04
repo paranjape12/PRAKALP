@@ -9,11 +9,11 @@ import axios from 'axios';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus, faCircleInfo, faD } from '@fortawesome/free-solid-svg-icons';
 
 import '../../pages/TaskOverview/TaskOverview.css';
-import EditEmployee1 from '../../components/EmployeeOverview/EditEmployee1';
 import LogsPopup from '../../components/EmployeeOverview/LogsPopup';
 import DeleteEmployeePopup from '../../components/EmployeeOverview/DeleteEmployeePopup';
 import EnableEmployee from '../../components/EmployeeOverview/EnableEmployee';
 import { useNavigate } from 'react-router-dom';
+import EditEmployee from '../../components/Navbar/Dropdown/Manage Employee/EditEmployee';
 
 function EmployeeOverview() {
 
@@ -50,10 +50,10 @@ function EmployeeOverview() {
 
   const onProjectsCountUpdate = useCallback((empId, projectsCount) => {
     setProjectsCount((prevState) => ({
-        ...prevState,
-        [empId]: projectsCount,
+      ...prevState,
+      [empId]: projectsCount,
     }));
-}, []); 
+  }, []);
 
 
   const [columnWidths, setColumnWidths] = useState({
@@ -463,13 +463,11 @@ function EmployeeOverview() {
 
       </table>
       {editEmployeeOpen && (
-        <EditEmployee1
-          // open={editEmployeeOpen}
-          open={handleOpenEditEmployeeDialog}
-          handleClose={handleCloseEditEmployeeDialog}
+        <EditEmployee
+          openFromEmployeeOverview={editEmployeeOpen}
+          handleCloseFromEmployeeOverview={handleCloseEditEmployeeDialog} // Ensure this function exists
         />
       )}
-
       {deleteEmployeeOpen && (
         <DeleteEmployeePopup
           open={deleteEmployeeOpen}
@@ -495,3 +493,4 @@ function EmployeeOverview() {
 }
 
 export default EmployeeOverview;
+ 

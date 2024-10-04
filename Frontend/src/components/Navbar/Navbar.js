@@ -10,6 +10,9 @@ import SettingsDialog from '../Navbar/Dropdown/Settings/SettingsDialog';
 import AddEmployee from '../Navbar/Dropdown/Manage Employee/AddEmployee';
 import LogoutPopup from '../../components/Navbar/Dropdown/Logout/LogoutPopup'
 import { getUserDataFromToken } from '../../utils/tokenUtils';
+import { useDispatch } from 'react-redux';
+import { openAddProjectModal } from '../../services/redux/AddEmployeeSlice';
+import { useSelector } from 'react-redux';
 
 function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, settingsDialogOpen, onOpenSettingsDialog, onSettingsClose, onSettingsApply }) {
   const [activeButton, setActiveButton] = useState(null);
@@ -24,6 +27,15 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [logoutPopupOpen, setLogoutPopupOpen] = useState(false);
 
+  const addEmployeeModal = useSelector((state) => state.addEmployee.addEmployeeModal);
+  
+  const dispatch = useDispatch();
+
+  const handleOpenAddEmployeeModal = () => {
+    setShowMenuDropdown(false);
+    dispatch(openAddProjectModal());
+
+  }
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -47,7 +59,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
     setAddEmployeeDialogOpen(true);
   };
   const handleCloseAddEmployeeDialog = () => {
-    setAddEmployeeDialogOpen(false);
+    setAddEmployeeDialogOpen();
   };
 
   const handleOpenAddTaskDialog = () => {
@@ -179,7 +191,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
                   <div>
                     <button
                       className='dropdown-item d-flex align-items-center'
-                      onClick={handleOpenAddEmployeeDialog}
+                      onClick={handleOpenAddEmployeeModal}
                       title="Add Project"
                     >
                       <div className='mr-3'>
@@ -292,4 +304,4 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
 
   );
 }
-export default Navbar;
+export default Navbar; 
