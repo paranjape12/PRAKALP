@@ -5,10 +5,13 @@ import Footer from '../../components/Footer';
 import EditProjectPopup from '../../components/TaskOverview/EditProjectPopup';
 import DeleteProjectPopup from '../../components/TaskOverview/DeleteProjectPopup';
 import AddTaskModal from '../../components/Navbar/Dropdown/Add Task/AddTask';
+import ProjectFilter from '../../components/TaskOverview/ProjectFilter';
 import AggregateTaskView from '../../components/TaskOverview/AggregateTaskView';
 import IndividualTaskView from '../../components/TaskOverview/IndividualTaskView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
+import funnel from '../../assets/images/icons/Funnel.svg';
+import funnelFilled from '../../assets/images/icons/FunnelFilled.svg';
 import { faEye, faEyeSlash, faTrashAlt, faPencilAlt, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
@@ -71,13 +74,16 @@ function TaskOverview() {
     return storedValue ? JSON.parse(storedValue) : true;
   });
   const [showTimeComplete, setShowTimeComplete] = useState(true);
+  const [isFunnelFilled, setIsFunnelFilled] = useState(false);
   const [taskDetailsWidth, setTaskDetailsWidth] = useState(0);
   const [expandedProjects, setExpandedProjects] = useState({});
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [editProjectDialogOpen, setEditProjectDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [filterOptions, setFilterOptions] = useState({ amc: false, internal: false });
   const [projects, setProjects] = useState([]);
   const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false);
+  const [filterProjectDialogOpen, setFilterProjectDialogOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [projectName, setProjectName] = useState(null);
   const [showTimeDetails, setShowTimeDetails] = useState(true);
@@ -199,7 +205,15 @@ function TaskOverview() {
     setShowAddTaskModal(false);
   };
 
-  const fetchProjects = async () => {
+  const fetchProjects = async (filters = { amc: false, internal: false }) => {
+
+    // Check if filters are being applied
+    if (filters.amc || filters.internal) {
+      setIsFunnelFilled(true); // Set to true if any filter is being used
+    } else {
+      setIsFunnelFilled(false); // Set to false if no filters are applied
+    }
+
     try {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/taskOverview`, {
         method: 'POST',
@@ -208,7 +222,9 @@ function TaskOverview() {
         },
         body: JSON.stringify({
           token: localStorage.getItem('token'),
-          is_complete: showComplete ? '1' : '0',
+          is_complete: '0', // Or your dynamic value
+          amc: filters.amc, // Pass the AMC filter value
+          internal: filters.internal, // Pass the Internal filter value
         }),
       });
 
@@ -333,7 +349,7 @@ function TaskOverview() {
   };
 
   useEffect(() => {
-   // Set initial width
+    // Set initial width
     updateTableWidth();
 
     // Add resize event listener
@@ -347,7 +363,6 @@ function TaskOverview() {
 
   const userData = getUserDataFromToken();
 
-  // Handler to open/close the SettingsDialog
   const handleOpenSettingsDialog = () => {
     setSettingsDialogOpen(true);
   };
@@ -355,6 +370,22 @@ function TaskOverview() {
     setSettingsDialogOpen(false);
   };
 
+  const handleOpenFilterProjectDialog = () => {
+    setFilterProjectDialogOpen(true);
+    setIsFunnelFilled(!isFunnelFilled);
+};
+
+  const handleCloseFilterProjectDialog = () => {
+    setFilterProjectDialogOpen(false);
+    setIsFunnelFilled(!isFunnelFilled); 
+  };
+
+
+  const handleFilterSave = (newFilterOptions) => {
+    setLoading(true); // Show loading state when fetching data
+    setFilterOptions(newFilterOptions); // Update filter options state
+    fetchProjects(newFilterOptions); // Fetch projects with the new filter options
+};
 
 
   return (
@@ -394,7 +425,15 @@ function TaskOverview() {
           <table className="table table-bordered text-dark" width="100%" cellSpacing="0" style={{ marginTop: '38px', fontFamily: "Nunito", tableLayout: 'fixed' }}>
             <thead className="text-white" id="theader" style={{ fontSize: '13px' }}>
               <tr className="text-center small" style={{ position: 'sticky', top: '2.4rem', zIndex: '5' }}>
-                <th style={{ width: '25%', verticalAlign: 'revert', color: 'white' }}>Projects</th>
+                <th style={{ width: '25%', verticalAlign: 'revert', color: 'white' }}>Projects
+                  <img
+                    src={isFunnelFilled ? funnelFilled : funnel} // Use state to toggle the icon
+                    className="taskeye"
+                    alt="Funnel Icon"
+                    style={{ float: 'right', zIndex: '2', height: '1.4rem', marginRight: '0.5rem', cursor: 'pointer' }}
+                    onClick={handleOpenFilterProjectDialog} // Call the toggle function when the icon is clicked
+                  />
+                </th>
                 <th ref={taskDetailsRef} style={{ width: '25%', verticalAlign: 'revert', color: 'white', position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                     <span style={{ textAlign: 'center' }}>Task Details</span>
@@ -523,6 +562,9 @@ function TaskOverview() {
               selectedProjectId={selectedProjectId}
               projectName={projectName}
             />
+          )}
+          {filterProjectDialogOpen && (
+            <ProjectFilter setFilterOptions={setFilterOptions} filterOptions={filterOptions} open={filterProjectDialogOpen} onClose={handleCloseFilterProjectDialog} onSave={handleFilterSave} />
           )}
           <Footer />
         </>
