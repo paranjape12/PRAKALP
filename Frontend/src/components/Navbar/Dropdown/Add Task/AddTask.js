@@ -55,31 +55,33 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
       return;
     }
   
-    const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/createTask`, {
-      ProjectName: selectedProject,
-      TaskName: taskName,
-      Empname: selectedEmployee.name, // still passing employee name
-      AssignTo: selectedEmployee.id,  // new AssignTo field with the employee's ID
-      islasttask: lastTask ? 1 : 0,
-      taskdetails: taskDetails,
-      hr: hours,
-      min: minutes,
-      assignDate: assignDate,
-      hrAssign: hrAssign,
-      minAssign: minAssign,
-      token: localStorage.getItem('token'),
-    });
-  
     try {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/createTask`, {
+        ProjectName: selectedProject,
+        TaskName: taskName,
+        Empname: selectedEmployee.name, // passing employee name
+        AssignTo: selectedEmployee.id,  // passing employee's ID
+        islasttask: lastTask ? 1 : 0,
+        taskdetails: taskDetails,
+        hr: hours,
+        min: minutes,
+        assignDate: assignDate,
+        hrAssign: hrAssign,
+        minAssign: minAssign,
+        token: localStorage.getItem('token'),
+      });
+  
       if (response.data === 'Success') {
         toast.success('Task added successfully!');
         setTimeout(onClose, 2500);
+      } else if (response.data === 'Last Task exist') {
+        toast.warning('Already Last Task exist');
       }
+  
     } catch (error) {
       console.error('Error saving task:', error);
       toast.error('Error saving task');
     } finally {
-      if (response.data.message === 'Success') {
         setTaskName('');
         setLastTask(false);
         setHours(0);
@@ -90,10 +92,9 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
         setSelectedProject(projectName || '');
         setSelectedEmployee('');
         setTaskDetails('');
-      }
     }
-  };  
-
+  };
+   
   useEffect(() => {
     fetchProjects();
     fetchEmployees();
