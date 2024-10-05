@@ -54,7 +54,7 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
       toast.error('Please enter task name');
       return;
     }
-  
+
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/createTask`, {
         ProjectName: selectedProject,
@@ -70,31 +70,31 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
         minAssign: minAssign,
         token: localStorage.getItem('token'),
       });
-  
+
       if (response.data === 'Success') {
         toast.success('Task added successfully!');
         setTimeout(onClose, 2500);
       } else if (response.data === 'Last Task exist') {
         toast.warning('Already Last Task exist');
       }
-  
+
     } catch (error) {
       console.error('Error saving task:', error);
       toast.error('Error saving task');
     } finally {
-        setTaskName('');
-        setLastTask(false);
-        setHours(0);
-        setMinutes(0);
-        setMinAssign(0);
-        setAssignDate(new Date().toISOString().substr(0, 10));
-        setHrAssign(0);
-        setSelectedProject(projectName || '');
-        setSelectedEmployee('');
-        setTaskDetails('');
+      setTaskName('');
+      setLastTask(false);
+      setHours(0);
+      setMinutes(0);
+      setMinAssign(0);
+      setAssignDate(new Date().toISOString().substr(0, 10));
+      setHrAssign(0);
+      setSelectedProject(projectName || '');
+      setSelectedEmployee('');
+      setTaskDetails('');
     }
   };
-   
+
   useEffect(() => {
     fetchProjects();
     fetchEmployees();
@@ -160,12 +160,12 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
               <Select
                 id="selempdrop"
                 label="Select Employee"
-                size='small'
-                value={selectedEmployee} // this can now be an object { id, name }
+                size="small"
+                value={selectedEmployee?.id || ''} // Use selectedEmployee.id or fallback to an empty string
                 onChange={(e) => {
                   const employeeId = e.target.value;
                   const selectedEmp = employees.find(emp => emp.id === employeeId);
-                  setSelectedEmployee({ id: selectedEmp.id, name: selectedEmp.Name }); // Store both id and name
+                  setSelectedEmployee(selectedEmp); // Store the full employee object
                 }}
                 style={{ fontFamily: 'Nunito', width: '15rem' }}
                 MenuProps={{
