@@ -159,17 +159,32 @@ exports.taskOverview = (req, res) => {
           // Construct the project query with filters
           let filterClause = '';
           if (projectFilter.length > 0) {
-              // Combine filters with OR if both are checked
-              filterClause = ` WHERE ${projectFilter.join(' OR ')}`;
+              // Combine filters with OR if filters are provided
+              filterClause = projectFilter.length > 0 ? `(${projectFilter.join(' OR ')})` : '';
           }
 
+          // Start building the query
+          selectProjectQuery = 'SELECT * FROM projects';
+
+          // Check if there are any sorting conditions
           if (proj_sort_str === '') {
-              selectProjectQuery = `SELECT * FROM projects${filterClause}`;
+              // If no sorting, just add the filter clause if it exists
+              if (filterClause) {
+                  selectProjectQuery += ` WHERE ${filterClause}`;
+              }
           } else {
+              // Prepare the status condition
               const sort_Status = proj_sort.map(status => `'${status}'`).join(',');
-              selectProjectQuery = `SELECT * FROM projects WHERE Status IN (${sort_Status})${filterClause}`;
-          }
 
+              // Always include the status filter
+              selectProjectQuery += ` WHERE Status IN (${sort_Status})`;
+              
+              // If there's an additional filter, combine it with AND
+              if (filterClause) {
+                  selectProjectQuery += ` AND ${filterClause}`;
+              }
+          }
+                  
           db.query(selectProjectQuery, (err, projectResults) => {
               if (err) {
                   console.error('Error executing project query:', err.stack);
