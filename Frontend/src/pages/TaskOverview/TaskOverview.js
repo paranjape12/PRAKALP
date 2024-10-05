@@ -376,12 +376,10 @@ function TaskOverview() {
 
   const handleOpenFilterProjectDialog = () => {
     setFilterProjectDialogOpen(true);
-    setIsFunnelFilled(!isFunnelFilled);
 };
 
   const handleCloseFilterProjectDialog = () => {
     setFilterProjectDialogOpen(false);
-    setIsFunnelFilled(!isFunnelFilled); 
   };
 
 const handleFilterSave = (newFilterOptions) => {
