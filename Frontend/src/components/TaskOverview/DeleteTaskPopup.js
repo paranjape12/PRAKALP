@@ -19,7 +19,7 @@ const DeleteTaskPopup = ({ open, handleClose, task }) => {
   const handleDelete = async () => {
     try {
       const token = localStorage.getItem('token'); // Assuming you store your token in localStorage
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/deleteTask`, { taskId: task.taskId });
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/deleteTask`, { taskId: task.taskId??task.id });
       
       if (response.data === 'Success') {
         toast.success('Task deleted successfully.');
