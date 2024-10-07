@@ -286,9 +286,6 @@ const AddEmployee = ({handleCloseModalForTemplate} ) => {
   }
 
 
-  console.log('editEmployee Modal', editEmployeeModal);
-
-
 
 
 
