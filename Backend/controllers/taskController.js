@@ -936,13 +936,6 @@ exports.empOverviewIndAggPATimes = (req, res) => {
         GROUP BY DATE(te.tasktimeemp), t.projectName
       `;
       queryParams = [taskIdList, userId, dateArray];
-    } else {
-      // Admin query for all employees remains unchanged
-      taskDataQuery = `
-        SELECT DATE(te.tasktimeemp) AS date, t.projectName, SUM(te.timetocomplete_emp) AS planned, SUM(te.actualtimetocomplete_emp) AS actual FROM Taskemp te INNER JOIN Task t ON te.taskid = t.id WHERE te.taskid IN (?) AND DATE(te.tasktimeemp) IN (?) GROUP BY DATE(te.tasktimeemp), t.projectName;
-      `;
-      queryParams = [taskIdList, dateArray];
-    }
 
     // Execute the query with the appropriate parameters
     db.query(taskDataQuery, queryParams, (err, taskData) => {
