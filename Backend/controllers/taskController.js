@@ -1336,7 +1336,8 @@ exports.empOverviewIndIndPATimes = (req, res) => {
     return res.status(400).json({ error: 'Invalid taskDates format' });
   }
 
-  const dateArray = taskDates.split(',').map(date => new Date(date).toISOString().split('T')[0]);
+  // Convert taskDates to array (no need to convert to UTC here)
+  const dateArray = taskDates.split(',').map(date => date.trim());
 
   // Query 1: Fetch all tasks for the given project
   const query1 = `
@@ -1377,14 +1378,14 @@ exports.empOverviewIndIndPATimes = (req, res) => {
 
       // Create a map for easy lookup
       const empDetailsMap = taskEmpDetails.reduce((acc, curr) => {
-        let tasktimeemp_date = new Date(curr.tasktimeemp_date);
-        tasktimeemp_date.setDate(tasktimeemp_date.getDate() + 1);
-        tasktimeemp_date = tasktimeemp_date.toISOString().split('T')[0];
-
+        const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
+        const istDate = new Intl.DateTimeFormat('en-GB', options).format(curr.tasktimeemp_date);
+        const [day, month, year] = istDate.split('/');
+        const formattedDate = `${year}-${month}-${day}`;
         acc[curr.taskid] = {
           id: curr.id, // Store the id from taskemp
           actualtimetocomplete_emp: curr.actualtimetocomplete_emp,
-          tasktimeemp_date: tasktimeemp_date,
+          tasktimeemp_date: formattedDate, // Already formatted as YYYY-MM-DD
           timetocomplete_emp: curr.timetocomplete_emp
         };
         return acc;
@@ -1403,6 +1404,7 @@ exports.empOverviewIndIndPATimes = (req, res) => {
     });
   });
 };
+
 
 exports.deleteTask = (req, res) => {
   const { taskId } = req.body;
