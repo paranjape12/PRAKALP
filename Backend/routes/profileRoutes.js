@@ -4,6 +4,7 @@ const profileController = require('../controllers/profileController');
 
 router.post('/register', profileController.register);
 router.get('/googlelogin', profileController.googlelogin);
+router.get('/AES256CBClogin', profileController.AES256CBClogin);
 router.post('/getProfile', profileController.getProfile);
 router.post('/getLogin', profileController.getLogin);
 router.post('/empDropdown', profileController.empDropdown);

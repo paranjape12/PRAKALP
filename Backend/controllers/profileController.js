@@ -1,11 +1,6 @@
 const db = require('../config/db');
 const decryptToken = require('../middleware/decryptToken');
-const { OAuth2Client } = require('google-auth-library');
-
-
-
-// Use environment variable
-const client = new OAuth2Client(process.env.NODE_APP_GOOGLE_CLIENT_ID);
+const crypto = require('crypto');
 
 // Google OAuth2 Callback Route
 exports.googlelogin = async (req, res) => {
@@ -68,6 +63,85 @@ exports.googlelogin = async (req, res) => {
     });
   } catch (error) {
     res.status(401).send('Error: Invalid token');
+  }
+};
+
+exports.AES256CBClogin = async (req, res) => {
+  const { token } = req.query;
+  
+  const secretKey = '741dec342a0cb6cd3a02a28f6bca3eef';
+
+  const decryptAESToken = (encryptedToken, secretKey) => {
+    const tokenParts = Buffer.from(encryptedToken, 'base64').toString('utf-8').split('::');
+
+    const encryptedData = tokenParts[0];
+    const iv = Buffer.from(tokenParts[1], 'base64'); 
+
+    const keyBuffer = Buffer.from(secretKey, 'utf-8');
+    
+    const decipher = crypto.createDecipheriv('aes-256-cbc', keyBuffer, iv);
+    let decrypted = decipher.update(Buffer.from(encryptedData, 'base64'));
+    decrypted += decipher.final();
+    
+    return decrypted.toString('utf-8');
+};
+
+  try {
+    const decryptedToken = decryptAESToken(token, secretKey);
+
+    const email = decryptedToken.split('|')[0];
+
+    const selectlogin = `SELECT 
+        Logincrd.id, 
+        Logincrd.Name, 
+        Logincrd.Nickname, 
+        Logincrd.Email, 
+        Logincrd.Password, 
+        Logincrd.Type, 
+        Logincrd.Location, 
+        Logincrd.loginusinggmail, 
+        Logincrd.disableemp, 
+        Logincrd.projsorting, 
+        Logincrd.projsorting2, 
+        Logincrd.projsorting_pv, 
+        GROUP_CONCAT(CONCAT(EmpAcess.AcessTo, ' : ', EmpAcess.acesstype) ORDER BY EmpAcess.id DESC SEPARATOR ', ') AS accessdetails 
+    FROM 
+        Logincrd 
+    LEFT JOIN (
+        SELECT Empid, AcessTo, acesstype, id 
+        FROM EmpAcess 
+        WHERE Empid = (
+            SELECT id 
+            FROM Logincrd 
+            WHERE Email = ?
+        )
+        ORDER BY id DESC 
+        LIMIT 3
+    ) AS EmpAcess ON EmpAcess.Empid = Logincrd.id 
+    WHERE 
+        Logincrd.Email = ? 
+    GROUP BY 
+        Logincrd.id 
+    ORDER BY 
+        Logincrd.id DESC 
+    LIMIT 1`;
+
+    db.query(selectlogin, [email, email], (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error');
+        return;
+      }
+
+      if (result.length === 0) {
+        return res.status(401).send('Error: User not found');
+      }
+
+      res.send({ message: 'Success', result: result });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(401).send('Error: Invalid token or decryption failed');
   }
 };
 
