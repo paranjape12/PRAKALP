@@ -235,7 +235,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
                     )}
                     {!loading && (
                       taskTimings[i]?.map(timing => (
-                        timing.taskid === task.taskId ? `${timing.nickname} : ${seconds2hrmin(timing.planned)}` : ''
+                        timing.taskid === task.taskId ? ` ${timing.nickname} : ${seconds2hrmin(timing.planned)}` : ''
                       ))
                     )}
                   </td>
@@ -269,7 +269,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
                         timing.taskid === task.taskId ? (
                           <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual, timing.id, timing.tasklog, timing.Status)} style={{ cursor: 'pointer' }}>
                             <span style={{ color: '#1cc88a' }}>
-                              {timing.nickname}
+                               {timing.nickname}
                             </span> : <span style={{ color: 'inherit', cursor: 'default' }}>
                               {seconds2hrmin(timing.actual)}
                             </span>
