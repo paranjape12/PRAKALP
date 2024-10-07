@@ -33,11 +33,11 @@ const TaskInfoDialog = ({ open, project, task, taskDetails, handleClose }) => {
 
 
   useEffect(() => {
-  if (taskDetails && taskDetails.results && taskDetails.results.length > 0) {
-    // Set filtered task details dynamically
-    setFilteredTaskDetails(taskDetails.results);
-  }
-}, [taskDetails]);
+    if (taskDetails && taskDetails.results && taskDetails.results.length > 0) {
+      // Set filtered task details dynamically
+      setFilteredTaskDetails(taskDetails.results);
+    }
+  }, [taskDetails]);
 
 
   const handleChangePage = (event, newPage) => {
@@ -187,14 +187,22 @@ const TaskInfoDialog = ({ open, project, task, taskDetails, handleClose }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-              {filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+                {filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow key={index}>
                     <TableCell align="center" sx={{ padding: '4px' }}>{formatDate(row.tasktimeemp)}</TableCell>
                     <TableCell align="center" sx={{ padding: '4px' }}>{row.Name}</TableCell>
                     <TableCell align="center" sx={{ padding: '4px' }}>{seconds2hrmin(row.timetocomplete_emp)}</TableCell>
                     <TableCell align="center" sx={{ padding: '4px' }}>{seconds2hrmin(row.actualtimetocomplete_emp)}</TableCell>
                     <TableCell align="center" sx={{ padding: '4px' }}>{row.Activity}</TableCell>
-                    <TableCell align="center" sx={{ padding: '4px' }}>{row.tasklog}</TableCell>
+                    <TableCell align="center" sx={{ padding: '4px', textAlign:'left' }}>
+                      {row.tasklog.split('\n').map((line, index) => (
+                        <span key={index}>
+                          {line}
+                          <br />
+                        </span>
+                      ))}
+                    </TableCell>
+
                   </TableRow>
                 ))}
               </TableBody>
