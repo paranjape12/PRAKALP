@@ -887,7 +887,7 @@ exports.empOverviewTaskDtlsIndAggView = (req, res) => {
 
 // add admin and employee side completed and nickname is inprocess
 exports.empOverviewIndAggPATimes = (req, res) => {
-  const { projectName, userId, startDate, userRole, userNickname } = req.query;
+  const { projectName, userId, startDate } = req.query;
 
   const taskIdQuery = `
     SELECT id 
@@ -922,9 +922,7 @@ exports.empOverviewIndAggPATimes = (req, res) => {
     let taskDataQuery;
     let queryParams = [];
 
-    if (userRole && userRole.trim() == "Employee") {
-      // Updated Employee-specific query with projectName
-      taskDataQuery = `
+    taskDataQuery = `
         SELECT 
           DATE(te.tasktimeemp) AS date, 
           t.projectName, 

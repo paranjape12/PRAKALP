@@ -28,11 +28,11 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     return `${formattedH} : ${formattedM}`;
   };
 
-  const fetchProjectTimeDetails = async (projectName, userId, startDate, userRole, userNickname) => {
+  const fetchProjectTimeDetails = async (projectName, userId, startDate) => {
     setLoading(true); // Start loading when fetching data
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/empOverviewIndAggPATimes`, {
-        params: { projectName, userId, startDate, userRole, userNickname }
+        params: { projectName, userId, startDate }
       });
 
       const updatedProjectTimeDetails = { planned: {}, actual: {}, projectName: response.data.data[0]?.projectName || '' };
@@ -61,11 +61,10 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     const projectName = project.projectName;
     const startDate = dates[0]?.ymdDate;
     const userRole = decrypToken.Type;
-    const userNickname = decrypToken.Nickname;
 
     // Fetch project time details when project or dates change
     if (project.projectId && dates.length > 0) {
-      fetchProjectTimeDetails(projectName, assignBy, startDate, userRole, userNickname);
+      fetchProjectTimeDetails(projectName, assignBy, startDate);
     }
   }, [project.projectId, project.projectName, dates]);
 

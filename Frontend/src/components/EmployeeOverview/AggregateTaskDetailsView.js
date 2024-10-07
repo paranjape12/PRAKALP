@@ -22,10 +22,10 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
         }
     };
 
-    const fetchProjectTimeDetails = async (projectName, userId, startDate, userRole, userNickname) => {
+    const fetchProjectTimeDetails = async (projectName, userId, startDate) => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/empOverviewIndAggPATimes`, {
-                params: { projectName, userId, startDate, userRole, userNickname }
+                params: { projectName, userId, startDate }
             });
 
             const updatedProjectTimeDetails = { planned: {}, actual: {}, projectName: response.data.data[0]?.projectName || '' };
@@ -63,10 +63,8 @@ function AggregateTaskDetailsView({ project, employee, dates, localShowTimeDetai
         const assignBy = employee.id;
         const projectName = project.projectName;
         const startDate = dates[0]?.ymdDate;
-        const userRole = decrypToken.Type;
-        const userNickname = decrypToken.Nickname;
         fetchTaskDetails(assignBy, projectName);
-        fetchProjectTimeDetails(projectName, assignBy, startDate, userRole, userNickname);
+        fetchProjectTimeDetails(projectName, assignBy, startDate);
     }, [employee.id, project.projectName, dates]);
 
 
