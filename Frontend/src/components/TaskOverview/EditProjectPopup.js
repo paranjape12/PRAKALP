@@ -9,7 +9,7 @@ const theme = createTheme({
   },
 });
 
-const EditProjectPopup = ({ open, handleClose, projectDetails, onSave }) => {
+const EditProjectPopup = ({ open, handleClose, projectDetails, onSave, onSaveFetchProjects }) => {
   const [salesOrder, setSalesOrder] = useState('');
   const [projectName, setProjectName] = useState('');
   const [projectId, setProjectId] = useState('');
@@ -117,6 +117,7 @@ const EditProjectPopup = ({ open, handleClose, projectDetails, onSave }) => {
             projectStatus,
             salesOrder
           });
+          onSaveFetchProjects();
           toast.success("Project updated Successfully !");
           setTimeout(handleClose, 2000);
         }

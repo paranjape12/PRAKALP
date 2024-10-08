@@ -13,7 +13,7 @@ const theme = createTheme({
 
 
 
-const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName }) => {
+const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName, onSaveFetchProjects }) => {
   const [isDeleting, setIsDeleting] = useState(false); // New state to track deletion in progress
 
   const handleDelete = async () => {
@@ -30,6 +30,7 @@ const DeleteProjectPopup = ({ open, handleClose, selectedProjectId, projectName 
       if (response.ok) {
         const data = await response.json();
         if (data.message === 'Success') {
+          onSaveFetchProjects();
           toast.success("Project deleted Successfully !");
           setTimeout(handleClose, 1000);
         } else {

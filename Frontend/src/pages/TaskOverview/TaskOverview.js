@@ -97,12 +97,6 @@ function TaskOverview() {
 
 
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
-      navigate("/");
-    }
-  }, [navigate]);
-
-  useEffect(() => {
 
     fetchProjects();
 
@@ -123,6 +117,10 @@ function TaskOverview() {
       clearTimeout(timeout); // Clean up the timeout to prevent memory leaks
     };
   }, []);
+
+  const handlefetchProjects = () => {
+    fetchProjects();
+  };
 
   const toggleShowComplete = (e) => {
     e.stopPropagation();
@@ -421,6 +419,7 @@ const handleFilterSave = (newFilterOptions) => {
               onPreviousDayClick={handlePreviousDayClick}
               onNextDayClick={handleNextDayClick}
               dates={dates}
+              onSaveFetchProjects={handlefetchProjects} 
               settingsDialogOpen={settingsDialogOpen} // Pass open state to Navbar
               onSettingsClose={handleCloseSettingsDialog} // Pass close handler to Navbar
               onOpenSettingsDialog={handleOpenSettingsDialog} // Pass open handler to Navbar
@@ -557,6 +556,7 @@ const handleFilterSave = (newFilterOptions) => {
               handleClose={handleCloseEditProjectDialog}
               projectDetails={selectedProject}
               onSave={handleSaveEditProject}
+              onSaveFetchProjects={handlefetchProjects} 
             />
           )}
           {selectedProjectId && (
@@ -565,6 +565,7 @@ const handleFilterSave = (newFilterOptions) => {
               handleClose={handleCloseDeleteProjectDialog}
               selectedProjectId={selectedProjectId}
               projectName={projectName}
+              onSaveFetchProjects={handlefetchProjects} 
             />
           )}
           {filterProjectDialogOpen && (
