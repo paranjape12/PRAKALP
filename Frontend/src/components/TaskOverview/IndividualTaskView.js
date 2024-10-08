@@ -20,7 +20,7 @@ function getTaskStatusColor(status, approved) {
   }
 }
 
-const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seconds2dayhrmin, tableWidth, taskDetailsWidth }) => {
+const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seconds2dayhrmin, tableWidth, taskDetailsWidth, onSaveFetchProjects }) => {
   const [localShowTimeDetails, setLocalShowTimeDetails] = useState(false);
   const [taskInfoDialogOpen, setTaskInfoDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState({});
@@ -183,6 +183,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
               task={taskToDelete}
               open={deleteTaskDialogOpen}
               handleClose={handleCloseDeleteTaskDialog}
+              onSaveFetchProjects={onSaveFetchProjects}
             />
           )}
 

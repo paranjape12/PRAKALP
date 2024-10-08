@@ -519,6 +519,7 @@ const handleFilterSave = (newFilterOptions) => {
                                 seconds2dayhrmin={seconds2dayhrmin}
                                 tableWidth={tableWidth}
                                 taskDetailsWidth={taskDetailsWidth}
+                                onSaveFetchProjects={handlefetchProjects}
                               />
                             ))
                         ) : (

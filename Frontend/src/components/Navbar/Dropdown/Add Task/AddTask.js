@@ -14,7 +14,7 @@ const theme = createTheme({
   },
 });
 
-const AddTaskModal = ({ projectName, open, onClose }) => {
+const AddTaskModal = ({ projectName, open, onClose, onSaveFetchProjects }) => {
   const [taskName, setTaskName] = useState('');
   const [lastTask, setLastTask] = useState(false);
   const [hours, setHours] = useState(0);
@@ -72,6 +72,7 @@ const AddTaskModal = ({ projectName, open, onClose }) => {
       });
 
       if (response.data === 'Success') {
+        onSaveFetchProjects();
         toast.success('Task added successfully!');
         setTimeout(onClose, 2500);
       } else if (response.data === 'Last Task exist') {

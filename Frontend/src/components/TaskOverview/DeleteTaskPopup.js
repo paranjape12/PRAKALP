@@ -12,7 +12,7 @@ const theme = createTheme({
   },
 });
 
-const DeleteTaskPopup = ({ open, handleClose, task }) => {
+const DeleteTaskPopup = ({ open, handleClose, task, onSaveFetchProjects }) => {
 
   
 
@@ -22,6 +22,7 @@ const DeleteTaskPopup = ({ open, handleClose, task }) => {
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/deleteTask`, { taskId: task.taskId??task.id });
       
       if (response.data === 'Success') {
+        onSaveFetchProjects();
         toast.success('Task deleted successfully.');
         setTimeout(() => {
           handleClose();

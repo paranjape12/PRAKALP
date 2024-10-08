@@ -267,7 +267,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
               <SettingsDialog open={settingsDialogOpen} onClose={onSettingsClose} onApply={onSettingsApply} />
               <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} />
               <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} onSaveFetchProjects={onSaveFetchProjects} />
-              <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />
+              <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} onSaveFetchProjects={onSaveFetchProjects}/>
             </div>
           )}
 
