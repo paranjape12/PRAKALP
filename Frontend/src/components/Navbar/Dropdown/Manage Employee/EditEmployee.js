@@ -70,7 +70,7 @@ const EditEmployee = ({ openEditEmployeeModal, handleCloseEditEmployeeModal,open
         setShowPasswordFields(!employee.loginusinggmail);
       }
     }
-  }, [selectedEmployee, employees]);
+  }, [selectedEmployee]);
 
   useEffect(() => {
     if (formData.id) {

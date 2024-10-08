@@ -155,7 +155,7 @@ useEffect(() => {
   const startDate = dates[0]?.ymdDate;
   fetchTaskDetails(assignBy, projectName);
   fetchProjectTimeDetails(projectName, assignBy, startDate);
-}, [employee.id, project.projectName, dates]);
+}, [project.projectName, dates]);
 
 const handleOpenSettingsDialog = () => {
   setSettingsDialogOpen(true);
@@ -257,20 +257,7 @@ const handleCloseSettingsDialog = () => {
     fetchProjects();
   }, []);
  
-  useEffect(() => {
-    console.log("Projects state:", projects);
-  }, [projects]);
-
-  // Fetch projects initially and every 4 seconds
-  useEffect(() => {
-    fetchProjects();
-    const intervalId = setInterval(() => {
-      fetchProjects();
-    }, 4000);
-
-    // Cleanup the interval on component unmount
-    return () => clearInterval(intervalId);
-  }, []);
+  useEffect(() => {  }, [projects]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
