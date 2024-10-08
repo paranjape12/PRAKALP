@@ -170,14 +170,14 @@ exports.taskOverview = (req, res) => {
           if (proj_sort_str === '') {
               // If no sorting, just add the filter clause if it exists
               if (filterClause) {
-                  selectProjectQuery += ` WHERE ${filterClause}`;
+                  selectProjectQuery += ` WHERE ${filterClause} ORDER BY ProjectName ASC, id ASC, sales_order ASC`;
               }
           } else {
               // Prepare the status condition
               const sort_Status = proj_sort.map(status => `'${status}'`).join(',');
 
               // Always include the status filter
-              selectProjectQuery += ` WHERE Status IN (${sort_Status})`;
+              selectProjectQuery += ` WHERE Status IN (${sort_Status}) ORDER BY ProjectName ASC, id ASC, sales_order ASC`;
               
               // If there's an additional filter, combine it with AND
               if (filterClause) {

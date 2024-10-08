@@ -241,13 +241,16 @@ function TaskOverview() {
         setProjects([]);
       } else {
         let filteredProjects = data;
+        const sortedProjects = filteredProjects.sort((a, b) => a.projectName.localeCompare(b.projectName));
+        // const sortedProjects = filteredProjects.sort((a, b) => a.projectSalesOrder.localeCompare(b.projectSalesOrder));
+        // const sortedProjects = filteredProjects.sort((a, b) => a.projectId - b.projectId);
   
         // Apply filter for less than 10 tasks
         if (filters.lessThanTenTasks) {
-          filteredProjects = filteredProjects.filter(project => project.tasks.length < 10);
+          sortedProjects = sortedProjects.filter(project => project.tasks.length < 10);
         }
   
-        setProjects(filteredProjects);
+        setProjects(sortedProjects);     
         setNoTaskMessage('');
       }
   
