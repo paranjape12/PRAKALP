@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 
-function CreateCopyProject({ open, onClose, onBack }) {
+function CreateCopyProject({ open, onClose, onBack, onSaveFetchProjects }) {
   const [projectName, setProjectName] = useState('');
   const [salesOrder, setSalesOrder] = useState('');
   const [selectedProject, setSelectedProject] = useState('');
@@ -88,6 +88,7 @@ function CreateCopyProject({ open, onClose, onBack }) {
       if (response.data === 'Project exist') {
         toast.error('Project already exists');
       } else if (response.data === 'Success') {
+        onSaveFetchProjects();
         toast.success('Project created successfully');
         setTimeout(() => {
           onClose();

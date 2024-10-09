@@ -111,7 +111,7 @@ function AddNewProject({ open, onClose, onSaveFetchProjects }) {
           </DialogActions>
         </Dialog>
       )}
-      {openCopyDialog && <CreateCopyProject open={openCopyDialog} onClose={handleCopyCloseDialog} onBack={handleCopyBackDialog} />}
+      {openCopyDialog && <CreateCopyProject open={openCopyDialog} onClose={handleCopyCloseDialog} onBack={handleCopyBackDialog} onSaveFetchProjects={onSaveFetchProjects} />}
     </>
   );
 }
