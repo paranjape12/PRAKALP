@@ -66,7 +66,16 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     if (project.projectId && dates.length > 0) {
       fetchProjectTimeDetails(projectName, assignBy, startDate);
     }
-  }, [project.projectId, project.projectName, dates]);
+  }, [project, dates]);
+
+  const handleTaskSaved = () => {
+    const assignBy = decrypToken.id;
+    const projectName = project.projectName;
+    const startDate = dates[0]?.ymdDate;
+
+    // Fetch the updated time details after the task is saved
+    fetchProjectTimeDetails(projectName, assignBy, startDate);
+  };
 
   const handleToggleShowTimeComplete = (e) => {
     e.stopPropagation();
@@ -81,6 +90,10 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
   const handleCloseAddTaskDialog = () => {
     setAddTaskDialogOpen(false);
   };
+
+  const defaultSaveFetchProjects = () => {
+    // This function does nothing but prevents errors when passed as a prop
+  };  
 
   function getTaskStatusColor(requiredTime, takenTime) {
     if (requiredTime < takenTime) {
@@ -150,7 +163,13 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
           </td>
         );
       })}
-      {<AddTaskModal projectName={project.projectName} open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} />}
+      {<AddTaskModal
+        projectName={project.projectName}
+        open={addTaskDialogOpen}
+        onClose={handleCloseAddTaskDialog}
+        onSaveFetchProjects={defaultSaveFetchProjects} // Pass the default function
+        onTaskSaved={handleTaskSaved}
+      />}
     </>
   );
 }
