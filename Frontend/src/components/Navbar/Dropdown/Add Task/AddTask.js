@@ -14,7 +14,7 @@ const theme = createTheme({
   },
 });
 
-const AddTaskModal = ({ projectName, open, onClose, onSaveFetchProjects }) => {
+const AddTaskModal = ({ projectName, open, onClose, onSaveFetchProjects, onTaskSaved }) => {
   const [taskName, setTaskName] = useState('');
   const [lastTask, setLastTask] = useState(false);
   const [hours, setHours] = useState(0);
@@ -30,7 +30,7 @@ const AddTaskModal = ({ projectName, open, onClose, onSaveFetchProjects }) => {
 
   const handleClose = () => {
     onClose();
-  };
+  }; 
 
   const handleSave = async () => {
     // Validation checks
@@ -73,6 +73,7 @@ const AddTaskModal = ({ projectName, open, onClose, onSaveFetchProjects }) => {
 
       if (response.data === 'Success') {
         onSaveFetchProjects();
+        onTaskSaved();
         toast.success('Task added successfully!');
         setTimeout(onClose, 2500);
       } else if (response.data === 'Last Task exist') {
