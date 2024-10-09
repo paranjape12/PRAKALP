@@ -12,7 +12,7 @@ const theme = createTheme({
   },
 });
 
-const AssignTaskDialog = ({ open, onClose }) => {
+const AssignTaskDialog = ({ open, onClose,projectData,taskData,empid,tasktimeemp,Activity,timingId}) => {
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [selectedEmployeeName, setSelectedEmployeeName] = useState('');
@@ -85,6 +85,39 @@ const AssignTaskDialog = ({ open, onClose }) => {
     fetchProjects();
     fetchEmployees();
   }, []);
+
+  useEffect (()=>{
+    if (projectData){
+      setSelectedProject(projectData);
+    }
+    if (taskData){
+      setSelectedTask(taskData);
+    }
+    if (empid){
+      setSelectedEmployeeId(empid);
+      setSelectedEmployeeName(true);
+    }
+    if(tasktimeemp){
+      setDate(tasktimeemp);
+    }
+   if(Activity){
+    setActivity(Activity);
+   }
+    if (timingId) {
+      const seconds2hrmin = (ss) => {
+        const h = Math.floor(ss / 3600); // Total hours
+        const m = Math.floor((ss % 3600) / 60); // Remaining minutes
+
+        const formattedH = h < 10 ? '0' + h : h;
+        const formattedM = m < 10 ? '0' + m : m;
+
+        setHours(formattedH);
+        setMinutes(formattedM);
+      }
+      seconds2hrmin(timingId);
+    }
+   
+  })
 
   useEffect(() => {
     if (selectedProject) {

@@ -6,6 +6,7 @@ import axios from 'axios';
 import EditTaskPopup from './EditTaskPopup';
 import DeleteTaskPopup from './DeleteTaskPopup';
 import TaskCompletePopup from './TaskCompletePopup';
+import AssignTaskDialog from '../Navbar/Dropdown/Assign Task/AssignTask';
 import { Buffer } from 'buffer';
 import { format } from 'date-fns';
 import { getUserDataFromToken } from '../../utils/tokenUtils';
@@ -35,6 +36,14 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
   const [taskCompletionTime, setTaskCompletionTime] = useState(null);
   const [taskCompletionLog, setTaskCompletionLog] = useState('');
   const [taskCompletionStatus, setTaskCompletionStatus] = useState('');
+  const [assignTaskDialogOpen, setAssignTaskDialogOpen] = useState(false);
+  const [assignProject, setAssignProject] = useState({}); 
+  const [assignTask, setAssignTask] = useState({}); 
+  const [assignEmpName, setAssignEmpName] = useState({}); 
+  const [assignDate, setAssignDate] = useState({}); 
+  const [assignActivity, setAssignActivity] = useState({});
+  const [assignTime, setAssignTime] = useState('');
+
 
   const seconds2hrmin = (ss) => {
     const h = Math.floor(ss / 3600); // Total hours
@@ -134,10 +143,25 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
     setTaskCompleteOpen(true);
   };
 
-
-
   const handleCloseTaskCompleteDialog = () => {
     setTaskCompleteOpen(false);
+  };
+
+
+  const handleOpenAssignTaskDialog = (empid,tasktimeemp,Activity,timingId) => {
+    setAssignTaskDialogOpen(true);
+    setAssignProject(project.projectName); 
+    setAssignTask(task.taskId);
+    setAssignEmpName(empid);
+    setAssignDate(tasktimeemp);
+    setAssignActivity(Activity);
+    setAssignTime(timingId);
+
+  };
+  
+
+  const handleCloseAssignTaskDialog = () => {
+    setAssignTaskDialogOpen(false); // <-- Close the assign task dialog
   };
 
   return (
@@ -198,6 +222,18 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
               timingId={timingId}
             />
           )}
+        {assignTaskDialogOpen && (
+          <AssignTaskDialog
+            open={assignTaskDialogOpen}
+            onClose={handleCloseAssignTaskDialog}
+            projectData={assignProject} 
+            taskData={assignTask}
+            empid={assignEmpName}
+            tasktimeemp={assignDate}
+            Activity={assignActivity}
+            timingId={assignTime}
+          />
+        )}
 
           {localShowTimeDetails && (
             <div className="card-body text-left" style={{ padding: '0', fontSize: '11px', height: 'auto', width: '13rem', marginLeft: '0.2rem', marginBottom: '0.2rem' }}>
@@ -236,7 +272,16 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
                     )}
                     {!loading && (
                       taskTimings[i]?.map(timing => (
-                        timing.taskid === task.taskId ? ` ${timing.nickname} : ${seconds2hrmin(timing.planned)}` : ''
+                        timing.taskid === task.taskId ? 
+                        (
+                          <span key={timing.id} onClick={() => handleOpenAssignTaskDialog( timing.empid, timing.tasktimeemp, timing.Activity,timing.planned)} style={{ cursor: 'pointer' }}>
+                            <span style={{ color: '#1cc88a' }}>
+                             {timing.nickname}
+                            </span> : <span style={{ color:'inherit', cursor: 'default' }}>
+                            {seconds2hrmin(timing.planned)}
+                            </span>
+                          </span>
+                        ) : ''
                       ))
                     )}
                   </td>
@@ -271,7 +316,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
                           <span key={timing.id} onClick={() => handleOpenTaskCompleteDialog(timing.actual, timing.id, timing.tasklog, timing.Status)} style={{ cursor: 'pointer' }}>
                             <span style={{ color: '#1cc88a' }}>
                                {timing.nickname}
-                            </span> : <span style={{ color: 'inherit', cursor: 'default' }}>
+                            </span> : <span style={{ color:'inherit', cursor: 'default' }}>
                               {seconds2hrmin(timing.actual)}
                             </span>
                           </span>

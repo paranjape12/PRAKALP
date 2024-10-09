@@ -387,7 +387,8 @@ exports.indViewPATimes = (req, res) => {
     te.timetocomplete_emp AS planned, 
     te.actualtimetocomplete_emp AS actual,
     te.tasklog AS tasklog,
-    t.Status AS Status
+    t.Status AS Status,
+    te.Activity as Activity
 FROM 
     Taskemp te
 JOIN 
