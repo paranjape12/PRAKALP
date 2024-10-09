@@ -422,7 +422,8 @@ function TaskOverview() {
               onPreviousDayClick={handlePreviousDayClick}
               onNextDayClick={handleNextDayClick}
               dates={dates}
-              onSaveFetchProjects={handlefetchProjects} 
+              onTaskSaved={handleTaskSaved}
+              onSaveFetchProjects={handlefetchProjects}
               settingsDialogOpen={settingsDialogOpen} // Pass open state to Navbar
               onSettingsClose={handleCloseSettingsDialog} // Pass close handler to Navbar
               onOpenSettingsDialog={handleOpenSettingsDialog} // Pass open handler to Navbar
