@@ -14,7 +14,7 @@ import { useDispatch } from 'react-redux';
 import { openAddProjectModal } from '../../services/redux/AddEmployeeSlice';
 import { useSelector } from 'react-redux';
 
-function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, settingsDialogOpen, onOpenSettingsDialog, onSettingsClose, onSettingsApply, onSaveFetchProjects }) {
+function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, settingsDialogOpen, onOpenSettingsDialog, onSettingsClose, onSettingsApply, onSaveFetchProjects, onTaskSaved }) {
   const [activeButton, setActiveButton] = useState(null);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showMenuDropdown, setShowMenuDropdown] = useState(false);
@@ -267,7 +267,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
               <SettingsDialog open={settingsDialogOpen} onClose={onSettingsClose} onApply={onSettingsApply} />
               <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} />
               <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} onSaveFetchProjects={onSaveFetchProjects} />
-              <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} onSaveFetchProjects={onSaveFetchProjects}/>
+              <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} onSaveFetchProjects={onSaveFetchProjects} onTaskSaved={onTaskSaved}/>
             </div>
           )}
 
