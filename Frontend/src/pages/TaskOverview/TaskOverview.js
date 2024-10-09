@@ -549,6 +549,8 @@ const handleFilterSave = (newFilterOptions) => {
               open={showAddTaskModal}
               onClose={handleCloseAddTaskModal}
               projectName={projectName}
+              onSaveFetchProjects={handlefetchProjects} // Pass the default function
+              onTaskSaved={handleTaskSaved}
             />
           )}
           {selectedProject && (
@@ -557,7 +559,7 @@ const handleFilterSave = (newFilterOptions) => {
               handleClose={handleCloseEditProjectDialog}
               projectDetails={selectedProject}
               onSave={handleSaveEditProject}
-              onSaveFetchProjects={handlefetchProjects} 
+              onSaveFetchProjects={handlefetchProjects}
             />
           )}
           {selectedProjectId && (
@@ -566,7 +568,7 @@ const handleFilterSave = (newFilterOptions) => {
               handleClose={handleCloseDeleteProjectDialog}
               selectedProjectId={selectedProjectId}
               projectName={projectName}
-              onSaveFetchProjects={handlefetchProjects} 
+              onSaveFetchProjects={handlefetchProjects}
             />
           )}
           {filterProjectDialogOpen && (
