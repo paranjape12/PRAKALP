@@ -383,12 +383,15 @@ function TaskOverview() {
     setFilterProjectDialogOpen(false);
   };
 
-const handleFilterSave = (newFilterOptions) => {
-  setLoading(true);
-  setFilterOptions(newFilterOptions);
-  fetchProjects(newFilterOptions);
-};
+  const handleFilterSave = (newFilterOptions) => {
+    setLoading(true);
+    setFilterOptions(newFilterOptions);
+    fetchProjects(newFilterOptions);
+  };
 
+  const handleTaskSaved = () => {
+    // This function does nothing but prevents errors when passed as a prop
+  }; 
 
   return (
     <div>
