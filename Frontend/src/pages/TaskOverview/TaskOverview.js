@@ -211,7 +211,7 @@ function TaskOverview() {
     } else {
       setIsFunnelFilled(false); // Set to false if no filters are applied
     }
-  
+
     try {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/taskOverview`, {
         method: 'POST',
@@ -225,7 +225,7 @@ function TaskOverview() {
           internal: filters.internal,
         }),
       });
-  
+
       const contentType = response.headers.get('Content-Type');
       let data;
       if (contentType && contentType.includes('application/json')) {
@@ -233,7 +233,7 @@ function TaskOverview() {
       } else {
         data = await response.text();
       }
-  
+
       if (data.message === 'No Task Assign') {
         setNoTaskMessage(data.message);
         setProjects([]);
@@ -242,16 +242,16 @@ function TaskOverview() {
         // const sortedProjects = filteredProjects.sort((a, b) => a.projectName.localeCompare(b.projectName));
         const sortedProjects = filteredProjects.sort((a, b) => a.projectSalesOrder.localeCompare(b.projectSalesOrder));
         // const sortedProjects = filteredProjects.sort((a, b) => a.projectId - b.projectId);
-  
+
         // Apply filter for less than 10 tasks
         if (filters.lessThanTenTasks) {
           sortedProjects = sortedProjects.filter(project => project.tasks.length < 10);
         }
-  
-        setProjects(sortedProjects);     
+
+        setProjects(sortedProjects);
         setNoTaskMessage('');
       }
-  
+
       setLoading(false);
     } catch (error) {
       console.error('Error:', error);
@@ -377,7 +377,7 @@ function TaskOverview() {
 
   const handleOpenFilterProjectDialog = () => {
     setFilterProjectDialogOpen(true);
-};
+  };
 
   const handleCloseFilterProjectDialog = () => {
     setFilterProjectDialogOpen(false);
