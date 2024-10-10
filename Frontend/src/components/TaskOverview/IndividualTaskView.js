@@ -72,7 +72,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
     };
 
     fetchTaskDetails();
-  }, [task.taskId]);
+  }, [task]);
 
   useEffect(() => {
     const fetchTaskTimings = async () => {
@@ -94,7 +94,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
       }
     };
     fetchTaskTimings();
-  }, [project.projectName, dates]);
+  }, [dates]);
 
   const handleTaskInfoDialogOpen = () => {
     setTaskInfoDialogOpen(true);
@@ -109,7 +109,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
       projectName: project.projectName,
       projectLastTask: project.projectLastTask,
       taskName: task.taskName,
-      taskActualTime: task.taskActualTime,
+      taskRequiredTime: task.taskRequiredTime,
       taskDetails: task.taskDetails,
     });
     setEditTaskDialogOpen(true);
@@ -200,6 +200,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
             open={editTaskDialogOpen}
             handleClose={handleCloseEditTaskDialog}
             projectDetails={selectedProject}
+            onSaveFetchProjects= {onSaveFetchProjects}
           />
 
           {deleteTaskDialogOpen && (
