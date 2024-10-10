@@ -203,60 +203,121 @@ function TaskOverview() {
     setShowAddTaskModal(false);
   };
 
-  const fetchProjects = async (filters = { amc: false, internal: false, lessThanTenTasks: false }) => {
+  
+  // const fetchProjects = async (filters = { amc: false, internal: false, lessThanTenTasks: false }) => {
 
+  //   if (filters.amc || filters.internal || filters.lessThanTenTasks) {
+  //     setIsFunnelFilled(true); // Set to true if any filter is being used
+  //   } else {
+  //     setIsFunnelFilled(false); // Set to false if no filters are applied
+  //   }
+
+  //   try {
+  //     const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/taskOverview`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         token: localStorage.getItem('token'),
+  //         is_complete: '0',
+  //         amc: filters.amc,
+  //         internal: filters.internal,
+  //       }),
+  //     });
+
+  //     const contentType = response.headers.get('Content-Type');
+  //     let data;
+  //     if (contentType && contentType.includes('application/json')) {
+  //       data = await response.json();
+  //     } else {
+  //       data = await response.text();
+  //     }
+
+  //     if (data.message === 'No Task Assign') {
+  //       setNoTaskMessage(data.message);
+  //       setProjects([]);
+  //     } else {
+  //       let filteredProjects = data;
+
+        
+  //       //let sortedProjects = filteredProjects.sort((a, b) => a.projectName.localeCompare(b.projectName));
+  //      let sortedProjects = filteredProjects.sort((a, b) => a.projectSalesOrder.localeCompare(b.projectSalesOrder));
+  //       // let sortedProjects = filteredProjects.sort((a, b) => a.projectId - b.projectId);
+
+  //       // Apply filter for less than 10 tasks
+  //       if (filters.lessThanTenTasks) {
+  //         sortedProjects = sortedProjects.filter(project => project.tasks.length < 10 && project.tasks.length > 0);
+  //       }
+
+  //       setProjects(sortedProjects);
+  //       setNoTaskMessage('');
+  //     }
+
+  //     setLoading(false);
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     setLoading(false);
+  //   }
+  // };
+
+  const fetchProjects = async (filters = { amc: false, internal: false, lessThanTenTasks: false, aToZ: false }) => {
     if (filters.amc || filters.internal || filters.lessThanTenTasks) {
-      setIsFunnelFilled(true); // Set to true if any filter is being used
+        setIsFunnelFilled(true); // Set to true if any filter is being used
     } else {
-      setIsFunnelFilled(false); // Set to false if no filters are applied
+        setIsFunnelFilled(false); // Set to false if no filters are applied
     }
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/taskOverview`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token: localStorage.getItem('token'),
-          is_complete: '0',
-          amc: filters.amc,
-          internal: filters.internal,
-        }),
-      });
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/taskOverview`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                token: localStorage.getItem('token'),
+                is_complete: '0',
+                amc: filters.amc,
+                internal: filters.internal,
+            }),
+        });
 
-      const contentType = response.headers.get('Content-Type');
-      let data;
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        data = await response.text();
-      }
-
-      if (data.message === 'No Task Assign') {
-        setNoTaskMessage(data.message);
-        setProjects([]);
-      } else {
-        let filteredProjects = data;
-        //let sortedProjects = filteredProjects.sort((a, b) => a.projectName.localeCompare(b.projectName));
-       let sortedProjects = filteredProjects.sort((a, b) => a.projectSalesOrder.localeCompare(b.projectSalesOrder));
-        // let sortedProjects = filteredProjects.sort((a, b) => a.projectId - b.projectId);
-
-        // Apply filter for less than 10 tasks
-        if (filters.lessThanTenTasks) {
-          sortedProjects = sortedProjects.filter(project => project.tasks.length < 10 && project.tasks.length > 0);
+        const contentType = response.headers.get('Content-Type');
+        let data;
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            data = await response.text();
         }
 
-        setProjects(sortedProjects);
-        setNoTaskMessage('');
-      }
+        if (data.message === 'No Task Assign') {
+            setNoTaskMessage(data.message);
+            setProjects([]);
+        } else {
+            let filteredProjects = data;
 
-      setLoading(false);
+            // Apply A to Z sorting if the option is checked
+            if (filters.aToZ) {
+                filteredProjects.sort((a, b) => a.projectName.localeCompare(b.projectName));
+            } else {
+                filteredProjects.sort((a, b) => a.projectSalesOrder.localeCompare(b.projectSalesOrder));
+            }
+
+            // Apply filter for less than 10 tasks
+            if (filters.lessThanTenTasks) {
+                filteredProjects = filteredProjects.filter(project => project.tasks.length < 10 && project.tasks.length > 0);
+            }
+
+            setProjects(filteredProjects);
+            setNoTaskMessage('');
+        }
+
+        setLoading(false);
     } catch (error) {
-      console.error('Error:', error);
-      setLoading(false);
+        console.error('Error:', error);
+        setLoading(false);
     }
-  };
+};
 
   const handleOpenEditProjectDialog = (project) => {
     setSelectedProject({

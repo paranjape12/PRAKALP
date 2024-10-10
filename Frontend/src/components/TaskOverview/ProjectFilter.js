@@ -6,6 +6,7 @@ const ProjectFilter = ({ open, onClose, onSave, filterOptions, setFilterOptions 
     const [amcChecked, setAmcChecked] = useState(filterOptions.amc);
     const [internalChecked, setInternalChecked] = useState(filterOptions.internal);
     const [lessThanTenTasksChecked, setLessThanTenTasksChecked] = useState(filterOptions.lessThanTenTasks);
+    const [aToZChecked, setAToZChecked] = useState(filterOptions.aToZ); // Add A to Z state
 
     const theme = createTheme({
         typography: {
@@ -18,6 +19,7 @@ const ProjectFilter = ({ open, onClose, onSave, filterOptions, setFilterOptions 
         setAmcChecked(filterOptions.amc);
         setInternalChecked(filterOptions.internal);
         setLessThanTenTasksChecked(filterOptions.lessThanTenTasks);
+        setAToZChecked(filterOptions.aToZ); // Add A to Z option sync
     }, [filterOptions]);
 
     const handleCheckboxChange = (event) => {
@@ -67,6 +69,16 @@ const ProjectFilter = ({ open, onClose, onSave, filterOptions, setFilterOptions 
                             />
                         }
                         label="Less than 10 tasks"
+                    />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={filterOptions.aToZ} // Updated to check for A to Z sorting option
+                                onChange={handleCheckboxChange}
+                                name="aToZ"
+                            />
+                        }
+                        label="A to Z"
                     />
                 </DialogContent>
                 <DialogActions>
