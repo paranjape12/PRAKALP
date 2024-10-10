@@ -15,7 +15,7 @@ const theme = createTheme({
   },
 });
 
-const EditTaskPopup = ({ open, handleClose, projectDetails }) => {
+const EditTaskPopup = ({ open, handleClose, projectDetails, onSaveFetchProjects }) => {
   const [projectName, setProjectName] = useState('');
   const [taskName, setTaskName] = useState('');
   const [originalTaskName, setOriginalTaskName] = useState('');
@@ -87,6 +87,8 @@ const EditTaskPopup = ({ open, handleClose, projectDetails }) => {
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/saveEditTask`, taskData);
       if (response.data === 'Success') {
         toast.success('Task saved successfully!');
+        onSaveFetchProjects();
+        setTimeout(handleClose, 1500);
       } else {
         toast.error(`Failed to save task: ${response.data}`);
       }
