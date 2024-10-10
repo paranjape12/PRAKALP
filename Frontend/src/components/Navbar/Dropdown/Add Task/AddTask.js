@@ -53,6 +53,9 @@ const AddTaskModal = ({ projectName, open, onClose, onSaveFetchProjects, onTaskS
     if (taskName === '') {
       toast.error('Please enter task name');
       return;
+    } if (taskDetails === '') {
+      toast.error('Please enter task Description');
+      return;
     }
 
     try {
