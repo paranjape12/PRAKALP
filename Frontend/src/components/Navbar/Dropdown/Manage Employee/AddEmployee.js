@@ -84,6 +84,25 @@ const AddEmployee = ({handleCloseModalForTemplate} ) => {
       });
       // Show/hide password fields based on the checkbox state
       setShowPasswordFields(!checked);
+    }  else if (name === 'Type') {
+      if (value === 'Admin') {
+        const adminAccess = pages.reduce((acc, page) => {
+          acc[page.PageName] = { add: true, edit: true, view: true };
+          return acc;
+        }, {});
+  
+        setFormData({
+          ...formData,
+          [name]: value, // Set Type to Admin
+          access: adminAccess // Set all access rights to true
+        });
+      } else {
+        // If not Admin, keep the current access
+        setFormData({
+          ...formData,
+          [name]: value
+        });
+      }
     } else {
       // For other fields, update the form data as usual
       setFormData({

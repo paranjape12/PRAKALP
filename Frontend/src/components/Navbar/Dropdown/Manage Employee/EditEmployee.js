@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { openAddProjectModal } from '../../../../services/redux/AddEmployeeSlice';
+import { getUserDataFromToken } from '../../../../utils/tokenUtils';
 
 const EditEmployee = ({ openEditEmployeeModal, handleCloseEditEmployeeModal,openFromEmployeeOverview, handleCloseFromEmployeeOverview }) => {
 
@@ -21,7 +22,7 @@ const EditEmployee = ({ openEditEmployeeModal, handleCloseEditEmployeeModal,open
   const [openDialog, setOpenDialog] = useState(false);
   const [showPasswordFields, setShowPasswordFields] = useState(true);
 
-
+  const userData = getUserDataFromToken();
 
   const [loadingAccessData, setLoadingAccessData] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(0);
@@ -134,6 +135,25 @@ const EditEmployee = ({ openEditEmployeeModal, handleCloseEditEmployeeModal,open
         [name]: checked ? 1 : 0
       });
       setShowPasswordFields(!checked);
+    }  else if (name === 'Type') {
+      if (value === 'Admin') {
+        const adminAccess = pages.reduce((acc, page) => {
+          acc[page.PageName] = { add: true, edit: true, view: true };
+          return acc;
+        }, {});
+  
+        setFormData({
+          ...formData,
+          [name]: value, // Set Type to Admin
+          access: adminAccess // Set all access rights to true
+        });
+      } else {
+        // If not Admin, keep the current access
+        setFormData({
+          ...formData,
+          [name]: value
+        });
+      }
     } else {
       setFormData({
         ...formData,
@@ -316,10 +336,9 @@ const EditEmployee = ({ openEditEmployeeModal, handleCloseEditEmployeeModal,open
       <Dialog
          open={handleOpenModalForTemplate}
          onClose={handleCloseModalForTemplate}
-        maxWidth='md'
       >
         <DialogTitle>Edit Employee
-          <Button className='addEmp-btn' style={{ marginLeft: '35rem' }} onClick={handleOpenAddEmployee} color='primary' variant='contained'>Add Employee</Button>
+          {userData.Type === "Admin" && (<Button className='addEmp-btn' style={{ marginLeft: '17rem' }} onClick={handleOpenAddEmployee} color='primary' variant='contained'>Add Employee</Button>)}
           <hr style={{ marginTop: "0.3rem", marginBottom: "0" }} />
         </DialogTitle>
         <DialogContent>
@@ -525,7 +544,7 @@ const EditEmployee = ({ openEditEmployeeModal, handleCloseEditEmployeeModal,open
               />
               <label htmlFor="text-input1" className="form-control-label text-dark font-weight-bold">Access To</label>
               <div className="table-responsive text-dark">
-                <table className="table table-bordered text-dark" id="tableeditsave">
+                <table className="table-bordered text-dark" id="tableeditsave">
                   <thead className="bg-primary text-white">
                     <tr>
                       <th></th>
