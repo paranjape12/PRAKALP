@@ -190,7 +190,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
                   </div>
                   <hr style={{ margin: '0', color: '#e5e8e8', backgroundColor: '#e5e8e8', }} />
 
-                  <div>
+                  {userdata.Type === "Admin" && (<div>
                     <button
                       className='dropdown-item d-flex align-items-center'
                       onClick={handleOpenAddEmployeeModal}
@@ -206,7 +206,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
                         Employee
                       </div>
                     </button>
-                  </div>
+                  </div>)}
                   <hr style={{ margin: '0', color: '#e5e8e8', backgroundColor: '#e5e8e8', }} />
 
                   <div>
