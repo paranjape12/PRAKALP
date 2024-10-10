@@ -95,7 +95,6 @@ function TaskOverview() {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false); // Manage dialog open/close
   const [filterOptions, setFilterOptions] = useState({ amc: false, internal: false, lessThanTenTasks: false });
 
-
   useEffect(() => {
 
     fetchProjects();
@@ -239,9 +238,9 @@ function TaskOverview() {
         setProjects([]);
       } else {
         let filteredProjects = data;
-        // const sortedProjects = filteredProjects.sort((a, b) => a.projectName.localeCompare(b.projectName));
-        const sortedProjects = filteredProjects.sort((a, b) => a.projectSalesOrder.localeCompare(b.projectSalesOrder));
-        // const sortedProjects = filteredProjects.sort((a, b) => a.projectId - b.projectId);
+        //let sortedProjects = filteredProjects.sort((a, b) => a.projectName.localeCompare(b.projectName));
+       let sortedProjects = filteredProjects.sort((a, b) => a.projectSalesOrder.localeCompare(b.projectSalesOrder));
+        // let sortedProjects = filteredProjects.sort((a, b) => a.projectId - b.projectId);
 
         // Apply filter for less than 10 tasks
         if (filters.lessThanTenTasks) {
