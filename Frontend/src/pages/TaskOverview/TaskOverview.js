@@ -244,7 +244,7 @@ function TaskOverview() {
 
         // Apply filter for less than 10 tasks
         if (filters.lessThanTenTasks) {
-          sortedProjects = sortedProjects.filter(project => project.tasks.length < 10);
+          sortedProjects = sortedProjects.filter(project => project.tasks.length < 10 && project.tasks.length > 0);
         }
 
         setProjects(sortedProjects);
