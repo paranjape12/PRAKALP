@@ -59,7 +59,6 @@ function AddNewProject({ open, onClose, onSaveFetchProjects }) {
       }
     }
 
-
   };
 
   return (

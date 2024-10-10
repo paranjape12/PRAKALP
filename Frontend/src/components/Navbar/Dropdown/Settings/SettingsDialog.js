@@ -9,7 +9,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { getUserDataFromToken } from '../../../../utils/tokenUtils';
 
-const SettingsDialog = ({ open, onClose,onApply  }) => {
+const SettingsDialog = ({ open, onClose,onApply, onSaveFetchProjects  }) => {
     const [activeLink, setActiveLink] = useState('pv');
     const [checkedValues, setCheckedValues] = useState([0, 1, 2, 3, 4]);
 
@@ -45,6 +45,7 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
     };
 
     const handleSave = () => {
+
         const token = localStorage.getItem('token');
         const data = {
             token: token,
@@ -69,6 +70,10 @@ const SettingsDialog = ({ open, onClose,onApply  }) => {
                 console.error('Error updating project sorting:', error);
                 toast.error('Error in updating project sorting.');
             });
+
+
+            onSaveFetchProjects();
+
     };
  
     const [selectedValue, setSelectedValue] = useState('no'); // Default value
