@@ -1521,10 +1521,8 @@ const updateTask = (projectName, taskId, taskName, taskDetails, taskActualTime, 
       console.error('Error updating task:', err);
       return res.status(500).send('Error updating task');
     }
-
-    // Proceed to update related task employees (assuming this function exists)
-    updateTaskEmp(taskId, taskDetails, taskActualTime, res);
   });
+  res.send('Success');
 };
 const updateTaskEmp = (taskId, taskDetails, taskActualTime, res) => {
   const updateTaskEmpQuery = `UPDATE Taskemp SET taskDetails_emp = ?, timetocomplete_emp = ? WHERE taskid = ?`;
