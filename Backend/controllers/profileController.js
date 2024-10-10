@@ -148,7 +148,6 @@ exports.AES256CBClogin = async (req, res) => {
 
 exports.register = (req, res) => {
   const { email, fname, lname, slectedval, passwd } = req.body;
-  console.log("req.body : ", req);
   const password = Buffer.from(passwd).toString('base64'); // Encrypting password
 
   const selectQuery = 'SELECT * FROM Logincrd WHERE Email=? OR Password=?';
