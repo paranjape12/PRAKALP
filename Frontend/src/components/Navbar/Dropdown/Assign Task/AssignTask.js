@@ -12,7 +12,7 @@ const theme = createTheme({
   },
 });
 
-const AssignTaskDialog = ({ open, onClose,projectData,taskData,empid,tasktimeemp,Activity,timingId}) => {
+const AssignTaskDialog = ({ open, onClose,projectData,taskData,empid,tasktimeemp,Activity,timingId,onSaveFetchProjects}) => {
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [selectedEmployeeName, setSelectedEmployeeName] = useState('');
@@ -56,6 +56,7 @@ const AssignTaskDialog = ({ open, onClose,projectData,taskData,empid,tasktimeemp
   
     axios.post(`${process.env.REACT_APP_API_BASE_URL}/assignTask`, data)
       .then(response => {
+        onSaveFetchProjects();
         toast.success(response.data);
         setTimeout(onClose, 1500); // Close after 1500 ms
       })
