@@ -205,6 +205,7 @@ exports.taskOverview = (req, res) => {
           const projectSalesOrder = project.sales_order;
           const proj_status = project.Status;
           const projectLastTask = project.lasttask;
+          const exactLastTask = project.taskid;
 
           let selcttask;
           let queryParams;
@@ -291,6 +292,7 @@ exports.taskOverview = (req, res) => {
                 noofassigntasks,
                 proj_status,
                 projectLastTask,
+                exactLastTask,
                 requiredTime,
                 takenTime,
                 tasks
