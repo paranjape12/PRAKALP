@@ -283,7 +283,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
                         timing.taskid === task.taskId ? 
                         (
                           <span key={timing.id} onClick={() => handleOpenAssignTaskDialog( timing.empid, timing.tasktimeemp, timing.Activity,timing.planned)} style={{ cursor: 'pointer' }}>
-                            <span style={{ color: '#1cc88a' }}>
+                            <span >
                              {timing.nickname}
                             </span> : <span style={{ color:'inherit', cursor: 'default' }}>
                             {seconds2hrmin(timing.planned)}
