@@ -63,7 +63,6 @@ function Login3() {
           token: urlEmail, // Pass the extracted email
         },
       });
-      console.log(response);
       
       if (response.data.message === 'Success') {
         const userData = response.data.result;
