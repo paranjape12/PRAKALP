@@ -239,6 +239,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
             tasktimeemp={assignDate}
             Activity={assignActivity}
             timingId={assignTime}
+            onSaveFetchProjects={onSaveFetchProjects}
           />
         )}
 
