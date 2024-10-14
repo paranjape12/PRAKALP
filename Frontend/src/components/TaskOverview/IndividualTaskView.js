@@ -159,8 +159,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
     setAssignProject(project.projectName); 
     setAssignTask(task.taskId);
     setAssignEmpName(empid);
-    setAssignDate(formatDate(tasktimeemp));    
-    console.log(tasktimeemp);
+    setAssignDate(formatDate(tasktimeemp)); 
     setAssignActivity(Activity);
     setAssignTime(timingId);
 

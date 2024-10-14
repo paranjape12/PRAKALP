@@ -87,41 +87,6 @@ const AssignTaskDialog = ({ open, onClose,projectData,taskData,empid,tasktimeemp
     fetchEmployees();
   }, []);
 
-  // useEffect (()=>{
-    
-  //   if (projectData){
-  //     setSelectedProject(projectData);
-  //   }
-  //   if (taskData){
-  //     setSelectedTask(taskData);
-  //   }
-  //   if (empid){
-  //     setSelectedEmployeeId(empid);
-  //     setSelectedEmployeeName(true);
-  //   }
-  //   if(tasktimeemp){
-  //     setDate(tasktimeemp);
-  //   }
-  //  if(Activity){
-  //   setActivity(Activity);
-  //  }
-  //   if (timingId) {
-  //     const seconds2hrmin = (ss) => {
-  //       const h = Math.floor(ss / 3600); // Total hours
-  //       const m = Math.floor((ss % 3600) / 60); // Remaining minutes
-
-  //       const formattedH = h < 10 ? '0' + h : h;
-  //       const formattedM = m < 10 ? '0' + m : m;
-
-  //       setHours(formattedH);
-  //       setMinutes(formattedM);
-  //     }
-  //     seconds2hrmin(timingId);
-  //   }
-   
-  // },[employees]);
-
-
   useEffect(() => {
   if (projectData) {
     setSelectedProject(projectData);
@@ -130,7 +95,9 @@ const AssignTaskDialog = ({ open, onClose,projectData,taskData,empid,tasktimeemp
     setSelectedTask(taskData);
   }
   if (empid && employees.length) { // Ensure employees are loaded before matching
-    const selectedEmployee = employees.find(emp => emp.id === empid);
+    // console.log('empid:', empid);
+    // console.log('employees:', employees);
+    const selectedEmployee = employees.find(emp => String(emp.id) === String(empid));
     if (selectedEmployee) {
       setSelectedEmployeeId(empid);
       setSelectedEmployeeName(selectedEmployee.Name);
