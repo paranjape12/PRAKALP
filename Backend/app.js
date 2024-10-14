@@ -6,7 +6,12 @@ const taskRoutes = require('./routes/taskRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 
 const app = express();
-app.use(cors()); 
+const corsOptions = {
+    origin: '*', // Replace with your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed methods
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 app.use('/api', profileRoutes);
