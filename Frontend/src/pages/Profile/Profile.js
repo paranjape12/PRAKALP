@@ -22,8 +22,7 @@ const Profile = () => {
   const [emailuse, setEmailuse] = useState(null);
   const [initialData, setInitialData] = useState({});
   const [logoutPopupOpen, setLogoutPopupOpen] = useState(false);
-  
-  
+
   const userData = getUserDataFromToken();
 
   const saveProfile = () => {
@@ -100,8 +99,8 @@ const Profile = () => {
               localStorage.removeItem('filterState');
               if (localStorage.getItem('filterStateAdmin')) {
                 localStorage.removeItem('filterStateAdmin');
-              } 
-              window.location = '/';
+              }
+              window.location.href = 'https://prakalp2.mydashboard.site/index.php';
             }, 1500);
           }
           if (response.data === 'User exists') {
@@ -138,7 +137,7 @@ const Profile = () => {
   }, []);
 
   const handleProfileButtonClick = () => {
-    console.log(showProfileDropdown);    
+    console.log(showProfileDropdown);
     setShowProfileDropdown(!showProfileDropdown);
   };
 
@@ -177,17 +176,17 @@ const Profile = () => {
           <button className={activeButton === 'home' ? 'home_bg active' : 'home_bg'} onClick={() => handleButtonClick('home')}>
             <FontAwesomeIcon icon={faHouse} style={{ fontSize: '1.6rem' }} color='white' />
           </button>
-          <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() =>  handleProfileButtonClick() }>
+          <button className={activeButton === 'profile' ? 'home_bg active' : 'home_bg'} onClick={() => handleProfileButtonClick()}>
             <FontAwesomeIcon icon={faCircleUser} style={{ fontSize: '1.7rem' }} color='white' />
             {showProfileDropdown && (
-              <div className="dropdown-profile-content" style={{marginTop:'15px'}}>
+              <div className="dropdown-profile-content" style={{ marginTop: '15px' }}>
                 <div>
                   <div>
                     <button ><Link to="/profile" style={{ textDecoration: 'none', color: 'black' }}>
-                    <FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile
-                  </Link></button>
-                  </div>      
-                  <hr style={{margin:'0',color:'#e5e8e8',backgroundColor:'#e5e8e8',}} />
+                      <FontAwesomeIcon icon={faUser} color='blue' />&emsp; Profile
+                    </Link></button>
+                  </div>
+                  <hr style={{ margin: '0', color: '#e5e8e8', backgroundColor: '#e5e8e8', }} />
                   <div onClick={() => handleOpenlogoutPopup()}>
                     <button><FontAwesomeIcon icon={faRightFromBracket} color='red' />&emsp; LogOut</button></div>
                 </div>
@@ -292,11 +291,11 @@ const Profile = () => {
         </div>
       </div>
       {logoutPopupOpen && (
-      <LogoutPopup
-        open={logoutPopupOpen}
-        handleClose={handleCloselogoutPopup}
-      />
-    )}
+        <LogoutPopup
+          open={logoutPopupOpen}
+          handleClose={handleCloselogoutPopup}
+        />
+      )}
       <Footer />
     </div>
   );
