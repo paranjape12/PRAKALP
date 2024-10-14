@@ -54,6 +54,12 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
 
     return `${formattedH} : ${formattedM}`;
   };
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    const offset = date.getTimezoneOffset(); // Get time zone offset in minutes
+    const adjustedDate = new Date(date.getTime() - offset * 60000); // Adjust date for time zone offset
+    return adjustedDate.toISOString().split('T')[0];
+  };
 
   const userData = getUserDataFromToken();
 
@@ -153,7 +159,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
     setAssignProject(project.projectName); 
     setAssignTask(task.taskId);
     setAssignEmpName(empid);
-    setAssignDate(tasktimeemp);
+    setAssignDate(formatDate(tasktimeemp)); 
     setAssignActivity(Activity);
     setAssignTime(timingId);
 
