@@ -383,7 +383,7 @@ exports.indViewPATimes = (req, res) => {
     let sqlGetSums = `
       SELECT 
     te.id, 
-    DATE(te.tasktimeemp), 
+    DATE(te.tasktimeemp)As tasktimeemp, 
     te.taskid, 
     te.AssignedTo_emp AS empid, 
     te.timetocomplete_emp AS planned, 
