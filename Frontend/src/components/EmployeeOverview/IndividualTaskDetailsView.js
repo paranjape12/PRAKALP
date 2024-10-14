@@ -241,7 +241,7 @@ function IndividualTaskDetailsView({ project, employee, dates, localShowTimeDeta
                                             <FontAwesomeIcon icon={faPencilAlt} title="Edit Task" style={{ cursor: 'pointer', color: '#4e73df', paddingLeft: '0.5rem' }} onClick={() => handleOpenEditTaskDialog(task)} />
                                             {task.Status === "1" && <FontAwesomeIcon icon={faCopyright} color="#1cc88a" title="Marked as Complete" style={{ paddingLeft: '0.5rem' }} />}
                                             <FontAwesomeIcon icon={faCircleInfo} title="Task Info" style={{ cursor: 'pointer', color: '#4e73df', paddingLeft: '0.5rem' }} onClick={() => handleTaskInfoDialogOpen(task)} />
-                                            {project.projectLastTask === 1 && <FontAwesomeIcon icon={faL} title="Last Task" style={{ color: '#36b9cc', paddingLeft: '0.5rem' }} />}
+                                            {project.exactLastTask == task.taskId && <FontAwesomeIcon icon={faL} title="Last Task" style={{ color: '#36b9cc', paddingLeft: '0.5rem' }} />}
                                             <FontAwesomeIcon title="Show/Hide Time" icon={localShowTimeDetails ? faEyeSlash : faEye} onClick={handleToggleShowTimeComplete} style={{ cursor: 'pointer', color: '#4e73df', paddingLeft: '0.5rem' }} />
                                         </div>
                                     </div>
