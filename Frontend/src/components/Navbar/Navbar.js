@@ -105,6 +105,10 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
   };
   const background = isPopupVisible ? 'blurred-background' : '';
 
+  const fetchTaskDetails = () => {
+    // This function does nothing but prevents errors when passed as a prop
+  };
+
   return (
     <div className={`App ${background}`}>
       <div className='navbar_bg'>
@@ -267,7 +271,7 @@ function Navbar({ onTodayClick, onNextDayClick, onPreviousDayClick, dates, setti
 
               <AddEmployee openDialog={addEmployeeDialogOpen} handleClose={handleCloseAddEmployeeDialog} />
               <SettingsDialog open={settingsDialogOpen} onClose={onSettingsClose} onApply={onSettingsApply}  onSaveFetchProjects={onSaveFetchProjects} />
-              <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} onSaveFetchProjects={onSaveFetchProjects}/>
+              <AssignTaskDialog open={assignTaskDialogOpen} onClose={handleCloseAssignTaskDialog} onSaveFetchProjects={onSaveFetchProjects} fetchTaskDetails={fetchTaskDetails}/>
               <AddNewProject open={addProjectDialogOpen} onClose={handleCloseAddProjectDialog} onSaveFetchProjects={onSaveFetchProjects} />
               <AddTaskModal open={addTaskDialogOpen} onClose={handleCloseAddTaskDialog} onSaveFetchProjects={onSaveFetchProjects} onTaskSaved={onTaskSaved}/>
             </div>
