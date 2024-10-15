@@ -28,11 +28,11 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
     return `${formattedH} : ${formattedM}`;
   };
 
-  const fetchProjectTimeDetails = async (projectName, userId, startDate) => {
+  const fetchProjectTimeDetails = async (projectName, userId, assignRole, startDate) => {
     setLoading(true); // Start loading when fetching data
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/empOverviewIndAggPATimes`, {
-        params: { projectName, userId, startDate }
+        params: { projectName, userId, assignRole, startDate }
       });
 
       const updatedProjectTimeDetails = { planned: {}, actual: {}, projectName: response.data.data[0]?.projectName || '' };
@@ -58,23 +58,25 @@ const AggregateTaskView = ({ project, dates, toggleShowTimeComplete, seconds2day
 
   useEffect(() => {
     const assignBy = decrypToken.id;
+    const assignRole = decrypToken.Type;
     const projectName = project.projectName;
     const startDate = dates[0]?.ymdDate;
     const userRole = decrypToken.Type;
 
     // Fetch project time details when project or dates change
     if (project.projectId && dates.length > 0) {
-      fetchProjectTimeDetails(projectName, assignBy, startDate);
+      fetchProjectTimeDetails(projectName, assignBy, assignRole, startDate);
     }
   }, [project, dates]);
 
   const handleTaskSaved = () => {
     const assignBy = decrypToken.id;
+    const assignRole = decrypToken.Type;
     const projectName = project.projectName;
     const startDate = dates[0]?.ymdDate;
 
     // Fetch the updated time details after the task is saved
-    fetchProjectTimeDetails(projectName, assignBy, startDate);
+    fetchProjectTimeDetails(projectName, assignBy, assignRole, startDate);
   };
 
   const handleToggleShowTimeComplete = (e) => {
