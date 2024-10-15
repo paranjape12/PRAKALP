@@ -63,44 +63,45 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
 
   const userData = getUserDataFromToken();
 
-  useEffect(() => {
-    const fetchTaskDetails = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/taskInfoDialog`, {
-          token,
-          taskId: task.taskId,
-        });
-        setTaskDetails(response.data);
-      } catch (error) {
-        console.error('Failed to fetch task details:', error);
-      }
-    };
+  const fetchTaskDetails = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/taskInfoDialog`, {
+        token,
+        taskId: task.taskId,
+      });
+      setTaskDetails(response.data);
+    } catch (error) {
+      console.error('Failed to fetch task details:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchTaskDetails();
-  }, [task]);
+  }, [project, task]);
+
+  const fetchTaskTimings = async () => {
+    try {
+      const formattedDates = dates.map(item => format(new Date(item.date), 'yyyy-MM-dd'));
+      const responses = await Promise.all(formattedDates.map(formattedDate => (
+        axios.post(`${process.env.REACT_APP_API_BASE_URL}/indViewPATimes`, {
+          projectName: project.projectName,
+          dates: [formattedDate],
+          role: userData.Type,
+          id: userData.id
+        })
+      )));
+      const responseData = responses.map(response => response.data);
+      setTaskTimings(responseData);
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch task timings:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchTaskTimings = async () => {
-      try {
-        const formattedDates = dates.map(item => format(new Date(item.date), 'yyyy-MM-dd'));
-        const responses = await Promise.all(formattedDates.map(formattedDate => (
-          axios.post(`${process.env.REACT_APP_API_BASE_URL}/indViewPATimes`, {
-            projectName: project.projectName,
-            dates: [formattedDate],
-            role: userData.Type,
-            id: userData.id
-          })
-        )));
-        const responseData = responses.map(response => response.data);
-        setTaskTimings(responseData);
-        setLoading(false);
-      } catch (error) {
-        console.error('Failed to fetch task timings:', error);
-      }
-    };
     fetchTaskTimings();
-  }, [dates]);
+  }, [project, dates]);
 
   const handleTaskInfoDialogOpen = () => {
     setTaskInfoDialogOpen(true);
