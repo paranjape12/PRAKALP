@@ -201,6 +201,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
             task={task}
             taskDetails={taskDetails}
             handleClose={handleTaskInfoDialogClose}
+            fetchTaskDetails={fetchTaskDetails}
           />
 
           <EditTaskPopup
@@ -228,6 +229,7 @@ const IndividualTaskView = ({ project, dates, task, toggleShowTimeComplete, seco
               completionLog={taskCompletionLog}
               completionStatus={taskCompletionStatus}
               timingId={timingId}
+              fetchTaskTimings={fetchTaskTimings}
             />
           )}
         {assignTaskDialogOpen && (
