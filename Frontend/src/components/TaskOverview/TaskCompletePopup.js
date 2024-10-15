@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { toast } from 'react-toastify';
 
-const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId, completionLog, completionStatus }) => {
+const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId, completionLog, completionStatus, fetchTaskTimings }) => {
   const [taskComplete, setTaskComplete] = useState(false);
   const [taskInProgress, setTaskInProgress] = useState(false);
   const [taskNotComplete, setTaskNotComplete] = useState(false);
@@ -99,6 +99,7 @@ const TaskCompletePopup = ({ open, task, handleClose, completionTime, timingId, 
       try {
         const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/completeTask`, taskCompleteData);
         if (response.data === 'Success') {
+          fetchTaskTimings();
           toast.success('Task timimg changed successfully.')
           setTimeout(handleClose, 2500);
         } else {
