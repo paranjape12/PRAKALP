@@ -12,7 +12,7 @@ const theme = createTheme({
   },
 });
 
-const TaskInfoDialog = ({ open, project, task, taskDetails, handleClose }) => {
+const TaskInfoDialog = ({ open, project, task, taskDetails, handleClose, fetchTaskDetails }) => {
   const [page, setPage] = useState(0);
   const rowsPerPage = 20;
   const [order, setOrder] = useState('asc');
@@ -33,6 +33,7 @@ const TaskInfoDialog = ({ open, project, task, taskDetails, handleClose }) => {
 
 
   useEffect(() => {
+    fetchTaskDetails();
     if (taskDetails && taskDetails.results && taskDetails.results.length > 0) {
       // Set filtered task details dynamically
       setFilteredTaskDetails(taskDetails.results);
