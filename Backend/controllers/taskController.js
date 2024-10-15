@@ -120,16 +120,28 @@ exports.taskOverview = (req, res) => {
     });
   }
 
+  // Function to get task information based on user type
   function proceedWithTasks() {
-    const selectTaskEmpQuery = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`;
-    db.query(selectTaskEmpQuery, [u_id], (err, taskResults) => {
+    let selectTaskEmpQuery;
+    const queryParams = [];
+
+    if (U_type === 'Employee') {
+      selectTaskEmpQuery = `SELECT DISTINCT taskid FROM Taskemp WHERE AssignedTo_emp = ?`;
+      queryParams.push(u_id);  // Add the user ID only for employees
+    } else {
+      selectTaskEmpQuery = `SELECT DISTINCT taskid FROM Taskemp`;
+    }
+
+    db.query(selectTaskEmpQuery, queryParams, (err, taskResults) => {
       if (err) {
         console.error('Error executing task query:', err.stack);
         return res.status(500).send('Database query error');
       }
 
+      // Map over taskResults to get the taskid array
       arrselectemptask = taskResults.map(row => row.taskid);
 
+      // Call the next function to get project sorting and projects
       getProjSortingAndProjects();
     });
   }
@@ -896,7 +908,7 @@ exports.empOverviewTaskDtlsIndAggView = (req, res) => {
 
 // add admin and employee side completed and nickname is inprocess
 exports.empOverviewIndAggPATimes = (req, res) => {
-  const { projectName, userId, startDate } = req.query;
+  const { projectName, userId, assignRole, startDate } = req.query;
 
   const taskIdQuery = `
     SELECT id 
@@ -931,7 +943,9 @@ exports.empOverviewIndAggPATimes = (req, res) => {
     let taskDataQuery;
     let queryParams = [];
 
-    taskDataQuery = `
+    // If the role is "Employee", include AssignedTo_emp = ? in the query
+    if (assignRole === 'Employee') {
+      taskDataQuery = `
         SELECT 
           DATE(te.tasktimeemp) AS date, 
           t.projectName, 
@@ -944,7 +958,23 @@ exports.empOverviewIndAggPATimes = (req, res) => {
         AND DATE(te.tasktimeemp) IN (?)
         GROUP BY DATE(te.tasktimeemp), t.projectName
       `;
-    queryParams = [taskIdList, userId, dateArray];
+      queryParams = [taskIdList, userId, dateArray];
+    } else {
+      // If the role is not "Employee", omit AssignedTo_emp condition
+      taskDataQuery = `
+        SELECT 
+          DATE(te.tasktimeemp) AS date, 
+          t.projectName, 
+          SUM(te.timetocomplete_emp) AS planned, 
+          SUM(te.actualtimetocomplete_emp) AS actual 
+        FROM Taskemp te
+        INNER JOIN Task t ON te.taskid = t.id
+        WHERE te.taskid IN (?) 
+        AND DATE(te.tasktimeemp) IN (?)
+        GROUP BY DATE(te.tasktimeemp), t.projectName
+      `;
+      queryParams = [taskIdList, dateArray];
+    }
 
     // Execute the query with the appropriate parameters
     db.query(taskDataQuery, queryParams, (err, taskData) => {
@@ -959,19 +989,12 @@ exports.empOverviewIndAggPATimes = (req, res) => {
         const adjustedDate = new Date(taskDate.getTime() - taskDate.getTimezoneOffset() * 60000);
         const formattedDate = adjustedDate.toISOString().split('T')[0];
 
-        return userId
-          ? {
-            taskDate: formattedDate,
-            projectName: row.projectName,  // Added projectName to the response
-            planned: row.planned,
-            actual: row.actual
-          }
-          : {
-            employeeId: row.employeeId,
-            taskDate: formattedDate,
-            planned: row.planned,
-            actual: row.actual
-          };
+        return {
+          taskDate: formattedDate,
+          projectName: row.projectName,
+          planned: row.planned,
+          actual: row.actual
+        };
       });
 
       res.status(200).json({ message: 'Success', data: formattedData });
